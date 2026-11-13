@@ -44,8 +44,11 @@ platform code, tools and conventions are the same.
   back every 4 h, x2 for an hour each, 8 h at most; away earnings ignore it). UI: the ribbon opens HARBOURS
   (`Hud.ShowHarbours`), the x2 badge under the gems is the boost. Each water has its own colours and plants
   (`World/Layout.cs` `Theme.For`). Money reads K, M, B, T, aa, ab... (`Format.Money`).
+- First-run tutorial (`UI/Hud.Tutorial.cs`, `GameState.tutorialStep` 0/1/2): Marta's welcome card, then her speech
+  bubble (lines in `Coach`, keyed by guide step up to `berth3`) beside the pointing hand, a goodbye card, SKIP at any
+  time. Her portrait is rendered from the kit character (`art-src/free/faces/jobs.json` through `icon_render.py`).
 - Not done yet (see DESIGN.md milestones): the logbook (spending renown), crew cards, voyages, daily
-  gifts and tasks, derbies, the season pass, the trophy hall, the tutorial, the iCloud "newer save" offer
+  gifts and tasks, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
   (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup. The rating prompt's App Store id is a placeholder until the app exists.
 
 ## Verify every change

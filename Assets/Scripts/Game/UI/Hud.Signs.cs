@@ -92,7 +92,7 @@ namespace ReelEmpire.Game
             {
                 var b = h.berths[i];
                 bool idle = !b.skipper && !b.sailing && b.crate < s.DeckOf(h, i);
-                Put(_tapBubbles[n], view.BoatAt(i) + Vector3.up * 3.5f, idle);
+                Put(_tapBubbles[n], view.BoatAt(i) + Vector3.up * 1.2f, idle);
                 if (idle) _tapBubbles[n].anchoredPosition += new Vector2(0, bob);
                 n++;
             }

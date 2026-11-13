@@ -109,6 +109,7 @@ namespace ReelEmpire.Game
             _shownCash = H.cash;
             OnChanged();
             if (GameRoot.Instance.AwaySeconds > 0) OfferAway();
+            BuildTutorial();
         }
 
         void OnDestroy()
@@ -159,6 +160,7 @@ namespace ReelEmpire.Game
             UpdateFx();
             UpdateRate();
             UpdateNav();
+            UpdateTutorial();
             if (_dirty) { _dirty = false; RefreshSheet(); }
         }
 

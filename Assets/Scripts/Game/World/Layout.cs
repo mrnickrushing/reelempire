@@ -17,7 +17,7 @@ namespace ReelEmpire.Game
         public static Vector3 Crate(int berth) { return new Vector3(2.2f, QuayY, BerthZ(berth) - 2.4f); }
         public static Vector3 Moored(int berth) { return new Vector3(-PierLength * 0.55f, 0, BerthZ(berth) + 2.6f + BoatLength(berth) * 0.08f); }
         public static Vector3 Grounds(int berth) { return new Vector3(-34 - berth % 3 * 7 - berth * 1.5f, 0, BerthZ(berth) + (berth % 2 == 0 ? 3 : -2)); }
-        public static float BoatLength(int berth) { return 4.2f + berth * 1.15f; }
+        public static float BoatLength(int berth) { return 5.6f + berth * 1.1f; }
     }
 
     /// <summary>What makes each water look like itself: its ground, its sea and what grows there.</summary>

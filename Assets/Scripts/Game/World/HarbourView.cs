@@ -192,8 +192,8 @@ namespace ReelEmpire.Game
         // ---- what the interface points at ----
 
         public Vector3 BoatAt(int berth) { return berth < _boats.Count ? _boats[berth].position + Vector3.up * 2.5f : Layout.Moored(berth); }
-        public Vector3 BerthSign(int berth) { return new Vector3(-7.5f, Layout.QuayY + 0.4f, Layout.BerthZ(berth) - 1.6f); }
-        public Vector3 DockSign { get { return new Vector3(5.5f, Layout.QuayY + 3.4f, 0.5f); } }
+        public Vector3 BerthSign(int berth) { return new Vector3(0.8f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 3.4f); }
+        public Vector3 DockSign { get { return new Vector3(7.5f, Layout.QuayY + 3.2f, -1.5f); } }
         public Vector3 HallSign { get { return Layout.HallCentre + new Vector3(0, Layout.HallSize.y + 2.5f, 0); } }
         public Vector3 MarketSign { get { return Layout.MarketCentre + new Vector3(-2, 9, 0); } }
         public Vector3 HaulerAt(int i) { return i < _haulers.Count ? _haulers[i].position + Vector3.up * 2.4f : Layout.HallDoor; }

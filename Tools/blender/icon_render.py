@@ -36,6 +36,10 @@ def load(path):
     before = set(bpy.context.scene.objects)
     bpy.ops.import_scene.gltf(filepath=path)
     new = [o for o in bpy.context.scene.objects if o not in before]
+    # Some kit characters carry a helper sphere round them: drop it, or it sets the size of the picture.
+    for o in list(new):
+        if o.type == "MESH" and o.name.lower().startswith("icosphere"):
+            new.remove(o); bpy.data.objects.remove(o)
     # One parent for the lot, so it can be scaled and stood where it belongs.
     holder = bpy.data.objects.new("holder", None); bpy.context.scene.collection.objects.link(holder)
     for o in new:
