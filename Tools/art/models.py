@@ -22,6 +22,12 @@ MODELS = {  # id: (source, "size" | "height"[, pose, extra args...])
     "lily": (NAT + "lily_large.glb", "size"), "log_stack": (NAT + "log_stackLarge.glb", "size"), "flowers": (NAT + "flower_yellowA.glb", "size"), "grass": (NAT + "grass_large.glb", "size"),
     "buoy": (WAT + "buoy-flag.glb", "height"),
 }
+# Single models from poly.pizza (Quaternius and MaverickFX, CC0), fetched by props.py.
+P = "props/"
+for mid, mode in (("big_barn", "size"), ("barn", "size"), ("open_barn", "size"), ("small_barn", "size"), ("silo_house", "height"), ("market_stalls", "size"),
+                  ("market_stalls_b", "size"), ("market_stand", "height"), ("market_stand_b", "height"), ("dock_long", "size"), ("dock", "size"),
+                  ("storage_hut", "size"), ("bucket_fish", "size"), ("lighthouse", "height"), ("container_red", "size"), ("pallet", "size")):
+    MODELS[mid] = (P + mid + ".glb", mode)
 BOATS = ["boat-row-small", "boat-row-large", "boat-fishing-small", "boat-sail-a", "boat-tug-a", "boat-tow-a", "boat-tug-c", "ship-cargo-a"]
 for i, b in enumerate(BOATS): MODELS["boat_%d" % i] = (WAT + b + ".glb", "size")
 # The dock hands: three kit people, each frozen in four walking strides and standing.

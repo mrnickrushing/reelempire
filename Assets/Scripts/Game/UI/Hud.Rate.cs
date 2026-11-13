@@ -12,7 +12,7 @@ namespace ReelEmpire.Game
     {
         const string RateAskedPref = "re_rate_asked";
         const int RateFromStars = 12;
-        public const string ReviewUrl = "https://apps.apple.com/app/id0000000000?action=write-review";
+        public const string ReviewUrl = "https://apps.apple.com/app/id6834551337?action=write-review";
 
         float _rateIn = -1;
         RectTransform _rateCard;

@@ -315,8 +315,8 @@ void ShowHarbours()
 
         const string CreditsText =
             "Reel Empire: Idle Tycoon is made by Rushing Technologies.\n\n" +
-            "<b>Models</b>\nBoats, the truck, buildings, stalls, trees, rocks, props and the dock hands: Kenney (kenney.nl), CC0.\n" +
-            "Fish and sea creatures: Quaternius (quaternius.com), CC0.\n" +
+            "<b>Models</b>\nBoats, the truck, trees, rocks, props and the dock hands: Kenney (kenney.nl), CC0.\n" +
+            "Barns, market stalls, docks, fish and sea creatures: Quaternius (quaternius.com), CC0. Lighthouse: MaverickFX, CC0.\n" +
             "Octopus, Lobster and Eel: Poly by Google, CC BY 3.0. Shrimp: jeremy, CC BY 3.0. (poly.pizza)\n\n" +
             "<b>Fonts</b>\nLilita One by Juan Montoreano and Fredoka by Milena Brandão and Hafontia, SIL Open Font License.\n\n" +
             "<b>Sound</b>\nInterface sounds: Kenney, CC0.\n\n<b>Sky</b>\nPoly Haven, CC0.\n\nThank you for playing.";

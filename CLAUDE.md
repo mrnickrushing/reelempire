@@ -30,6 +30,10 @@ platform code, tools and conventions are the same.
   is white with `Stroke()`. Layout: cash pill top-left with the pace tab under it, gems top-right, the harbour's name
   on a ribbon, the guide card left, the chain as four round badges along the bottom, the upgrade sheet rising from
   the bottom (`Hud.Sheet`). Keep `CREDITS.md` in step with what ships.
+- Buildings and docks: `Tools/art/props.py` fetches single models from poly.pizza (CC0 / CC BY only, authors kept in
+  `art-src/free/props/manifest.json`); `models.py` converts them. The hall is Quaternius's Big Barn, the market a
+  Barn with stalls, piers are `dock` pieces end to end; they are painted darker than the Kenney boats, so they are
+  drawn through `Models.Kit(..., tint)` (`Scenery.Lift`). The App Store Connect app exists: Apple ID 6834551337.
 - Fish: `Tools/art/fish.py fetch|render|species` downloads the fish models (poly.pizza; refuses anything not CC0 / CC
   BY), renders each with `Tools/blender/icon_render.py`, and makes one picture per species (its model's picture,
   hue-shifted by the table in the script) in `Resources/UI/Species/<harbour>_<name>.png` (`Hud.SpeciesPicture`).
@@ -49,7 +53,7 @@ platform code, tools and conventions are the same.
   time. Her portrait is rendered from the kit character (`art-src/free/faces/jobs.json` through `icon_render.py`).
 - Not done yet (see DESIGN.md milestones): the logbook (spending renown), crew cards, voyages, daily
   gifts and tasks, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
-  (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup. The rating prompt's App Store id is a placeholder until the app exists.
+  (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup.
 
 ## Verify every change
 

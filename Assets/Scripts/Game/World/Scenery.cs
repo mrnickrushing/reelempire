@@ -43,7 +43,7 @@ namespace ReelEmpire.Game
 
         public static GameObject Crate(Transform parent)
         {
-            var kit = Models.Kit("box", parent, Vector3.zero, 0, 1.25f);
+            var kit = Models.Kit("bucket_fish", parent, Vector3.zero, 0, 1.6f) ?? Models.Kit("box", parent, Vector3.zero, 0, 1.25f);
             if (kit != null) return kit;
             return Models.Built("Crate", parent, mb =>
             {
@@ -121,19 +121,20 @@ namespace ReelEmpire.Game
             return go;
         }
 
-        public static float HallYaw = 90, MarketYaw = -90;
+        public static float HallYaw = -90, MarketYaw = -90;
         /// <summary>How much the industrial kit's dark buildings are brightened, a little toward warm.</summary>
-        static readonly Color Lift = new Color(1.75f, 1.62f, 1.5f);
+        static readonly Color Lift = new Color(1.55f, 1.5f, 1.45f);
 
         public static void Hall(Transform parent, HarbourState h)
         {
-            var hall = Models.Kit("hall", parent, new Vector3(Layout.HallCentre.x, Layout.QuayY, Layout.HallCentre.z), HallYaw, 21f);
+            // The hall: a big red barn with its doors on the quay, the smokehouse silo behind it.
+            var hall = Models.Kit("big_barn", parent, new Vector3(Layout.HallCentre.x, Layout.QuayY, Layout.HallCentre.z), HallYaw, 17f, Lift);
             if (hall != null)
             {
-                hall.GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(Lift);
-                Models.Kit("tank", parent, new Vector3(Layout.HallCentre.x + 2, Layout.QuayY, Layout.HallCentre.z + 16), 0, 6f);
-                Models.Kit("container", parent, new Vector3(Layout.HallCentre.x + 9, Layout.QuayY, Layout.HallCentre.z + 15), 90, 6f);
-                for (int i = 0; i < 4; i++) Models.Kit("barrel", parent, Layout.HallDoor + new Vector3(-1.2f + i % 2 * 1.3f, 0, -6.5f - i / 2 * 1.3f), i * 40, 1.3f);
+                Models.Kit("silo_house", parent, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY, Layout.HallCentre.z + 14), HallYaw, 11f, Lift);
+                Models.Kit("container_red", parent, new Vector3(Layout.HallCentre.x + 10, Layout.QuayY, Layout.HallCentre.z + 12), 0, 6f);
+                Models.Kit("pallet", parent, new Vector3(Layout.HallCentre.x + 11, Layout.QuayY, Layout.HallCentre.z + 7), 20, 2.2f);
+                for (int i = 0; i < 4; i++) Models.Kit("barrel", parent, Layout.HallDoor + new Vector3(-1.2f + i % 2 * 1.3f, 0, -7.5f - i / 2 * 1.3f), i * 40, 1.3f);
                 return;
             }
             Models.Built("Hall", parent, mb =>
@@ -162,19 +163,15 @@ namespace ReelEmpire.Game
 
         public static void Market(Transform parent)
         {
-            var market = Models.Kit("market", parent, new Vector3(Layout.MarketCentre.x + 4, Layout.QuayY, Layout.MarketCentre.z + 2), MarketYaw, 19f);
+            // The market: a barn for the fishmonger, stalls and stands along the road in front of it.
+            var market = Models.Kit("barn", parent, new Vector3(Layout.MarketCentre.x + 5, Layout.QuayY, Layout.MarketCentre.z + 3), MarketYaw, 14f, Lift);
             if (market != null)
             {
-                market.GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(Lift);
-                for (int i = 0; i < 4; i++)
-                {
-                    float z = Layout.MarketCentre.z - 9f + i * 5.2f, x = Layout.MarketCentre.x - 8.5f;
-                    Models.Kit("stall", parent, new Vector3(x, Layout.QuayY, z), 0, 3.6f);
-                    Models.Kit(i % 2 == 0 ? "box_open" : "box", parent, new Vector3(x - 0.2f, Layout.QuayY, z + 0.6f), 90, 1.5f);
-                    Models.Kit("fish", parent, new Vector3(x - 0.2f, Layout.QuayY + 0.95f, z - 0.9f), 30 + i * 50, 1.3f);
-                    Models.Kit("barrel", parent, new Vector3(x + 1.2f, Layout.QuayY, z - 1.2f), 0, 1.2f);
-                }
-                Models.Kit("flag", parent, new Vector3(Layout.MarketCentre.x - 8.5f, Layout.QuayY, Layout.MarketCentre.z + 13), 0, 8f);
+                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, Lift);
+                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, Lift);
+                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, Lift);
+                Models.Kit("bucket_fish", parent, new Vector3(Layout.MarketCentre.x - 9.5f, Layout.QuayY, Layout.MarketCentre.z + 1), 30, 1.6f);
+                Models.Kit("flag", parent, new Vector3(Layout.MarketCentre.x - 10, Layout.QuayY, Layout.MarketCentre.z + 16), 0, 8f);
                 return;
             }
             Models.Built("Market", parent, mb =>
@@ -287,8 +284,10 @@ namespace ReelEmpire.Game
             }
             Models.Kit("signpost", parent, new Vector3(9.5f, y, -11), 200, 2.4f);
             Models.Kit("log_stack", parent, new Vector3(12, y, 28), 80, 3.4f);
-            Models.Kit("shed", parent, new Vector3(20, y, -34), 90, 12f).GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(Lift);
-            Models.Kit("tower", parent, new Vector3(4, y, 60), 0, 13f);
+            Models.Kit("open_barn", parent, new Vector3(36, y, 17), -90, 10f, Lift);
+            Models.Kit("small_barn", parent, new Vector3(20, y, -34), -90, 10f, Lift);
+            Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift);
+            Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
         }
     }
 

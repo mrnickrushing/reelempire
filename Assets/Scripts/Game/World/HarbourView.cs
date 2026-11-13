@@ -102,6 +102,14 @@ namespace ReelEmpire.Game
         void BuildPier(int berth, bool open)
         {
             float z = Layout.BerthZ(berth);
+            if (Resources.Load<Mesh>("Models/dock") != null)
+            {
+                // Kit dock pieces end to end (one for a berth not opened yet); each is one unit long, 0.43 wide, 0.38 tall.
+                const float tile = 5f;
+                int n = open ? 3 : 1;
+                for (int i = 0; i < n; i++) Models.Kit("dock", _static, new Vector3(-tile * (i + 0.5f) + 0.3f, Layout.QuayY - tile * 0.38f + 0.06f, z), 90, tile, new Color(1.5f, 1.4f, 1.25f));
+                return;
+            }
             Models.Built("Pier " + berth, _static, mb =>
             {
                 var planks = open ? Palette.Hex(0xE0A86A) : Palette.Hex(0xB9B0A0); var post = Palette.Hex(0x7A5234);
