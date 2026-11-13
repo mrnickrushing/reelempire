@@ -14,7 +14,7 @@ namespace ReelEmpire.Game
     /// <summary>
     /// The player's account: Sign in with Apple (optional). Signing in creates the account the friends service knows
     /// (Apple's opaque user id goes to it over HTTPS and is stored there only as a hash), and names the manager from the first name Apple
-    /// sends if none was chosen. The airport itself travels through iCloud (<see cref="CloudSave"/>). In the Editor a
+    /// sends if none was chosen. The harbour itself travels through iCloud (<see cref="CloudSave"/>). In the Editor a
     /// stand-in account lets the whole flow be played without an iPhone.
     /// </summary>
     public static class AppleAccount
@@ -80,7 +80,6 @@ namespace ReelEmpire.Game
         {
             PlayerPrefs.DeleteKey(UserKey);
             PlayerPrefs.Save();
-            FriendsClient.Forget();
             Changed?.Invoke();
         }
     }

@@ -13,7 +13,7 @@ namespace ReelEmpire.Game
 {
     /// <summary>
     /// Anonymous play statistics, sent to the game's own Cloudflare Worker (`Tools/stats-worker`, stored in D1), to see
-    /// where players stop: sittings, each guide goal reached, stars gained, airports sold, and a frame-rate sample
+    /// where players stop: sittings, each guide goal reached, stars gained, harbours opened, and a frame-rate sample
     /// every five minutes. The player is a random id made on this device, hashed before it leaves it; nothing about
     /// the person, no advertising id, no IP kept, no tracking. Off in the Editor and when the player turns it off in
     /// Settings. Events wait in a small queue (kept across launches) and go out in batches.
@@ -64,7 +64,7 @@ namespace ReelEmpire.Game
         float _sendIn = 10f, _sampleIn = SampleEvery, _frameSum, _sittingStart;
         int _frames;
         Sim _sim;
-        int _goal = -1, _stars = -1, _airports = -1;
+        int _goal = -1, _stars = -1, _harbours = -1;
 
         void Awake()
         {
@@ -84,11 +84,11 @@ namespace ReelEmpire.Game
         {
             var s = GameRoot.Sim;
             if (s == null) return;
-            if (s != _sim) { _sim = s; _goal = s.State.goalIndex; _stars = s.Stars; _airports = s.State.mapsRun.Count; }
+            if (s != _sim) { _sim = s; _goal = s.State.goalIndex; _stars = s.Stars; _harbours = s.State.harbours.Count; }
             if (!_started) { _started = true; Send("Session.started", ("Session.firstLaunch", _firstLaunch ? "true" : "false")); }
             if (s.State.goalIndex != _goal) { if (s.State.goalIndex > _goal) Send("Goal.reached"); _goal = s.State.goalIndex; }
             if (s.Stars != _stars) { if (s.Stars > _stars) Send("Stars.gained"); _stars = s.Stars; }
-            if (s.State.mapsRun.Count != _airports) { _airports = s.State.mapsRun.Count; Send("Airport.sold", ("Game.wings", s.State.wings.ToString(CultureInfo.InvariantCulture))); }
+            if (s.State.harbours.Count != _harbours) { _harbours = s.State.harbours.Count; Send("Harbour.opened"); }
 
             _frameSum += Time.unscaledDeltaTime; _frames++;
             if ((_sampleIn -= Time.unscaledDeltaTime) <= 0)
@@ -117,13 +117,13 @@ namespace ReelEmpire.Game
             };
             if (s != null)
             {
-                p.Add(("Game.goal", s.CurrentGoal != null ? s.CurrentGoal.Id : "end"));
+                p.Add(("Game.goal", s.Goal != null ? s.Goal.Id : "end"));
                 p.Add(("Game.goalIndex", s.State.goalIndex.ToString(CultureInfo.InvariantCulture)));
                 p.Add(("Game.stars", s.Stars.ToString(CultureInfo.InvariantCulture)));
-                p.Add(("Game.map", s.State.map));
-                p.Add(("Game.airports", s.State.mapsRun.Count.ToString(CultureInfo.InvariantCulture)));
-                p.Add(("Game.minutesPlayed", Mathf.FloorToInt((float)(s.State.time / 60)).ToString(CultureInfo.InvariantCulture)));
-                p.Add(("Game.managers", s.State.managers.Count.ToString(CultureInfo.InvariantCulture)));
+                p.Add(("Game.harbour", s.H.id));
+                p.Add(("Game.harbours", s.State.harbours.Count.ToString(CultureInfo.InvariantCulture)));
+                p.Add(("Game.berths", s.H.berths.Count.ToString(CultureInfo.InvariantCulture)));
+                p.Add(("Game.minutesPlayed", Mathf.FloorToInt((float)(s.State.played / 60)).ToString(CultureInfo.InvariantCulture)));
             }
             p.Add(("Session.minutes", Mathf.FloorToInt((Time.realtimeSinceStartup - _sittingStart) / 60f).ToString(CultureInfo.InvariantCulture)));
             foreach (var e in extra) p.Add(e);

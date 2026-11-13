@@ -11,7 +11,7 @@ namespace ReelEmpire.Game
     /// <summary>
     /// The save in the player's own iCloud (key-value storage, no server of ours): written beside the local file
     /// at most once a minute and when the game goes to the background, read at launch. A new phone continues the
-    /// airport at once; a newer save from another device is offered, never forced (<see cref="CloudRules"/>).
+    /// harbour at once; a newer save from another device is offered, never forced (<see cref="CloudRules"/>).
     /// Only on an iPhone signed in to iCloud; elsewhere every call does nothing.
     /// </summary>
     public static class CloudSave
@@ -71,7 +71,7 @@ namespace ReelEmpire.Game
                 var packed = CWCloudGet(SaveKey);
                 if (string.IsNullOrEmpty(packed)) return null;
                 var s = JsonUtility.FromJson<GameState>(Unpack(packed));
-                return s != null && s.levels != null && s.levels.Count > 0 ? s : null;
+                return s != null && s.harbours != null && s.harbours.Count > 0 ? s : null;
             }
             catch (Exception e) { Debug.LogWarning("iCloud save unreadable: " + e.Message); return null; }
         }

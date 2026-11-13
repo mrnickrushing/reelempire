@@ -93,7 +93,7 @@ namespace ReelEmpire.Core
                 }
                 if (c.t < Content.HaulRound) continue;
                 c.busy = false;
-                if (c.load > 0) { h.raw += c.load; Hauled?.Invoke(c.load); c.load = 0; }
+                if (c.load > 0) { h.raw += c.load; State.hauls++; Hauled?.Invoke(c.load); c.load = 0; }
             }
 
             // The hall works the floor into the chosen product.
@@ -120,7 +120,7 @@ namespace ReelEmpire.Core
                     double cash = c.value * IncomeMult(h);
                     c.load = 0; c.value = 0;
                     Pay(h, cash);
-                    Sold?.Invoke(cash);
+                    if (cash > 0) { State.sales++; Sold?.Invoke(cash); }
                 }
                 if (c.t >= Content.TruckRound) c.busy = false;
             }

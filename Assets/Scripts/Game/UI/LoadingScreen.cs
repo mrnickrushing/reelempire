@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace ReelEmpire.Game
 {
     /// <summary>
-    /// What covers the launch while the airport is built behind it: the game's key picture, its name, a progress bar
+    /// What covers the launch while the harbour is built behind it: the game's key picture, its name, a progress bar
     /// with an aircraft riding it, a tip, and the Rushing Technologies logo (every game's loading screen carries it).
     /// GameRoot moves <see cref="Progress"/> as it builds; the screen fades once it is told it's done and has been
     /// up long enough to be read.
@@ -17,28 +17,18 @@ namespace ReelEmpire.Game
 
         static readonly string[] Tips =
         {
-            "Hire a manager and the department runs itself, even while you're away.",
-            "Contracts are marked three ways: punctual, serviced, standards. Full marks pay the whole reward.",
-            "Reputation with an airline raises what every one of its flights pays you.",
-            "The terminal grows wider with check-in, security and gates, and deeper with every star.",
-            "Fenced bays in the terminal are floor for sale: tap one to open it. Each makes the next dearer.",
-            "An incident waits 75 seconds for your answer. Unanswered, it settles itself the passive way.",
-            "Every answer to an incident says what it will cost before you choose.",
-            "A surprise inspection looks at the runway surface first: keep it above 60%.",
-            "Holiday airlines fly more at the weekend, business airlines in the week. Plan around them.",
-            "Wages and upkeep are charged when the day closes at 06:00. A big airport standing idle still costs money.",
-            "Plan a contract onto a quiet hour: the planner in OPS shows how busy each hour is.",
-            "On-time flights please an airline. Happy airlines pay up to 30% more.",
-            "A crowded hour chokes the runway: spread your routes in the day planner.",
-            "Every new star brings a team crate. Put your best people on duty.",
-            "Queues at check-in and security cost you in the shops. Upgrade the slowest one.",
-            "Storm coming? Landing aids keep the runway moving.",
-            "Sell a finished airport for Wings: every one adds to all income, for good.",
-            "Fuel is cheaper some days than others. Fill the tank farm on a cheap one.",
-            "A worn runway clears slowly. Resurface it in a quiet hour.",
-            "Close the day with grade A for a 5% bonus. Five good days in a row pay gems.",
-            "Your own aircraft need a check now and then. A hangar halves the bill.",
-            "Wide-body jets only park on wide-body stands. Build one before signing the route.",
+            "The weakest stage holds the whole harbour back. The chain bar at the top glows red on it.",
+            "Hire a skipper and the boat sails by itself, even while you're away.",
+            "Levels 10, 25, 50 and 100 double a berth. Level 25 and 100 make its boat twice as fast.",
+            "The market has a favourite every day: that product sells for half as much again.",
+            "Smoked and canned fish sell for far more, but the hall works them slowly. Upgrade the hall to keep up.",
+            "What the hall can't keep up with is sold fresh: nothing is ever wasted.",
+            "Some fish only bite at night, in the rain or in one season. Check the book.",
+            "The first catch of a new species pays gems.",
+            "A new berth lands eight times what the one before it does.",
+            "The docks hold two hours of work while you're away. Come back before they fill.",
+            "Buy NEXT to go straight to the next milestone level.",
+            "No ads here. Ever.",
         };
 
         CanvasGroup _group;
@@ -79,13 +69,13 @@ namespace ReelEmpire.Game
 
             _rays = Ui.ArtImg("Rays", root, "rays", new Color(1f, 0.85f, 0.4f, 0.13f), 0).rectTransform;
             _rays.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 0.5f), new Vector2(0, -330), new Vector2(1300, 1300));
-            var title = Ui.Label("Title", root, "REELEMPIRE", 190, Color.white);
+            var title = Ui.Label("Title", root, "REEL EMPIRE", 170, Color.white);
             title.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -210), new Vector2(1040, 200));
             var o = title.gameObject.AddComponent<Outline>(); o.effectColor = new Color(0.05f, 0.1f, 0.2f, 0.9f); o.effectDistance = new Vector2(5, -5);
             var sh = title.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.5f); sh.effectDistance = new Vector2(0, -12);
             var ribbon = Ui.ArtImg("Ribbon", root, "button", Ui.Gold);
             ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -400), new Vector2(560, 96));
-            var sub = Ui.Label("Sub", ribbon.transform, "AIRPORT TYCOON", 50, Ui.Ink);
+            var sub = Ui.Label("Sub", ribbon.transform, "IDLE TYCOON", 50, Ui.Ink);
             sub.rectTransform.Fill(); sub.rectTransform.offsetMin = new Vector2(0, 8);
 
             // The bar: a dark plate, a gold fill, a little aircraft on its leading edge.
@@ -94,10 +84,10 @@ namespace ReelEmpire.Game
             var track = Ui.Rect("Track", bar); track.Fill(); track.offsetMin = new Vector2(18, 24); track.offsetMax = new Vector2(-18, -18);
             _fill = Ui.Img("Fill", track, Ui.Gold, true).rectTransform;
             _fill.anchorMin = Vector2.zero; _fill.anchorMax = new Vector2(0.02f, 1); _fill.offsetMin = _fill.offsetMax = Vector2.zero;
-            var planeImg = Ui.Img("Plane", track, Color.white); planeImg.sprite = Ui.Icon("plane"); planeImg.preserveAspect = true;
+            var planeImg = Ui.Img("Plane", track, Color.white); planeImg.sprite = Ui.Art("coin"); planeImg.preserveAspect = true;
             _plane = planeImg.rectTransform;
             _plane.Place(new Vector2(0, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(84, 84));
-            _plane.localRotation = Quaternion.Euler(0, 0, -90);
+            
             var ps = planeImg.gameObject.AddComponent<Shadow>(); ps.effectColor = new Color(0, 0, 0, 0.6f); ps.effectDistance = new Vector2(3, -3);
             _percent = Ui.Label("Percent", root, "", 40, Color.white);
             _percent.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 458), new Vector2(800, 50));
@@ -126,7 +116,7 @@ namespace ReelEmpire.Game
             _fill.anchorMax = new Vector2(Mathf.Max(0.02f, _shown), 1);
             _plane.anchorMin = _plane.anchorMax = new Vector2(Mathf.Max(0.02f, _shown), 0.5f);
             _plane.anchoredPosition = new Vector2(0, Mathf.Sin(_age * 6) * 2);
-            _percent.text = _shown >= 0.999f ? "CLEARED FOR TAKE-OFF" : "Preparing the airport  " + Mathf.RoundToInt(_shown * 100) + "%";
+            _percent.text = _shown >= 0.999f ? "LINES AWAY!" : "Rigging the boats  " + Mathf.RoundToInt(_shown * 100) + "%";
             _rays.localRotation = Quaternion.Euler(0, 0, _age * 10);
             if (Done && _shown >= 0.999f && _age > 2.2f)
             {

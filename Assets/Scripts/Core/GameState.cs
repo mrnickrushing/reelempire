@@ -59,7 +59,8 @@ namespace ReelEmpire.Core
         public int at;                  // the harbour on screen
         public List<HarbourState> harbours = new List<HarbourState>();
         public List<SpeciesEntry> species = new List<SpeciesEntry>();
-        public long trips, fish, taps;
+        public long trips, fish, taps, hauls, sales;
+        public List<string> achieved = new List<string>();
         public int goalIndex;
         public int tutorialStep;
         public bool freeSkipperUsed;
@@ -96,6 +97,7 @@ namespace ReelEmpire.Core
             if (transactions == null) transactions = new List<string>();
             if (pending == null) pending = new List<PendingPurchase>();
             if (playerName == null) playerName = "";
+            if (achieved == null) achieved = new List<string>();
             if (seed == 0) seed = 2463534242;
             at = Math.Max(0, Math.Min(at, harbours.Count - 1));
             foreach (var h in harbours)

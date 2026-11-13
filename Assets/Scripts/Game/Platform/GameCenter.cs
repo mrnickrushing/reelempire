@@ -9,14 +9,14 @@ using UnityEngine.SocialPlatforms.GameCenter;
 namespace ReelEmpire.Game
 {
     /// <summary>
-    /// Apple's Game Center: three leaderboards and the game's achievements, mirrored. The player signs in with their
+    /// Apple's Game Center: four leaderboards and the game's achievements, mirrored. The player signs in with their
     /// own Game Center account (iOS asks once); nothing goes through our servers. Ids must match the ones created in
     /// App Store Connect by Tools/appstore/gamecenter.py: leaderboards <c>reelempire.board.*</c>, achievements
     /// <c>reelempire.ach.&lt;achievement id&gt;</c>. Does nothing in the Editor.
     /// </summary>
     public static class GameCenter
     {
-        public const string Flights = "reelempire.board.flights", Wings = "reelempire.board.wings", TopDays = "reelempire.board.topdays";
+        public const string Earnings = "reelempire.board.earnings", Species = "reelempire.board.species", Stars = "reelempire.board.stars", Heaviest = "reelempire.board.heaviest";
         public const string AchievementPrefix = "reelempire.ach.";
         const string SentKey = "gc.sent";
 
@@ -44,9 +44,11 @@ namespace ReelEmpire.Game
         {
             if (s == null || !SignedIn || Time.unscaledTime < _next) return;
             _next = Time.unscaledTime + 20;
-            Score(Flights, s.State.flightsHandled);
-            Score(Wings, s.State.wings);
-            Score(TopDays, s.State.daysAtA);
+            // Lifetime earnings as its power of ten in hundredths (1.00M = 600): the sums outgrow what a board can hold.
+            Score(Earnings, s.State.lifetime > 1 ? (long)(System.Math.Log10(s.State.lifetime) * 100) : 0);
+            Score(Species, s.SpeciesCaught);
+            Score(Stars, s.Stars);
+            Score(Heaviest, (long)(s.HeaviestKg * 10));
             if (_sent == null) _sent = new HashSet<string>(PlayerPrefs.GetString(SentKey, "").Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries));
             foreach (var a in Sim.Achievements)
             {

@@ -4,17 +4,14 @@ using UnityEngine;
 namespace ReelEmpire.Game
 {
     /// <summary>
-    /// Sound: interface clips from Resources/Audio (takes named name, name_2, name_3 are picked at random), and the
-    /// airfield itself made in code: a jet's roar for each landing and take-off and a quiet bed of wind and distant
-    /// engines. Inside the terminal the wind gives way to the hall's murmur (Audio/hall, from a CC0 recording made in an
-    /// airport; see Tools/art/ambience.py).
+    /// Sound: interface clips from Resources/Audio (takes named name, name_2, name_3 are picked at random), the music,
+    /// and a quiet bed of wind made in code.
     /// </summary>
     public static class Sfx
     {
         static readonly Dictionary<string, AudioClip[]> _clips = new Dictionary<string, AudioClip[]>();
         static AudioSource[] _pool;
-        static AudioSource _bed, _hall;
-        static AudioClip _jet, _prop;
+        static AudioSource _bed;
         static int _next;
         static AudioSource _day, _night;
         const float MusicLevel = 0.32f;
@@ -47,20 +44,11 @@ namespace ReelEmpire.Game
             }
         }
 
-        /// <summary>
-        /// The ambience follows the view: in the terminal the hall's murmur, fuller the bigger the crowd
-        /// (<paramref name="crowd"/> 0 to 1), over a hush of the wind; on the airfield the wind alone.
-        /// </summary>
-        public static void TickAmbience(bool inside, float crowd, float dt)
+        /// <summary>The harbour's bed of sound: wind and water, a little quieter at night.</summary>
+        public static void TickAmbience(float night, float dt)
         {
-            if (_hall == null) return;
-            float want = inside ? 0.1f + 0.14f * Mathf.Clamp01(crowd) : 0;
-            _hall.volume = Mathf.MoveTowards(_hall.volume, want, dt * 0.3f);
-            _bed.volume = Mathf.MoveTowards(_bed.volume, inside ? 0.015f : 0.05f, dt * 0.06f);
-            if (_hall.clip == null) return;
-            // Starts somewhere in the loop, so opening the hall twice doesn't sound the same; silent, it stops.
-            if (want > 0 && !_hall.isPlaying) { _hall.time = Random.Range(0f, _hall.clip.length * 0.9f); _hall.Play(); }
-            else if (want <= 0 && _hall.volume <= 0.0001f && _hall.isPlaying) _hall.Stop();
+            if (_bed == null) return;
+            _bed.volume = Mathf.MoveTowards(_bed.volume, Mathf.Lerp(0.06f, 0.035f, night), dt * 0.06f);
         }
 
         static AudioSource MusicSource(Transform parent, string name)
@@ -89,15 +77,10 @@ namespace ReelEmpire.Game
                 _pool[i].transform.SetParent(go.transform, false);
                 _pool[i].playOnAwake = false; _pool[i].spatialBlend = 0;
             }
-            _jet = Roar("Jet", 3.2f, 900f, 0.0f);
-            _prop = Roar("Prop", 2.6f, 420f, 95f);
             _bed = new GameObject("Bed").AddComponent<AudioSource>();
             _bed.transform.SetParent(go.transform, false);
             _bed.clip = Roar("Wind", 6f, 260f, 0f, loop: true); _bed.loop = true; _bed.volume = 0.05f; _bed.spatialBlend = 0;
             _bed.Play();
-            _hall = new GameObject("Hall").AddComponent<AudioSource>();
-            _hall.transform.SetParent(go.transform, false);
-            _hall.clip = Resources.Load<AudioClip>("Audio/hall"); _hall.loop = true; _hall.volume = 0; _hall.spatialBlend = 0; _hall.playOnAwake = false;
             _day = MusicSource(go.transform, "day"); _night = MusicSource(go.transform, "night");
             AudioListener.volume = Muted ? 0 : 1;
         }
@@ -143,14 +126,6 @@ namespace ReelEmpire.Game
             if (_pool == null) return;
             var clip = Clip(name);
             if (clip != null) Voice(clip, volume, pitch);
-        }
-
-        /// <summary>An aircraft on the runway: the bigger it is, the deeper and louder.</summary>
-        public static void Aircraft(Core.AircraftClass c)
-        {
-            if (_pool == null) return;
-            bool prop = c <= Core.AircraftClass.B;
-            Voice(prop ? _prop : _jet, prop ? 0.16f : 0.2f + (int)c * 0.03f, prop ? 1.1f - (int)c * 0.15f : 1.25f - (int)c * 0.12f);
         }
 
         static void Voice(AudioClip clip, float volume, float pitch)
