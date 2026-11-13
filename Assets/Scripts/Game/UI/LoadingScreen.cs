@@ -50,7 +50,8 @@ namespace ReelEmpire.Game
             var root = Ui.Canvas("Loading canvas", transform);
             root.GetComponent<Canvas>().sortingOrder = 100;
             _group = root.gameObject.AddComponent<CanvasGroup>();
-            var back = Ui.Img("Back", root, new Color(0.09f, 0.16f, 0.27f));
+            // A bright sea: turquoise shading to deep blue at the bottom, with soft rays behind the name.
+            var back = Ui.Img("Back", root, new Color(0.13f, 0.72f, 0.8f));
             back.rectTransform.Fill(); back.raycastTarget = true;
             var hero = Resources.Load<Sprite>("UI/Loading/hero");
             if (hero != null)
@@ -59,51 +60,50 @@ namespace ReelEmpire.Game
                 art.rectTransform.Fill();
                 var fit = art.gameObject.AddComponent<AspectRatioFitter>(); fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; fit.aspectRatio = hero.rect.width / hero.rect.height;
             }
-            // Dark at the top (the name) and the bottom (the bar and the logo), the picture clear between.
-            foreach (bool top in new[] { true, false })
-                for (int i = 0; i < 6; i++)
+            else
+                for (int i = 0; i < 8; i++)
                 {
-                    var band = Ui.Img("Shade", root, new Color(0.04f, 0.07f, 0.12f, 0.2f)).rectTransform;
-                    band.Band(top, 0, (top ? 560 : 640) * (6 - i) / 6f);
+                    var band = Ui.Img("Deep", root, new Color(0.04f, 0.3f, 0.55f, 0.16f)).rectTransform;
+                    band.Band(false, 0, 620 * (8 - i) / 8f);
                 }
 
-            _rays = Ui.ArtImg("Rays", root, "rays", new Color(1f, 0.85f, 0.4f, 0.13f), 0).rectTransform;
-            _rays.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 0.5f), new Vector2(0, -330), new Vector2(1300, 1300));
-            var title = Ui.Label("Title", root, "REEL EMPIRE", 170, Color.white);
-            title.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -210), new Vector2(1040, 200));
-            var o = title.gameObject.AddComponent<Outline>(); o.effectColor = new Color(0.05f, 0.1f, 0.2f, 0.9f); o.effectDistance = new Vector2(5, -5);
-            var sh = title.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.5f); sh.effectDistance = new Vector2(0, -12);
-            var ribbon = Ui.ArtImg("Ribbon", root, "button", Ui.Gold);
-            ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -400), new Vector2(560, 96));
-            var sub = Ui.Label("Sub", ribbon.transform, "IDLE TYCOON", 50, Ui.Ink);
-            sub.rectTransform.Fill(); sub.rectTransform.offsetMin = new Vector2(0, 8);
+            _rays = Ui.ArtImg("Rays", root, "rays", new Color(1f, 1f, 1f, 0.22f), 0).rectTransform;
+            _rays.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 0.5f), new Vector2(0, -300), new Vector2(1500, 1500));
+            var title = Ui.Label("Title", root, "REEL EMPIRE", 180, Color.white);
+            title.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -150), new Vector2(1400, 210));
+            title.Stroke(7f);
+            var ribbon = Ui.Ribbon("Ribbon", root, Ui.Coral);
+            ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -360), new Vector2(520, 118));
+            var sub = Ui.Label("Sub", ribbon.transform, "IDLE TYCOON", 54, Color.white);
+            sub.rectTransform.Fill(); sub.rectTransform.offsetMin = new Vector2(0, 24); sub.Stroke(2.5f);
 
-            // The bar: a dark plate, a gold fill, a little aircraft on its leading edge.
-            var bar = Ui.ArtImg("Bar", root, "plate", Color.white).rectTransform;
-            bar.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 372), new Vector2(860, 76));
-            var track = Ui.Rect("Track", bar); track.Fill(); track.offsetMin = new Vector2(18, 24); track.offsetMax = new Vector2(-18, -18);
-            _fill = Ui.Img("Fill", track, Ui.Gold, true).rectTransform;
+            // The bar: a paper track, a green fill, a coin riding its leading edge.
+            var bar = Ui.ArtImg("Bar", root, "pill", Color.white, 62, 2f).rectTransform;
+            bar.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 330), new Vector2(880, 78));
+            var track = Ui.Rect("Track", bar); track.Fill(); track.offsetMin = new Vector2(16, 20); track.offsetMax = new Vector2(-16, -14);
+            _fill = Ui.Img("Fill", track, Ui.Green, true).rectTransform;
             _fill.anchorMin = Vector2.zero; _fill.anchorMax = new Vector2(0.02f, 1); _fill.offsetMin = _fill.offsetMax = Vector2.zero;
-            var planeImg = Ui.Img("Plane", track, Color.white); planeImg.sprite = Ui.Art("coin"); planeImg.preserveAspect = true;
+            var planeImg = Ui.Img("Coin", track, Color.white); planeImg.sprite = Ui.Art("coin"); planeImg.preserveAspect = true;
             _plane = planeImg.rectTransform;
-            _plane.Place(new Vector2(0, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(84, 84));
-            
-            var ps = planeImg.gameObject.AddComponent<Shadow>(); ps.effectColor = new Color(0, 0, 0, 0.6f); ps.effectDistance = new Vector2(3, -3);
-            _percent = Ui.Label("Percent", root, "", 40, Color.white);
-            _percent.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 458), new Vector2(800, 50));
-            var po = _percent.gameObject.AddComponent<Outline>(); po.effectColor = new Color(0, 0, 0, 0.7f); po.effectDistance = new Vector2(2, -2);
+            _plane.Place(new Vector2(0, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(96, 96));
+            _percent = Ui.Label("Percent", root, "", 42, Color.white);
+            _percent.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 420), new Vector2(800, 54));
+            _percent.Stroke(2.5f);
 
-            var tip = Ui.Label("Tip", root, Tips[Random.Range(0, Tips.Length)], 36, new Color(1, 1, 1, 0.92f), TextAnchor.MiddleCenter, false);
-            tip.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 256), new Vector2(900, 100));
-            var to = tip.gameObject.AddComponent<Outline>(); to.effectColor = new Color(0, 0, 0, 0.6f); to.effectDistance = new Vector2(2, -2);
+            var tip = Ui.Label("Tip", root, Tips[Random.Range(0, Tips.Length)], 36, Color.white, TextAnchor.MiddleCenter, false);
+            tip.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 220), new Vector2(1000, 100));
+            tip.Stroke(2f);
 
+            // The studio's mark on its own dark plate (it is drawn for a dark ground).
+            var plate = Ui.Img("Studio", root, new Color(0.05f, 0.09f, 0.17f, 1f), true).rectTransform;
+            plate.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 26), new Vector2(300, 176));
             var logo = Resources.Load<Sprite>("UI/Brand/rushingtech");
             if (logo != null)
             {
-                var li = Ui.Img("Logo", root, Color.white); li.sprite = logo; li.preserveAspect = true;
-                li.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(260, 200));
+                var li = Ui.Img("Logo", plate, Color.white); li.sprite = logo; li.preserveAspect = true;
+                li.rectTransform.Fill(8);
             }
-            else Ui.Label("Studio", root, "RUSHING TECHNOLOGIES", 34, Ui.Dim).rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 90), new Vector2(800, 50));
+            else Ui.Label("Name", plate, "RUSHING\nTECHNOLOGIES", 34, Color.white).rectTransform.Fill();
         }
 
         void Update()

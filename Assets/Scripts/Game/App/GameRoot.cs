@@ -68,7 +68,7 @@ namespace ReelEmpire.Game
                 RenderSettings.skybox = sky;
                 RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
                 RenderSettings.customReflectionTexture = skyTex;
-                RenderSettings.reflectionIntensity = 0.9f;
+                RenderSettings.reflectionIntensity = 0.15f;
             }
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.62f, 0.72f, 0.86f);

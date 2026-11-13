@@ -4,8 +4,8 @@ Shader "ReelEmpire/Water"
 {
     Properties
     {
-        _Deep ("Deep", Color) = (0.05, 0.27, 0.42, 1)
-        _Shallow ("Shallow", Color) = (0.16, 0.56, 0.62, 1)
+        _Deep ("Deep", Color) = (0.07, 0.42, 0.62, 1)
+        _Shallow ("Shallow", Color) = (0.25, 0.80, 0.78, 1)
         _Foam ("Foam", Color) = (0.92, 0.97, 1, 1)
         _ShoreX ("Shore x", Float) = 0
         _ShoreFade ("Shallow reach", Float) = 38

@@ -41,14 +41,15 @@ namespace ReelEmpire.Game
 
         void ShowRateCard()
         {
-            _rateCard = Ui.Img("Rate", _root, new Color(0, 0, 0, 0.7f)).rectTransform;
+            _rateCard = Ui.Img("Rate", _root, new Color(0.05f, 0.15f, 0.25f, 0.6f)).rectTransform;
             _rateCard.Fill(); _rateCard.GetComponent<Image>().raycastTarget = true;
-            var box = Ui.Img("Box", _rateCard, Ui.Panel, true).rectTransform;
+            var box = Ui.ArtImg("Box", _rateCard, "panel", Color.white, 60).rectTransform;
             box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(920, 520));
-            Ui.Label("T", box, "ENJOYING REEL EMPIRE?", 58, Color.white).rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -40), new Vector2(840, 80));
+            var star = Ui.ArtImg("Star", box, "star", Color.white, 0); star.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 0.5f), new Vector2(0, -10), new Vector2(150, 150));
+            Ui.Label("T", box, "ENJOYING REEL EMPIRE?", 58, Ui.Ink).rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -96), new Vector2(840, 80));
             Ui.Label("B", box, "If you like running your harbour, a quick rating on the App Store helps other players find it.", 36, Ui.Dim, TextAnchor.UpperCenter, false)
-                .rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -150), new Vector2(820, 180));
-            var yes = Ui.Button("Yes", box, "RATE IT", Ui.Gold, () => { CloseRateCard(); RequestRating(); }, 46);
+                .rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -190), new Vector2(800, 160));
+            var yes = Ui.Button("Yes", box, "RATE IT", Ui.Green, () => { CloseRateCard(); RequestRating(); }, 46);
             ((RectTransform)yes.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(210, 50), new Vector2(400, 120));
             var no = Ui.Button("No", box, "NO THANKS", Ui.Off, CloseRateCard, 46);
             ((RectTransform)no.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-210, 50), new Vector2(400, 120));

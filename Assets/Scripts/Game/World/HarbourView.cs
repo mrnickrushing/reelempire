@@ -50,7 +50,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < h.haulers.Count; i++)
             {
                 var t = Scenery.Hauler(_moving, i).transform; _haulers.Add(t); _haulTo.Add(0);
-                var load = Scenery.Crate(t); load.transform.localPosition = new Vector3(0, 0.55f, 0.75f); load.transform.localScale = Vector3.one * 0.55f; _haulLoads.Add(load.transform);
+                var load = Scenery.Crate(t); load.transform.localPosition = new Vector3(0, 0.95f, 0.55f); load.transform.localScale *= 0.6f; _haulLoads.Add(load.transform);
             }
             for (int i = 0; i < h.trucks.Count; i++)
             {
@@ -80,14 +80,20 @@ namespace ReelEmpire.Game
         {
             Models.Built("Land", _static, mb =>
             {
-                var grass = Palette.Grass; var stone = Palette.Hex(0x8C8A84); var planks = Palette.Hex(0xA9825A);
-                mb.Surf = SurfaceKind.Stone;
-                mb.Box(new Vector3(300, -2.5f + Layout.QuayY / 2, 0), new Vector3(600, 5 + Layout.QuayY, 900), stone, grass);          // the land
+                var grass = Palette.Hex(0x8FD05A); var sand = Palette.Hex(0xF2DFA4); var stone = Palette.Hex(0xB8AE9C); var planks = Palette.Hex(0xD9A066);
+                mb.Mat(0.02f);
+                mb.Surf = SurfaceKind.None;
+                mb.Box(new Vector3(310, -2.5f + Layout.QuayY / 2 - 0.02f, 0), new Vector3(600, 5 + Layout.QuayY, 900), grass, grass);       // the meadow
+                mb.Box(new Vector3(5.5f, -2.5f + Layout.QuayY / 2, 0), new Vector3(11, 5 + Layout.QuayY, 900), stone, sand);                  // the shore: a strip of sand
+                // The beach slopes into the water beyond the ends of the quay.
+                foreach (float side in new[] { -1f, 1f })
+                    mb.Quad(new Vector3(0, Layout.QuayY, side * 49), new Vector3(0, Layout.QuayY, side * 450), new Vector3(-14, -0.4f, side * 450), new Vector3(-14, -0.4f, side * 49), sand);
                 mb.Surf = SurfaceKind.Planks;
-                mb.Box(new Vector3(Layout.QuayWidth / 2, Layout.QuayY + 0.06f, 0), new Vector3(Layout.QuayWidth, 0.12f, 96), planks);       // the quay's boards
-                mb.Surf = SurfaceKind.Concrete;
-                mb.Box(new Vector3(47, Layout.QuayY + 0.04f, -5), new Vector3(42, 0.08f, 7), Palette.Asphalt);                              // the road to market
-                mb.Box(new Vector3(34, Layout.QuayY + 0.04f, 0), new Vector3(9, 0.08f, 22), Palette.ConcreteDark);                          // the loading yard
+                mb.Box(new Vector3(Layout.QuayWidth / 2, Layout.QuayY + 0.06f, 0), new Vector3(Layout.QuayWidth, 0.14f, 98), planks);         // the quay's boards
+                mb.Box(new Vector3(-0.2f, Layout.QuayY - 0.6f, 0), new Vector3(0.5f, 1.5f, 98), Palette.Hex(0x8A5A3C));                       // its face
+                mb.Surf = SurfaceKind.None;
+                mb.Box(new Vector3(47, Layout.QuayY + 0.04f, -5), new Vector3(44, 0.08f, 7.5f), Palette.Hex(0xE6CF9A));                       // the sandy road to market
+                mb.Box(new Vector3(35, Layout.QuayY + 0.04f, 0), new Vector3(10, 0.08f, 24), Palette.Hex(0xDCC48C));                          // the loading yard
                 mb.Surf = SurfaceKind.Auto;
             });
         }
@@ -97,7 +103,8 @@ namespace ReelEmpire.Game
             float z = Layout.BerthZ(berth);
             Models.Built("Pier " + berth, _static, mb =>
             {
-                var planks = open ? Palette.Hex(0xB58E64) : Palette.Hex(0x8A8377); var post = Palette.Hex(0x5E4630);
+                var planks = open ? Palette.Hex(0xE0A86A) : Palette.Hex(0xB9B0A0); var post = Palette.Hex(0x7A5234);
+                mb.Mat(0.02f);
                 float len = open ? Layout.PierLength : 5f;
                 mb.Surf = SurfaceKind.Planks;
                 mb.Box(new Vector3(-len / 2, Layout.QuayY - 0.1f, z), new Vector3(len, 0.22f, 2.8f), planks);
@@ -174,7 +181,9 @@ namespace ReelEmpire.Game
 
         static void Walk(Transform t, Vector3 at, float yaw, bool moving)
         {
-            at.y += moving ? Mathf.Abs(Mathf.Sin(Time.time * 9)) * 0.08f : 0;
+            var st = t.GetComponent<Strider>();
+            if (st != null) st.Show(moving, Time.time * 2.2f + t.GetSiblingIndex() * 0.3f);
+            else at.y += moving ? Mathf.Abs(Mathf.Sin(Time.time * 9)) * 0.08f : 0;
             t.position = at;
             t.rotation = Quaternion.Slerp(t.rotation, Quaternion.Euler(0, yaw, 0), 1 - Mathf.Exp(-10 * Time.deltaTime));
         }
@@ -182,8 +191,8 @@ namespace ReelEmpire.Game
         // ---- what the interface points at ----
 
         public Vector3 BoatAt(int berth) { return berth < _boats.Count ? _boats[berth].position + Vector3.up * 2.5f : Layout.Moored(berth); }
-        public Vector3 BerthSign(int berth) { return new Vector3(3.5f, Layout.QuayY + 2.6f, Layout.BerthZ(berth) - 2.4f); }
-        public Vector3 DockSign { get { return Layout.HallDoor + new Vector3(-5, 2.6f, -9); } }
+        public Vector3 BerthSign(int berth) { return new Vector3(-7.5f, Layout.QuayY + 0.4f, Layout.BerthZ(berth) - 1.6f); }
+        public Vector3 DockSign { get { return new Vector3(5.5f, Layout.QuayY + 3.4f, 0.5f); } }
         public Vector3 HallSign { get { return Layout.HallCentre + new Vector3(0, Layout.HallSize.y + 2.5f, 0); } }
         public Vector3 MarketSign { get { return Layout.MarketCentre + new Vector3(-2, 9, 0); } }
         public Vector3 HaulerAt(int i) { return i < _haulers.Count ? _haulers[i].position + Vector3.up * 2.4f : Layout.HallDoor; }

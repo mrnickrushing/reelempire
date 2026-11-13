@@ -27,6 +27,18 @@ namespace ReelEmpire.Game
             }
         }
 
+        static readonly Dictionary<string, Material> _tinted = new Dictionary<string, Material>();
+        /// <summary>The kit material with its colours multiplied (the industrial kit's buildings are painted for a night city: lifted here).</summary>
+        public static Material KitTint(Color tint)
+        {
+            string key = tint.ToString();
+            Material m;
+            if (_tinted.TryGetValue(key, out m)) return m;
+            m = new Material(Kit) { name = "Kit " + key };
+            m.SetColor("_Tint", tint);
+            return _tinted[key] = m;
+        }
+
         static Material _world;
         static readonly Dictionary<string, Material> _surfaces = new Dictionary<string, Material>();
 

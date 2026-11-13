@@ -1,196 +1,121 @@
 #!/usr/bin/env python3
-"""Paints the game's own interface art (no downloads): glossy bubbles and plates, coin, gem, star, crate, service
-icons, sunburst rays. Everything is drawn 4x and scaled down.   python3 Tools/art/ui_art.py
-Writes Assets/Resources/UI/Fx/*.png. Bubble and plate are nine-sliced in Ui.Art (border 44 of 128)."""
+"""Paints the interface art into Assets/Resources/UI/Fx: python3 -I Tools/art/ui_art.py
+The look: cut paper and stickers. Cream panels and bright candy buttons, every shape with a thick navy outline and a
+hard drop shadow. Buttons, badges and bars are painted in greys so the game tints them."""
 import math, os
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageChops
+from PIL import Image, ImageDraw, ImageFilter
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "Assets", "Resources", "UI", "Fx")
-FONT = os.path.join(ROOT, "Assets", "Resources", "Fonts", "BarlowCondensed-Bold.ttf")
 os.makedirs(OUT, exist_ok=True)
-S = 4
+S = 4                                   # supersampling
+INK = (22, 50, 79)
+PAPER, PAPER2 = (255, 246, 227), (243, 226, 192)
 
-def save(im, name, size):
-    im.resize((size, size), Image.LANCZOS).save(os.path.join(OUT, name + ".png"))
-    print("ui", name)
 
-def vgrad(w, h, top, bottom):
-    g = Image.new("RGBA", (w, h))
-    px = g.load()
-    for y in range(h):
-        t = y / max(1, h - 1)
-        c = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(4))
-        for x in range(w): px[x, y] = c
-    return g
+def canvas(w, h): return Image.new("RGBA", (w * S, h * S), (0, 0, 0, 0))
+def save(im, name, w, h): im.resize((w, h), Image.LANCZOS).save(os.path.join(OUT, name + ".png")); print(name)
+def rr(d, box, r, fill): d.rounded_rectangle([b * S for b in box], r * S, fill=fill)
 
-def shaped(n, mask, top, bottom, outline=(22, 28, 38, 255), ow=5, shadow=True, gloss=0.5, drop=6):
-    """A glossy piece: soft shadow, dark outline, a vertical gradient inside, a light band across the top."""
-    N = n * S
-    im = Image.new("RGBA", (N, N), (0, 0, 0, 0))
-    if shadow:
-        sh = Image.new("L", (N, N), 0)
-        sh.paste(mask, (0, drop * S))
-        sh = sh.filter(ImageFilter.GaussianBlur(4 * S)).point(lambda v: int(v * 0.55))
-        im.paste(Image.new("RGBA", (N, N), (0, 0, 0, 255)), (0, 0), sh)
-    im.paste(Image.new("RGBA", (N, N), outline), (0, 0), mask)
-    inner = mask.filter(ImageFilter.MinFilter(ow * S * 2 + 1))
-    im.paste(vgrad(N, N, top, bottom), (0, 0), inner)
-    if gloss > 0:
-        gl = Image.new("L", (N, N), 0)
-        d = ImageDraw.Draw(gl)
-        d.ellipse((-N * 0.2, -N * 0.75, N * 1.2, N * 0.46), fill=int(255 * gloss * 0.45))
-        gl = ImageChops.multiply(gl, inner.filter(ImageFilter.MinFilter(S * 4 + 1)))
-        im.paste(Image.new("RGBA", (N, N), (255, 255, 255, 255)), (0, 0), gl)
-    return im
 
-def rounded(n, r, pad, bottom_pad=None):
-    N = n * S
-    m = Image.new("L", (N, N), 0)
-    bp = pad if bottom_pad is None else bottom_pad
-    ImageDraw.Draw(m).rounded_rectangle((pad * S, pad * S, N - pad * S, N - bp * S), r * S, fill=255)
-    return m
+def slab(name, w, h, r, fill, lip=None, line=7, drop=7, shade=None, gloss=False):
+    """A rounded shape: hard shadow, ink outline, fill, an optional darker lip along the bottom (a button's edge)."""
+    im = canvas(w, h); d = ImageDraw.Draw(im)
+    rr(d, (2, 2 + drop, w - 2, h - 1), r, INK + (70,))                      # the shadow, straight down
+    rr(d, (2, 2, w - 2, h - 2 - drop), r, INK + (255,))                    # the outline
+    inner = (2 + line, 2 + line, w - 2 - line, h - 2 - drop - line)
+    if lip:
+        rr(d, inner, r - line, lip + (255,))
+        rr(d, (inner[0], inner[1], inner[2], inner[3] - 9), r - line, fill + (255,))
+    else:
+        rr(d, inner, r - line, fill + (255,))
+    if shade:                                                              # a band of the second paper tone along the bottom
+        m = canvas(w, h); md = ImageDraw.Draw(m); rr(md, inner, r - line, (255, 255, 255, 255))
+        band = canvas(w, h); bd = ImageDraw.Draw(band); bd.rectangle([0, int((inner[3] - 16) * S), w * S, h * S], fill=shade + (255,))
+        im.paste(band, (0, 0), Image.composite(band, canvas(w, h), m).split()[3])
+    if gloss:
+        rr(d, (inner[0] + 9, inner[1] + 6, inner[2] - 9, inner[1] + 13), 4, (255, 255, 255, 110))
+    save(im, name, w, h)
 
-def disc(n, pad):
-    N = n * S
-    m = Image.new("L", (N, N), 0)
-    ImageDraw.Draw(m).ellipse((pad * S, pad * S, N - pad * S, N - pad * S), fill=255)
-    return m
 
-def poly(n, pts):
-    N = n * S
-    m = Image.new("L", (N, N), 0)
-    ImageDraw.Draw(m).polygon([(x * N, y * N) for x, y in pts], fill=255)
-    return m
+slab("panel", 192, 192, 40, PAPER, shade=PAPER2, line=8, drop=9)
+slab("card", 128, 128, 26, (255, 255, 255), line=6, drop=0)               # a row inside a panel (tinted)
+slab("button", 160, 144, 36, (255, 255, 255), lip=(196, 196, 196), line=7, drop=6, gloss=True)
+slab("pill", 140, 132, 62, PAPER, line=7, drop=6)
+slab("tag", 96, 92, 26, PAPER, line=6, drop=5)
+slab("plate", 128, 120, 30, (255, 255, 255), line=6, drop=5)              # tinted slabs (the guide, toasts)
+slab("well", 64, 64, 20, (255, 255, 255), line=5, drop=0)                 # a bar's track / fill (tinted)
 
-def glyph(n, text, size, fill=(255, 255, 255, 255), dy=0.0, stroke=0, stroke_fill=(0, 0, 0, 255)):
-    N = n * S
-    im = Image.new("RGBA", (N, N), (0, 0, 0, 0))
-    f = ImageFont.truetype(FONT, int(size * S))
-    d = ImageDraw.Draw(im)
-    b = d.textbbox((0, 0), text, font=f, stroke_width=stroke * S)
-    d.text(((N - (b[2] - b[0])) / 2 - b[0], (N - (b[3] - b[1])) / 2 - b[1] + dy * N), text, font=f, fill=fill, stroke_width=stroke * S, stroke_fill=stroke_fill)
-    return im
+# A round badge (tinted) and its plain disc.
+im = canvas(128, 136); d = ImageDraw.Draw(im)
+d.ellipse([4 * S, 12 * S, 124 * S, 132 * S], fill=INK + (70,)); d.ellipse([4 * S, 4 * S, 124 * S, 124 * S], fill=INK + (255,))
+d.ellipse([11 * S, 11 * S, 117 * S, 117 * S], fill=(196, 196, 196, 255)); d.ellipse([11 * S, 11 * S, 117 * S, 109 * S], fill=(255, 255, 255, 255))
+save(im, "badge", 128, 136)
 
-# Bubble (white: tinted in the game) and its tail; plate (dark, for chips and banners); rim (a white ring to tint).
-save(shaped(128, rounded(128, 34, 8, 14), (255, 255, 255, 255), (196, 200, 210, 255)), "bubble", 128)
-save(shaped(64, poly(64, [(0.12, 0.1), (0.88, 0.1), (0.5, 0.86)]), (214, 218, 226, 255), (186, 190, 200, 255), gloss=0, drop=4), "tail", 64)
-save(shaped(128, rounded(128, 34, 8, 14), (44, 58, 78, 255), (16, 22, 32, 255), outline=(8, 10, 14, 255), gloss=0.28), "plate", 128)
-N = 128 * S
-ring = ImageChops.subtract(rounded(128, 34, 8, 14), rounded(128, 34, 8, 14).filter(ImageFilter.MinFilter(4 * S * 2 + 1)))
-rim = Image.new("RGBA", (N, N), (0, 0, 0, 0)); rim.paste(vgrad(N, N, (255, 255, 255, 255), (200, 200, 200, 255)), (0, 0), ring)
-save(rim, "rim", 128)
-# Button (white, tinted): flatter gloss, a darker lip at the bottom so it reads as pressable.
-btn = shaped(128, rounded(128, 16, 6, 10), (255, 255, 255, 255), (214, 218, 226, 255), ow=3, gloss=0.2, drop=4)
-lip = Image.new("L", (N, N), 0); ImageDraw.Draw(lip).rectangle((0, N * 0.84, N, N), fill=46)
-lip = ImageChops.multiply(lip, rounded(128, 16, 6, 10).filter(ImageFilter.MinFilter(3 * S * 2 + 1)))
-btn.paste(Image.new("RGBA", (N, N), (0, 0, 0, 255)), (0, 0), lip)
-save(btn, "button", 128)
-# Panels: dark glass with a fine light edge (the HUD's surfaces), and the lighter card that rows sit on.
-def glass(top, bottom, edge, r=18, hi=40):
-    m = rounded(128, r, 3)
-    im = Image.new("RGBA", (N, N), (0, 0, 0, 0))
-    im.paste(Image.new("RGBA", (N, N), edge), (0, 0), m)
-    inner = m.filter(ImageFilter.MinFilter(2 * S * 2 + 1))
-    im.paste(vgrad(N, N, top, bottom), (0, 0), inner)
-    line = Image.new("L", (N, N), 0); ImageDraw.Draw(line).rectangle((0, 5 * S, N, 7 * S), fill=hi)
-    im.paste(Image.new("RGBA", (N, N), (255, 255, 255, 255)), (0, 0), ImageChops.multiply(line, inner))
-    return im
-save(glass((26, 36, 52, 242), (12, 18, 28, 242), (86, 108, 138, 255)), "panel", 128)
-save(glass((40, 52, 72, 255), (30, 40, 56, 255), (62, 78, 102, 255), r=14, hi=26), "card", 128)
-save(glass((16, 22, 32, 255), (22, 30, 42, 255), (48, 60, 80, 255), r=12, hi=0), "well", 128)
+# The banner the harbour's name hangs on: a ribbon with swallow-tail ends (tinted).
+im = canvas(256, 96); d = ImageDraw.Draw(im)
+def ribbon(off, col):
+    x0, x1, y0, y1 = 6, 250, 8 + off, 74 + off
+    pts = [(x0, y0), (x1, y0), (x1 - 22, (y0 + y1) / 2), (x1, y1), (x0, y1), (x0 + 22, (y0 + y1) / 2)]
+    d.polygon([(x * S, y * S) for x, y in pts], fill=col)
+ribbon(8, INK + (70,)); ribbon(0, INK + (255,))
+x0, x1, y0, y1 = 20, 236, 15, 67
+d.polygon([(p[0] * S, p[1] * S) for p in [(x0, y0), (x1, y0), (x1 - 15, 41), (x1, y1), (x0, y1), (x0 + 15, 41)]], fill=(255, 255, 255, 255))
+d.polygon([(p[0] * S, p[1] * S) for p in [(x0 + 5, y1 - 9), (x1 - 5, y1 - 9), (x1, y1), (x0, y1)]], fill=(205, 205, 205, 255))
+save(im, "ribbon", 256, 96)
 
-# Coin, gem, star: full colour.
-coin = shaped(128, disc(128, 8), (255, 226, 110, 255), (232, 150, 20, 255), outline=(110, 62, 8, 255), gloss=0.6)
-inner = Image.new("L", (N, N), 0); d = ImageDraw.Draw(inner); d.ellipse((26 * S, 26 * S, N - 26 * S, N - 26 * S), outline=255, width=3 * S)
-coin.paste(Image.new("RGBA", (N, N), (150, 86, 10, 150)), (0, 0), inner)
-coin.alpha_composite(glyph(128, "$", 74, (120, 66, 6, 255), dy=-0.02))
-coin.alpha_composite(glyph(128, "$", 74, (255, 240, 170, 255), dy=-0.035))
-save(coin, "coin", 128)
-gm = poly(128, [(0.5, 0.06), (0.9, 0.36), (0.5, 0.95), (0.1, 0.36)])
-gem = shaped(128, gm, (150, 232, 255, 255), (30, 120, 235, 255), outline=(10, 44, 110, 255), gloss=0.0)
-fac = Image.new("RGBA", (N, N), (0, 0, 0, 0)); d = ImageDraw.Draw(fac)
-d.polygon([(0.5 * N, 0.12 * N), (0.68 * N, 0.36 * N), (0.5 * N, 0.86 * N), (0.32 * N, 0.36 * N)], fill=(255, 255, 255, 70))
-d.polygon([(0.5 * N, 0.12 * N), (0.32 * N, 0.36 * N), (0.17 * N, 0.36 * N)], fill=(255, 255, 255, 120))
-d.line([(0.15 * N, 0.36 * N), (0.85 * N, 0.36 * N)], fill=(10, 44, 110, 120), width=2 * S)
-gem.alpha_composite(Image.composite(fac, Image.new("RGBA", (N, N), (0, 0, 0, 0)), gm.filter(ImageFilter.MinFilter(5 * S * 2 + 1))))
-save(gem, "gem", 128)
-def star_pts(cx, cy, R, r, k=5, rot=-90):
-    return [(cx + (R if i % 2 == 0 else r) * math.cos(math.radians(rot + i * 180 / k)), cy + (R if i % 2 == 0 else r) * math.sin(math.radians(rot + i * 180 / k))) for i in range(k * 2)]
-sm = Image.new("L", (N, N), 0); ImageDraw.Draw(sm).polygon([(x * N, y * N) for x, y in star_pts(0.5, 0.52, 0.44, 0.2)], fill=255)
-sm = sm.filter(ImageFilter.GaussianBlur(3 * S)).point(lambda v: 255 if v > 110 else 0)      # rounded points
-save(shaped(128, sm, (255, 236, 120, 255), (245, 160, 20, 255), outline=(120, 66, 6, 255), gloss=0.55), "star", 128)
-# Crate: a team crate, wooden with a gold band.
-cr = shaped(128, rounded(128, 14, 14, 16), (206, 150, 84, 255), (150, 96, 44, 255), outline=(62, 36, 14, 255), gloss=0.25)
-d = ImageDraw.Draw(cr)
-for x in (0.36, 0.64): d.line([(x * N, 0.16 * N), (x * N, 0.84 * N)], fill=(98, 60, 24, 255), width=3 * S)
-d.rectangle((0.12 * N, 0.42 * N, 0.88 * N, 0.58 * N), fill=(250, 196, 60, 255), outline=(110, 62, 8, 255), width=3 * S)
-d.ellipse((0.43 * N, 0.4 * N, 0.57 * N, 0.6 * N), fill=(255, 236, 150, 255), outline=(110, 62, 8, 255), width=3 * S)
-save(cr, "crate", 128)
+# The coin: gold, with a fish stamped on it.
+im = canvas(128, 132); d = ImageDraw.Draw(im)
+d.ellipse([4 * S, 10 * S, 124 * S, 130 * S], fill=INK + (80,)); d.ellipse([4 * S, 4 * S, 124 * S, 124 * S], fill=INK + (255,))
+d.ellipse([11 * S, 11 * S, 117 * S, 117 * S], fill=(230, 150, 30, 255)); d.ellipse([11 * S, 11 * S, 117 * S, 110 * S], fill=(255, 197, 51, 255))
+d.ellipse([22 * S, 20 * S, 106 * S, 102 * S], outline=(255, 226, 130, 255), width=4 * S)
+fish = (214, 132, 22, 255)
+d.ellipse([34 * S, 46 * S, 84 * S, 78 * S], fill=fish); d.polygon([(80 * S, 62 * S), (100 * S, 46 * S), (100 * S, 78 * S)], fill=fish)
+d.ellipse([44 * S, 55 * S, 51 * S, 62 * S], fill=(255, 226, 130, 255))
+save(im, "coin", 128, 132)
 
-# Service icons: white with a dark outline, to sit on a coloured bubble.
-def icon(draw_fn, name):
-    N2 = 128 * S
-    m = Image.new("L", (N2, N2), 0)
-    draw_fn(ImageDraw.Draw(m), N2)
-    out = Image.new("RGBA", (N2, N2), (0, 0, 0, 0))
-    edge = m.filter(ImageFilter.MaxFilter(5 * S * 2 + 1))
-    out.paste(Image.new("RGBA", (N2, N2), (18, 24, 34, 255)), (0, 0), edge)
-    out.paste(vgrad(N2, N2, (255, 255, 255, 255), (220, 226, 236, 255)), (0, 0), m)
-    save(out, name, 128)
-def fuel(d, n):
-    d.polygon([(0.5 * n, 0.1 * n), (0.76 * n, 0.52 * n), (0.24 * n, 0.52 * n)], fill=255)
-    d.ellipse((0.22 * n, 0.36 * n, 0.78 * n, 0.9 * n), fill=255)
-    d.ellipse((0.36 * n, 0.56 * n, 0.5 * n, 0.74 * n), fill=0)
-def bags(d, n):
-    d.rounded_rectangle((0.38 * n, 0.14 * n, 0.62 * n, 0.34 * n), 0.05 * n, outline=255, width=int(0.05 * n))
-    d.rounded_rectangle((0.16 * n, 0.3 * n, 0.84 * n, 0.86 * n), 0.08 * n, fill=255)
-    for x in (0.34, 0.66): d.rectangle((x * n - 0.025 * n, 0.3 * n, x * n + 0.025 * n, 0.86 * n), fill=0)
-def food(d, n):
-    d.pieslice((0.14 * n, 0.28 * n, 0.86 * n, 1.0 * n), 180, 360, fill=255)
-    d.rectangle((0.08 * n, 0.68 * n, 0.92 * n, 0.78 * n), fill=255)
-    d.ellipse((0.44 * n, 0.16 * n, 0.56 * n, 0.28 * n), fill=255)
-    d.rectangle((0.14 * n, 0.625 * n, 0.86 * n, 0.66 * n), fill=0)
-def clean(d, n):
-    def spark(cx, cy, r):
-        d.polygon([(cx, cy - r), (cx + r * 0.24, cy - r * 0.24), (cx + r, cy), (cx + r * 0.24, cy + r * 0.24), (cx, cy + r), (cx - r * 0.24, cy + r * 0.24), (cx - r, cy), (cx - r * 0.24, cy - r * 0.24)], fill=255)
-    spark(0.42 * n, 0.56 * n, 0.34 * n); spark(0.76 * n, 0.26 * n, 0.17 * n); spark(0.8 * n, 0.78 * n, 0.11 * n)
-def tug(d, n):
-    # A low tractor seen from the side, with a tow bar.
-    d.rounded_rectangle((0.2 * n, 0.44 * n, 0.86 * n, 0.68 * n), 0.05 * n, fill=255)
-    d.rounded_rectangle((0.5 * n, 0.26 * n, 0.8 * n, 0.5 * n), 0.05 * n, fill=255)
-    d.rectangle((0.56 * n, 0.32 * n, 0.74 * n, 0.43 * n), fill=0)
-    d.rectangle((0.04 * n, 0.54 * n, 0.22 * n, 0.6 * n), fill=255)
-    for x in (0.34, 0.72):
-        d.ellipse((x * n - 0.12 * n, 0.58 * n, x * n + 0.12 * n, 0.82 * n), fill=255)
-        d.ellipse((x * n - 0.05 * n, 0.65 * n, x * n + 0.05 * n, 0.75 * n), fill=0)
-def deice(d, n):
-    # A snowflake: three bars through the middle with barbs.
-    import math
-    w = int(0.07 * n)
-    for a in (90, 30, 150):
-        dx, dy = math.cos(math.radians(a)), math.sin(math.radians(a))
-        d.line((0.5 * n - dx * 0.4 * n, 0.5 * n - dy * 0.4 * n, 0.5 * n + dx * 0.4 * n, 0.5 * n + dy * 0.4 * n), fill=255, width=w)
-        for sgn in (-1, 1):
-            cx, cy = 0.5 * n + sgn * dx * 0.27 * n, 0.5 * n + sgn * dy * 0.27 * n
-            for b in (a + 50, a - 50):
-                bx, by = math.cos(math.radians(b)) * sgn, math.sin(math.radians(b)) * sgn
-                d.line((cx, cy, cx + bx * 0.13 * n, cy + by * 0.13 * n), fill=255, width=w)
-icon(fuel, "svc_fuel"); icon(bags, "svc_bags"); icon(food, "svc_food"); icon(clean, "svc_clean"); icon(tug, "svc_tug"); icon(deice, "svc_deice")
+# The gem: a cut stone in sea-glass purple.
+im = canvas(128, 132); d = ImageDraw.Draw(im)
+def poly(pts, col, off=0): d.polygon([(x * S, (y + off) * S) for x, y in pts], fill=col)
+outer = [(28, 10), (100, 10), (124, 44), (64, 122), (4, 44)]
+poly(outer, INK + (80,), 6); poly(outer, INK + (255,))
+poly([(33, 18), (95, 18), (113, 44), (15, 44)], (176, 150, 255, 255)); poly([(15, 44), (113, 44), (64, 110)], (123, 97, 255, 255))
+poly([(47, 44), (81, 44), (64, 110)], (150, 126, 255, 255)); poly([(47, 18), (81, 18), (81, 44), (47, 44)], (214, 200, 255, 255))
+poly([(15, 44), (47, 44), (64, 110)], (98, 74, 224, 255))
+save(im, "gem", 128, 132)
 
-# Sunburst rays (white, to tint and spin behind a reward) and a soft glow.
-R = 256 * S
-rays = Image.new("L", (R, R), 0); d = ImageDraw.Draw(rays)
+# The star for milestones.
+im = canvas(128, 132); d = ImageDraw.Draw(im)
+def star(cx, cy, r1, r2, col):
+    pts = []
+    for i in range(10):
+        a = -math.pi / 2 + i * math.pi / 5; r = r1 if i % 2 == 0 else r2
+        pts.append(((cx + math.cos(a) * r) * S, (cy + math.sin(a) * r) * S))
+    d.polygon(pts, fill=col)
+star(64, 72, 62, 30, INK + (80,)); star(64, 66, 62, 30, INK + (255,)); star(64, 66, 49, 22, (255, 197, 51, 255)); star(64, 62, 30, 13, (255, 226, 130, 255))
+save(im, "star", 128, 132)
+
+# The TAP bubble: a white speech bubble with its point at the bottom.
+im = canvas(128, 144); d = ImageDraw.Draw(im)
+def bubble(off, col, grow):
+    rr(d, (6 - grow, 6 - grow + off, 122 + grow, 108 + grow + off), 34 + grow, col)
+    d.polygon([((46 - grow) * S, (100 + off) * S), ((82 + grow) * S, (100 + off) * S), (64 * S, (136 + grow + off) * S)], fill=col)
+bubble(5, INK + (70,), 0); bubble(0, INK + (255,), 0); bubble(0, (255, 255, 255, 255), -7)
+save(im, "bubble", 128, 144)
+
+# The up arrow on level signs (white, tinted).
+im = canvas(64, 64); d = ImageDraw.Draw(im)
+d.polygon([(32 * S, 8 * S), (58 * S, 36 * S), (42 * S, 36 * S), (42 * S, 56 * S), (22 * S, 56 * S), (22 * S, 36 * S), (6 * S, 36 * S)], fill=(255, 255, 255, 255))
+save(im, "up", 64, 64)
+
+# Sun rays behind prizes and on the loading screen (white, tinted, soft).
+im = canvas(512, 512); d = ImageDraw.Draw(im)
 for i in range(12):
-    a0, a1 = math.radians(i * 30 - 6), math.radians(i * 30 + 6)
-    d.polygon([(R / 2, R / 2), (R / 2 + R * math.cos(a0), R / 2 + R * math.sin(a0)), (R / 2 + R * math.cos(a1), R / 2 + R * math.sin(a1))], fill=255)
-fall = Image.new("L", (R, R), 0); px = fall.load()
-small = Image.new("L", (64, 64), 0); sp = small.load()
-for y in range(64):
-    for x in range(64):
-        r = math.hypot(x - 31.5, y - 31.5) / 32
-        sp[x, y] = int(255 * max(0, 1 - r) ** 1.3)
-fall = small.resize((R, R), Image.BILINEAR)
-out = Image.new("RGBA", (R, R), (255, 255, 255, 0)); out.putalpha(ImageChops.multiply(rays, fall))
-out.resize((256, 256), Image.LANCZOS).save(os.path.join(OUT, "rays.png")); print("ui rays")
-g = Image.new("RGBA", (R, R), (255, 255, 255, 0)); g.putalpha(fall)
-g.resize((128, 128), Image.LANCZOS).save(os.path.join(OUT, "glow.png")); print("ui glow")
+    a0 = i * math.pi / 6; a1 = a0 + math.pi / 12
+    d.polygon([(256 * S, 256 * S), ((256 + math.cos(a0) * 400) * S, (256 + math.sin(a0) * 400) * S), ((256 + math.cos(a1) * 400) * S, (256 + math.sin(a1) * 400) * S)], fill=(255, 255, 255, 255))
+im = im.resize((512, 512), Image.LANCZOS)
+mask = Image.new("L", (512, 512), 0); md = ImageDraw.Draw(mask)
+for r in range(256, 0, -2): md.ellipse([256 - r, 256 - r, 256 + r, 256 + r], fill=int(255 * (1 - r / 256) ** 0.8))
+im.putalpha(Image.composite(im.split()[3], Image.new("L", (512, 512), 0), mask).point(lambda v: v) if False else Image.eval(Image.merge("L", [im.split()[3]]), lambda v: v))
+a = im.split()[3]; from PIL import ImageChops
+im.putalpha(ImageChops.multiply(a, mask))
+im.save(os.path.join(OUT, "rays.png")); print("rays")

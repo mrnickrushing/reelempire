@@ -35,7 +35,7 @@ namespace ReelEmpire.Game
             var tone = p.Add<Tonemapping>(); tone.mode.Override(TonemappingMode.ACES);
             var bloom = p.Add<Bloom>(); look._bloom = bloom; bloom.intensity.Override(0.18f); bloom.threshold.Override(1.5f); bloom.scatter.Override(0.6f);
             look._grade = p.Add<ColorAdjustments>();
-            look._grade.postExposure.Override(0.35f); look._grade.contrast.Override(14f); look._grade.saturation.Override(16f);
+            look._grade.postExposure.Override(0.1f); look._grade.contrast.Override(8f); look._grade.saturation.Override(22f);
             var vig = p.Add<Vignette>(); vig.intensity.Override(0.2f); vig.smoothness.Override(0.5f);
             return look;
         }
@@ -48,8 +48,8 @@ namespace ReelEmpire.Game
             const bool inside = false;
             float want = inside || w == Core.Weather.Clear ? 0 : w == Core.Weather.Rain ? 0.45f : w == Core.Weather.Fog ? 0.6f : 0.9f;
             _gloom = inside ? 0 : Mathf.MoveTowards(_gloom, want, Time.unscaledDeltaTime * 0.4f);
-            _grade.postExposure.Override(Mathf.Lerp(0.35f, Mathf.Lerp(-0.25f, 0.2f, sim.Night), _gloom));     // bad weather darkens the day, not the night
-            _grade.saturation.Override(Mathf.Lerp(16f, -30f, _gloom));
+            _grade.postExposure.Override(Mathf.Lerp(0.1f, Mathf.Lerp(-0.3f, 0.05f, sim.Night), _gloom));     // bad weather darkens the day, not the night
+            _grade.saturation.Override(Mathf.Lerp(22f, -25f, _gloom));
             _grade.colorFilter.Override(Color.Lerp(Color.white, new Color(0.78f, 0.84f, 0.95f), _gloom));
             // The day: the sun swings round and sinks, the sky dims, and everything that glows comes on at dusk.
             float night = sim.Night * 0.72f, phase = sim.DayPhase;      // a bright moonlit night: the harbour stays readable
@@ -68,7 +68,7 @@ namespace ReelEmpire.Game
             RenderSettings.ambientSkyColor = Color.Lerp(new Color(0.62f, 0.72f, 0.86f), new Color(0.36f, 0.44f, 0.68f), night);
             RenderSettings.ambientEquatorColor = Color.Lerp(new Color(0.55f, 0.58f, 0.56f), new Color(0.3f, 0.36f, 0.52f), night);
             RenderSettings.ambientGroundColor = Color.Lerp(new Color(0.3f, 0.32f, 0.26f), new Color(0.08f, 0.1f, 0.15f), night);
-            RenderSettings.reflectionIntensity = Mathf.Lerp(0.9f, 0.25f, night);
+            RenderSettings.reflectionIntensity = Mathf.Lerp(0.15f, 0.1f, night);    // the sky's sun would glare off the flat ground
             float fog = inside ? 0 : w == Core.Weather.Fog ? 1 : w == Core.Weather.Storm ? 0.5f : w == Core.Weather.Rain ? 0.3f : 0;
             // Night fog is lit from below by the harbour: a grey glow, never a black wall.
             RenderSettings.fogColor = Color.Lerp(new Color(0.74f, 0.83f, 0.92f), Color.Lerp(new Color(0.05f, 0.07f, 0.13f), new Color(0.17f, 0.19f, 0.25f), fog), night);

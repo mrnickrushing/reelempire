@@ -11,6 +11,7 @@ Shader "ReelEmpire/VertexLit"
         _DetailScale ("Detail Scale", Float) = 0
         _DetailStrength ("Detail Strength", Range(0,1)) = 0
         _KitSurface ("Ignore uv2 surface (kit models)", Float) = 0
+        _Tint ("Tint", Color) = (1, 1, 1, 1)
     }
 
     // ------------------------------------------------------------------ URP (Universal Render Pipeline)
@@ -27,6 +28,7 @@ Shader "ReelEmpire/VertexLit"
             float _DetailScale;
             float _DetailStrength;
             float _KitSurface;  // 1 = the mesh has no surface channel (free kit models): matte, no detail
+            float4 _Tint;
         CBUFFER_END
         float _NightGlow;
         float4 _GlowColor;
@@ -51,6 +53,7 @@ Shader "ReelEmpire/VertexLit"
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #define _SPECULARHIGHLIGHTS_OFF 1   // a matte, toy-like world: no sun glare off the ground
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             struct Attributes
@@ -104,6 +107,7 @@ Shader "ReelEmpire/VertexLit"
                     float d = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.positionWS.xz * _DetailScale).r;
                     albedo *= lerp(1, d * 1.6 + 0.2, _DetailStrength);
                 }
+                albedo = saturate(albedo * _Tint.rgb);
                 float glow = 1 - i.color.a;
                 float3 normalWS = normalize(i.normalWS);
                 float occlusion = 1;

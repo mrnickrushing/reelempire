@@ -131,9 +131,14 @@ the Logbook (day 3), trophy hall (day 6-7), Cannery and harbours 3-4 (days 8-18)
 
 ## Art
 
-Stylised-realistic low-poly diorama from free kits; water with depth colour, foam and gentle waves; warm golden-hour
-light by default, real day/night on top. Interface art painted by `Tools/art/ui_art.py`. Loading screen with the key
-picture, a progress bar and the Rushing Technologies logo.
+A look of its own, unlike Last Tide (realistic scans) and Crosswind (dark navy plates, condensed type):
+
+- **World:** a bright low-poly toy diorama from the Kenney kits (CC0): turquoise water with foam, a sandy shore,
+  chunky boats, matte colours, no glare. Day by default; night is a bright moonlit blue.
+- **Interface:** cut paper and stickers. Cream panels and candy-coloured buttons with a thick navy outline and a hard
+  drop shadow; rounded lettering (Lilita One, Fredoka); the harbour's name on a coral ribbon; round badges for the
+  chain; the upgrade sheet rises from the bottom. Painted by `Tools/art/ui_art.py`.
+- Loading screen: the sea, sun rays, the name, a progress bar with the coin, a tip and the Rushing Technologies logo.
 
 ## Architecture
 

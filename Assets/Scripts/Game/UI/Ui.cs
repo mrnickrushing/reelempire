@@ -13,12 +13,21 @@ namespace ReelEmpire.Game
         static Font _bold, _body;
         static Sprite _round, _circle;
 
-        public static Font Bold { get { return _bold ?? (_bold = Resources.Load<Font>("Fonts/BarlowCondensed-Bold") ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")); } }
-        public static Font Body { get { return _body ?? (_body = Resources.Load<Font>("Fonts/BarlowSemiCondensed-SemiBold") ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")); } }
+        public static Font Bold { get { return _bold ?? (_bold = Resources.Load<Font>("Fonts/LilitaOne-Regular") ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")); } }
+        public static Font Body { get { return _body ?? (_body = Resources.Load<Font>("Fonts/Fredoka-SemiBold") ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")); } }
 
-        public static readonly Color Ink = new Color(0.09f, 0.12f, 0.16f, 1f), Panel = new Color(0.12f, 0.16f, 0.21f, 0.96f), Card = new Color(0.17f, 0.22f, 0.28f, 1f);
-        public static readonly Color Gold = new Color(1f, 0.78f, 0.24f), Green = new Color(0.25f, 0.72f, 0.42f), Blue = new Color(0.2f, 0.52f, 0.86f), Red = new Color(0.9f, 0.36f, 0.3f);
-        public static readonly Color Dim = new Color(1, 1, 1, 0.6f), Off = new Color(0.32f, 0.36f, 0.42f);
+        // Cut paper and stickers: cream panels, candy colours, navy ink for outlines and for text on paper.
+        public static readonly Color Ink = new Color(0.086f, 0.196f, 0.31f, 1f), Paper = new Color(1f, 0.965f, 0.89f, 1f), Panel = new Color(1f, 0.965f, 0.89f, 1f), Card = new Color(0.98f, 0.9f, 0.76f, 1f);
+        public static readonly Color Gold = new Color(1f, 0.77f, 0.2f), Green = new Color(0.3f, 0.77f, 0.42f), Blue = new Color(0.1f, 0.71f, 0.78f), Red = new Color(1f, 0.42f, 0.34f), Coral = new Color(1f, 0.42f, 0.34f), Grape = new Color(0.48f, 0.38f, 1f);
+        public static readonly Color Dim = new Color(0.086f, 0.196f, 0.31f, 0.78f), Off = new Color(0.72f, 0.76f, 0.8f), Faint = new Color(0.086f, 0.196f, 0.31f, 0.1f);
+
+        /// <summary>White lettering with a navy outline and a drop, for text on colour or over the world.</summary>
+        public static Text Stroke(this Text t, float width = 2.5f)
+        {
+            var o = t.gameObject.AddComponent<Outline>(); o.effectColor = Ink; o.effectDistance = new Vector2(width, -width);
+            var sh = t.gameObject.AddComponent<Shadow>(); sh.effectColor = Ink; sh.effectDistance = new Vector2(0, -width * 1.8f);
+            return t;
+        }
 
         /// <summary>A landscape canvas (1920 x 1080 reference, expanding on taller or wider screens) and the event system.</summary>
         public static RectTransform Canvas(string name, Transform parent)
@@ -97,8 +106,8 @@ namespace ReelEmpire.Game
         public static Button Button(string name, Transform parent, string label, Color color, Action onClick, int size = 40)
         {
             var img = Img(name, parent, color, true);
-            var glossy = color.a > 0.5f ? Art("button", 44) : null;      // see-through buttons stay plain hit areas
-            if (glossy != null) { img.sprite = glossy; img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 1.6f; }
+            var glossy = color.a > 0.5f ? Art("button", 46) : null;      // see-through buttons stay plain hit areas
+            if (glossy != null) { img.sprite = glossy; img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 1.5f; }
             img.raycastTarget = true;
             var b = img.gameObject.AddComponent<Button>();
             b.targetGraphic = img;
@@ -108,7 +117,7 @@ namespace ReelEmpire.Game
             {
                 var l = Label("Label", img.transform, label, size, Color.white);
                 l.rectTransform.Fill(6);
-                if (glossy != null) { l.rectTransform.offsetMin = new Vector2(8, 10); var sh = l.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, 0.45f); sh.effectDistance = new Vector2(0, -3); }
+                if (glossy != null) { l.rectTransform.offsetMin = new Vector2(8, 14); l.Stroke(2f); }
             }
             return b;
         }
@@ -151,6 +160,20 @@ namespace ReelEmpire.Game
             var tex = Resources.Load<Texture2D>("UI/Fx/" + name);
             s = tex == null ? null : Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
             return _art[key] = s;
+        }
+
+        /// <summary>The ribbon: its swallow-tail ends keep their shape, the middle stretches.</summary>
+        public static Image Ribbon(string name, Transform parent, Color color)
+        {
+            var img = Img(name, parent, color);
+            Sprite s;
+            if (!_art.TryGetValue("ribbon-h", out s))
+            {
+                var tex = Resources.Load<Texture2D>("UI/Fx/ribbon");
+                _art["ribbon-h"] = s = tex == null ? null : Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(64, 0, 64, 0));
+            }
+            if (s != null) { img.sprite = s; img.type = Image.Type.Sliced; }
+            return img;
         }
 
         /// <summary>An image of a painted piece, sliced so its corners keep their shape at any size.</summary>
