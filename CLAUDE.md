@@ -30,6 +30,14 @@ platform code, tools and conventions are the same.
   is white with `Stroke()`. Layout: cash pill top-left with the pace tab under it, gems top-right, the harbour's name
   on a ribbon, the guide card left, the chain as four round badges along the bottom, the upgrade sheet rising from
   the bottom (`Hud.Sheet`). Keep `CREDITS.md` in step with what ships.
+- Fish: `Tools/art/fish.py fetch|render|species` downloads the fish models (poly.pizza; refuses anything not CC0 / CC
+  BY), renders each with `Tools/blender/icon_render.py`, and makes one picture per species (its model's picture,
+  hue-shifted by the table in the script) in `Resources/UI/Species/<harbour>_<name>.png` (`Hud.SpeciesPicture`).
+- Screens (`UI/Hud.Screens.cs`, round buttons in the bottom corners): BOOK (tiles by harbour; uncaught ones are
+  silhouettes with when they bite), AWARDS (claim gems), SHOP (time warps for gems, the one-time purchases, gem packs,
+  restore), MORE (sound, music, battery saver, reminders, statistics, Sign in with Apple, name, iCloud, Game Center,
+  rate, privacy, support, credits, delete account). `Frame` + `Entry` build them; the in-game credits are
+  `CreditsText`: keep them in step with `CREDITS.md`.
 - Not done yet (see DESIGN.md milestones): renovation and renown, crew cards, boosts, voyages, the
   book and shop screens, settings and accounts UI, more harbours, derbies, the season pass, the tutorial, App Store
   Connect setup. The rating prompt's App Store id is a placeholder until the app exists.

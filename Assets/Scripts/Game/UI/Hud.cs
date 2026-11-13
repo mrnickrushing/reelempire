@@ -86,6 +86,7 @@ namespace ReelEmpire.Game
             }
 
             BuildGuide();
+            BuildNav();
             BuildSheet();
             _modal = Ui.Rect("Modal", _root); _modal.Fill();
             S.Changed += OnChanged; S.Caught += OnCaught; S.Sold += OnSold; S.MilestoneReached += OnMilestone;
@@ -136,6 +137,7 @@ namespace ReelEmpire.Game
             UpdateSheet();
             UpdateFx();
             UpdateRate();
+            UpdateNav();
             if (_dirty) { _dirty = false; RefreshSheet(); }
         }
 

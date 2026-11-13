@@ -114,13 +114,14 @@ namespace ReelEmpire.Game
         readonly List<Chip> _chips = new List<Chip>();
         float _lastSoldSound;
 
-        void Pop(Vector3 world, string text, Color color, int size = 40, float life = 1.3f)
+        void Pop(Vector3 world, string text, Color color, int size = 40, float life = 1.3f, Sprite picture = null)
         {
             Vector2 p;
             if (!Project(world, out p) || _chips.Count > 24) return;
             var l = Ui.Label("Chip", _fx, text, size, color);
             l.rectTransform.anchorMin = l.rectTransform.anchorMax = Vector2.zero; l.rectTransform.sizeDelta = new Vector2(420, 60); l.rectTransform.anchoredPosition = p;
             l.Stroke(2.5f);
+            if (picture != null) { var pic = Ui.Img("Pic", l.transform, Color.white); pic.sprite = picture; pic.preserveAspect = true; pic.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 0), new Vector2(0, -6), new Vector2(110, 110)); }
             _chips.Add(new Chip { Rt = l.rectTransform, Label = l, Life = life, From = p });
         }
 
@@ -156,7 +157,7 @@ namespace ReelEmpire.Game
                 Toast("New species: " + sp.Name + "  +" + Content.RarityGems[(int)sp.Rarity] + " gems");
                 Sfx.Play("star", 0.6f);
             }
-            if (sp.Rarity >= Rarity.Rare || first) Pop(view.BoatAt(berth), sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg", RarityColor(sp.Rarity), 36, 1.8f);
+            if (sp.Rarity >= Rarity.Rare || first) Pop(view.BoatAt(berth) + Vector3.up * 2, sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg", RarityColor(sp.Rarity), 34, 2f, SpeciesPicture(sp));
         }
 
         void OnSold(double cash)
@@ -233,7 +234,7 @@ namespace ReelEmpire.Game
                 _guideText.rectTransform.sizeDelta = new Vector2(done ? 200 : 370, 90);
                 // The hand points at what the step is about, for the first steps and while nothing else is open.
                 var view = HarbourView.Instance;
-                if (!done && view != null && s.State.goalIndex < 12 && !SheetOpen && !ModalOpen && (g.Point != Stage.Berth || g.PointBerth >= 0))
+                if (!done && view != null && s.State.goalIndex < 12 && !SheetOpen && !ModalOpen && !ScreenOpen && (g.Point != Stage.Berth || g.PointBerth >= 0))
                 {
                     var h = H;
                     Vector3 at = g.Point == Stage.Dock ? (h.dockSkipper || g.Id == "dock5" || g.Id == "dockskipper" ? view.DockSign : view.HaulerAt(0))

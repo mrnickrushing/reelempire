@@ -266,6 +266,30 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
+        public void TheStarterPackAddsAHaulerAndATruckForGood()
+        {
+            var s = TestGame.New();
+            s.Grant("reelempire.starter", "t");
+            Assert.That(s.State.gems, Is.EqualTo(250));
+            Assert.That(s.H.haulers.Count, Is.EqualTo(2));
+            Assert.That(s.H.trucks.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ATimeWarpPaysIdleEarningsForGems()
+        {
+            var s = TestGame.New();
+            var h = s.H; h.cash = 1e7; s.State.gems = 25;
+            Assert.That(s.BuyWarp(0), Is.False, "nothing to warp while nothing runs by itself");
+            s.HireSkipper(Stage.Berth, 0); s.HireSkipper(Stage.Dock); s.HireSkipper(Stage.Market);
+            double before = h.cash, rate = s.IdleRate(h);
+            Assert.That(s.BuyWarp(0), Is.True);
+            Assert.That(h.cash - before, Is.EqualTo(rate * 3600).Within(1e-6));
+            Assert.That(s.State.gems, Is.EqualTo(5));
+            Assert.That(s.BuyWarp(1), Is.False);
+        }
+
+        [Test]
         public void NightCrewAddsFourHoursAway()
         {
             var s = TestGame.New();

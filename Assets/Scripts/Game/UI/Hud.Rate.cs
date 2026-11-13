@@ -31,7 +31,7 @@ namespace ReelEmpire.Game
         void UpdateRate()
         {
             if (_rateIn < 0) return;
-            if (ModalOpen || SheetOpen) return;      // wait for cards and the sheet to be out of the way
+            if (ModalOpen || SheetOpen || ScreenOpen) return;      // wait for cards and the sheet to be out of the way
             if ((_rateIn -= Time.unscaledDeltaTime) > 0) return;
             _rateIn = -1;
             if (RateAsked) return;

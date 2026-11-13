@@ -74,8 +74,9 @@ namespace ReelEmpire.Core
 
         void FitCrew(HarbourState h)
         {
-            int n = Content.CrewAt(h.dock); while (h.haulers.Count < n) h.haulers.Add(new Carrier());
-            n = Content.CrewAt(h.market); while (h.trucks.Count < n) h.trucks.Add(new Carrier());
+            int extra = Owns("reelempire.starter") ? 1 : 0;
+            int n = Content.CrewAt(h.dock) + extra; while (h.haulers.Count < n) h.haulers.Add(new Carrier());
+            n = Content.CrewAt(h.market) + extra; while (h.trucks.Count < n) h.trucks.Add(new Carrier());
         }
 
         // ---- levels and what they cost ----

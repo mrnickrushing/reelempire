@@ -9,6 +9,17 @@ Reel Empire: Idle Tycoon is made by Rushing Technologies. It uses these free wor
   stalls, the flag, rocks, the watchtower), Survival Kit (boxes, fish, the signpost), Nature Kit (trees, bushes,
   rocks, lily pads, flowers, grass, logs), Mini Characters (the dock hands). Converted by `Tools/art/models.py`.
 
+- **Quaternius** (quaternius.com, via poly.pizza): the fish and sea creatures of the species book (Cute Fish pack:
+  Tuna, Koi, Goldfish, Red Snapper, Clownfish, Armored Catfish, Cowfish, Moorish Idol, Sunfish, Swordfish, Lionfish,
+  Puffer, Anglerfish, Butterfly Fish, Shark, Goblin Shark, Piranha, Tang, Blue Tang, Turbot, Flatfish, Coral Grouper,
+  Flower Horn, Royal Gramma, Mandarin Fish, Tetra, Cardinal Fish, Blobfish; Crab Enemy, Squid). Pictures rendered and
+  recoloured per species by `Tools/art/fish.py`.
+
+## Models (CC BY 3.0, via poly.pizza)
+
+- **Poly by Google**: Octopus, Lobster, Eel.
+- **jeremy**: Shrimp.
+
 ## Fonts (SIL Open Font License 1.1)
 
 - **Lilita One** by Juan Montoreano.

@@ -40,7 +40,7 @@ namespace ReelEmpire.Core
             new ProductDef { Id = "reelempire.gems.medium", Name = "Bucket of Gems", Blurb = "300 gems", Gems = 300, FallbackPrice = "$4.99" },
             new ProductDef { Id = "reelempire.gems.large", Name = "Crate of Gems", Blurb = "700 gems", Gems = 700, FallbackPrice = "$9.99" },
             new ProductDef { Id = "reelempire.gems.huge", Name = "Hold Full of Gems", Blurb = "1,600 gems: the best value", Gems = 1600, FallbackPrice = "$19.99" },
-            new ProductDef { Id = "reelempire.starter", Name = "Deckhand's Pack", Blurb = "250 gems now and a second pair of hands on every hauler round, for good. One time only.", Gems = 250, Once = true, FallbackPrice = "$2.99" },
+            new ProductDef { Id = "reelempire.starter", Name = "Deckhand's Pack", Blurb = "250 gems, plus an extra hauler and an extra truck in every harbour, for good.", Gems = 250, Once = true, FallbackPrice = "$2.99" },
             new ProductDef { Id = "reelempire.ledger", Name = "Captain's Ledger", Blurb = "All income doubled, for good, in every harbour.", Once = true, FallbackPrice = "$7.99" },
             new ProductDef { Id = "reelempire.nightcrew", Name = "Night Crew", Blurb = "The harbour earns for 4 more hours while you're away, for good.", Once = true, FallbackPrice = "$4.99" },
         };
@@ -57,6 +57,7 @@ namespace ReelEmpire.Core
             if (!string.IsNullOrEmpty(transaction)) { if (State.transactions.Contains(transaction)) return false; State.transactions.Add(transaction); }
             if (p.Once) { if (State.owned.Contains(product)) return false; State.owned.Add(product); }
             if (!restored) State.gems += p.Gems;
+            foreach (var h in State.harbours) FitCrew(h);
             EndPurchase(product);
             Changed?.Invoke();
             return true;
@@ -124,6 +125,31 @@ namespace ReelEmpire.Core
                 if (Grant(id, null, restored: true)) n++;
             }
             return n;
+        }
+
+        // ---- what gems buy ----
+
+        public sealed class WarpDef { public string Name; public double Hours; public int Gems; }
+        /// <summary>Time warps: the harbour's idle earnings for that long, at once.</summary>
+        public static readonly WarpDef[] Warps =
+        {
+            new WarpDef { Name = "Fair Wind", Hours = 1, Gems = 20 },
+            new WarpDef { Name = "Spring Tide", Hours = 4, Gems = 60 },
+            new WarpDef { Name = "A Full Day's Catch", Hours = 24, Gems = 250 },
+        };
+
+        public double WarpCash(WarpDef w) { return IdleRate(H) * w.Hours * 3600; }
+
+        public bool BuyWarp(int index)
+        {
+            if (index < 0 || index >= Warps.Length) return false;
+            var w = Warps[index];
+            double cash = WarpCash(w);
+            if (State.gems < w.Gems || cash <= 0) return false;
+            State.gems -= w.Gems;
+            Pay(H, cash);
+            Touch();
+            return true;
         }
     }
 }
