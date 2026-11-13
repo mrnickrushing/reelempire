@@ -51,8 +51,11 @@ platform code, tools and conventions are the same.
 - First-run tutorial (`UI/Hud.Tutorial.cs`, `GameState.tutorialStep` 0/1/2): Marta's welcome card, then her speech
   bubble (lines in `Coach`, keyed by guide step up to `berth3`) beside the pointing hand, a goodbye card, SKIP at any
   time. Her portrait is rendered from the kit character (`art-src/free/faces/jobs.json` through `icon_render.py`).
-- Not done yet (see DESIGN.md milestones): the logbook (spending renown), crew cards, voyages, daily
-  gifts and tasks, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
+- Daily play (`Core/Sim.Live.cs`, the TODAY page in `Hud.Screens`): the seven-day gift (`ClaimGift`; a missed day
+  starts the week again), three daily tasks counted from the day's start (`RollTasks` in `Tick`), voyages (one boat
+  away for 30 min / 2 h / 8 h, a second with `reelempire.fleet`; the first one sent asks for notifications) and the
+  Skipper's Logbook: eight perks that open at renown thresholds (`Logbook(id)`; nothing is spent).
+- Not done yet (see DESIGN.md milestones): crew cards, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
   (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

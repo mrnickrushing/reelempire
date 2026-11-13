@@ -45,6 +45,7 @@ namespace ReelEmpire.Core
         public void Tick(double dt)
         {
             if (dt <= 0) return;
+            RollTasks();        // the day's counts start when the day does, not when the page is first opened
             State.played += dt;
             while (dt > 0)
             {

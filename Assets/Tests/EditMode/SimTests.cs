@@ -278,6 +278,75 @@ namespace ReelEmpire.Tests
         }
     }
 
+    public class LiveTests
+    {
+        [Test]
+        public void TheGiftComesOnceADayAndAMissedDayStartsTheWeekAgain()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            Assert.That(s.GiftReady, Is.True);
+            Assert.That(s.ClaimGift().Gems, Is.EqualTo(10));
+            Assert.That(s.ClaimGift(), Is.Null, "once a day");
+            t += 86400;
+            Assert.That(s.GiftIndex, Is.EqualTo(1));
+            s.ClaimGift();
+            t += 86400;
+            Assert.That(s.ClaimGift().Gems, Is.EqualTo(15));
+            t += 3 * 86400;
+            Assert.That(s.GiftIndex, Is.EqualTo(0), "a missed day");
+        }
+
+        [Test]
+        public void DailyTasksCountFromTheStartOfTheDay()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            s.H.cash = 1e6;
+            Assert.That(s.TaskHave(1), Is.EqualTo(0));
+            s.Upgrade(Stage.Berth, 0, 30);
+            Assert.That(s.TaskDone(1), Is.True);
+            int gems = s.State.gems;
+            Assert.That(s.ClaimTask(1), Is.True);
+            Assert.That(s.ClaimTask(1), Is.False);
+            Assert.That(s.State.gems, Is.EqualTo(gems + 5));
+            t += 86400;
+            Assert.That(s.TaskHave(1), Is.EqualTo(0), "a new day");
+            Assert.That(s.TaskClaimed(1), Is.False);
+        }
+
+        [Test]
+        public void AVoyageComesBackWithCashAndGems()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            Assert.That(s.StartVoyage(0), Is.True);
+            Assert.That(s.StartVoyage(1), Is.False, "one boat to spare");
+            Assert.That(s.CollectVoyage(0), Is.EqualTo(0), "not back yet");
+            t += 30 * 60 + 1;
+            Assert.That(s.VoyageBack, Is.True);
+            double cash = s.H.cash; int gems = s.State.gems;
+            Assert.That(s.CollectVoyage(0), Is.GreaterThan(0));
+            Assert.That(s.H.cash, Is.GreaterThan(cash));
+            Assert.That(s.State.gems, Is.EqualTo(gems + 3));
+            s.Grant("reelempire.fleet", "t");
+            Assert.That(s.StartVoyage(0) && s.StartVoyage(2), Is.True, "two with the second boat");
+        }
+
+        [Test]
+        public void TheLogbookOpensWithRenown()
+        {
+            var s = TestGame.New();
+            double cap = s.AwayCap;
+            Assert.That(s.Logbook("watch1"), Is.False);
+            s.State.renown = 150;
+            Assert.That(s.Logbook("watch1") && s.Logbook("tide") && s.Logbook("watch2"), Is.True);
+            Assert.That(s.AwayCap, Is.EqualTo(cap + 2 * 3600));
+            s.UseBoost();
+            Assert.That(s.BoostLeft, Is.EqualTo(5400).Within(1));
+        }
+    }
+
     public class FormatTests
     {
         [Test]

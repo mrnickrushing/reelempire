@@ -8,7 +8,12 @@ namespace ReelEmpire.Core
     {
         /// <summary>A named effect on a harbour (1 = none): "catch", "dock", "hall", "market", "levelcost", "berthcost".
         /// Crew, the logbook and trophies add to these.</summary>
-        public double Fx(HarbourState h, string what) { return 1; }
+        public double Fx(HarbourState h, string what)
+        {
+            if (what == "berthcost") return Logbook("yard") ? 0.85 : 1;
+            if (what == "levelcost") return Logbook("trade") ? 0.9 : 1;
+            return 1;
+        }
 
         /// <summary>Everything that multiplies a sale.</summary>
         public double IncomeMult(HarbourState h)
@@ -65,7 +70,7 @@ namespace ReelEmpire.Core
         // ---- away ----
 
         public const double AwayBase = 2 * 3600;
-        public double AwayCap { get { return AwayBase + (Owns("reelempire.nightcrew") ? 4 * 3600 : 0); } }
+        public double AwayCap { get { return AwayBase + (Owns("reelempire.nightcrew") ? 4 * 3600 : 0) + LogbookAwayHours * 3600; } }
 
         /// <summary>What the harbour on screen made in <paramref name="seconds"/> away (nothing under a minute).</summary>
         public double AwayEarnings(double seconds)

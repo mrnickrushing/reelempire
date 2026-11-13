@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -18,6 +18,7 @@ namespace ReelEmpire.Game
         {
             NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
             NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
+            NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
             NavButton(new Vector2(1, 0), new Vector2(-226, 16), "SHOP", Ui.Art("gem"), Color.white, () => Open(Page.Shop), false);
             NavButton(new Vector2(1, 0), new Vector2(-84, 16), "MORE", Ui.Ic("gear"), Ui.Ink, () => Open(Page.Settings), false);
             _screenRoot = Ui.Rect("Screen", _root); _screenRoot.Fill();
@@ -39,8 +40,9 @@ namespace ReelEmpire.Game
 
         void UpdateNav()
         {
-            bool claim = S.AchievementsToClaim > 0;
-            foreach (var d in _navDots) if (d.gameObject.activeSelf != claim) d.gameObject.SetActive(claim);
+            // The dots are made in the order of the buttons that carry one: AWARDS, then TODAY.
+            if (_navDots.Count > 0) { bool claim = S.AchievementsToClaim > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
+            if (_navDots.Count > 1) { bool today = S.TodayWaiting; if (_navDots[1].gameObject.activeSelf != today) _navDots[1].gameObject.SetActive(today); }
         }
 
         public bool ScreenOpen { get { return _screen != Page.None; } }
@@ -113,10 +115,53 @@ namespace ReelEmpire.Game
                 case Page.Shop: ShowShop(); break;
                 case Page.Settings: ShowSettings(); break;
                 case Page.Harbours: ShowHarbours(); break;
+                case Page.Today: ShowToday(); break;
             }
         }
 
-void ShowHarbours()
+void ShowToday()
+        {
+            var s = S;
+            Frame("TODAY");
+            float y = 0;
+            // The gift.
+            int gi = s.GiftIndex; var gift = Sim.Gifts[gi];
+            y = Entry(y, Ui.Art("star"), Color.white, "Day " + (gi + 1) + " gift: " + gift.Name, s.GiftReady ? "Come back every day: day 7 is 60 gems. Miss a day and the week starts again." : "Taken. The next one is ready in " + Format.Time(s.GiftIn) + ".",
+                s.GiftReady ? "TAKE IT" : null, Ui.Gold, s.GiftReady ? (Action)(() => { var g = S.ClaimGift(); if (g != null) { Sfx.Play("claim", 0.9f); Toast("Today's gift: " + g.Name); GameRoot.Instance.Save(); ShowToday(); } }) : null, s.GiftReady ? null : "TAKEN", s.GiftReady);
+
+            y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
+            for (int i = 0; i < s.State.voyages.Count; i++)
+            {
+                var v = s.State.voyages[i]; var d = Sim.Voyages[v.kind]; int k = i; double left = s.VoyageLeft(v);
+                y = Entry(y, Resources.Load<Sprite>("UI/Species/coast_mackerel"), Color.white, d.Name, left > 0 ? "Back in " + Format.Time(left) : "Back with a full hold: +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems",
+                    left > 0 ? null : "UNLOAD", Ui.Green, left > 0 ? null : (Action)(() => { double cash = S.CollectVoyage(k); if (cash > 0) { Sfx.Play("coin", 0.9f); Toast("+" + Format.Money(cash) + "  +" + d.Gems + " gems"); GameRoot.Instance.Save(); ShowToday(); } }), left > 0 ? "AT SEA" : null, left <= 0);
+            }
+            if (s.State.voyages.Count < s.VoyageSlots)
+                for (int i = 0; i < Sim.Voyages.Length; i++)
+                {
+                    var d = Sim.Voyages[i]; int k = i;
+                    y = Entry(y, Ui.Ic("compass"), Ui.Ink, d.Name, d.Blurb + ": about +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems", Format.Time(s.VoyageSeconds(d)), Ui.Blue,
+                        () => { if (S.StartVoyage(k)) { Sfx.Play("dispatch", 0.7f); Toast(d.Name + ": the boat is away"); Reminders.AskOnce(); GameRoot.Instance.Save(); ShowToday(); } });
+                }
+
+            y = Heading(y, "TODAY'S TASKS");
+            for (int i = 0; i < Sim.Tasks.Length; i++)
+            {
+                var t = Sim.Tasks[i]; int k = i; bool done = s.TaskDone(i), claimed = s.TaskClaimed(i);
+                y = Entry(y, Ui.Ic("target"), Ui.Ink, t.Text, Format.Money(s.TaskHave(i)) + " / " + Format.Money(t.Need), claimed ? null : "+" + t.Gems + " GEMS", Ui.Green,
+                    done && !claimed ? (Action)(() => { if (S.ClaimTask(k)) { Sfx.Play("claim", 0.8f); GameRoot.Instance.Save(); ShowToday(); } }) : null, claimed ? "DONE" : null, done && !claimed);
+            }
+
+            y = Heading(y, "SKIPPER'S LOGBOOK: opens as your renown grows (now " + s.State.renown + ")");
+            foreach (var p in Sim.LogbookPages)
+            {
+                bool has = s.Logbook(p.Id);
+                y = Entry(y, Ui.Ic(has ? "medal" : "lock"), Ui.Ink, p.Name, p.Blurb, null, Ui.Off, null, has ? "YOURS" : "AT " + p.Renown + " RENOWN", has);
+            }
+            EndList(-y);
+        }
+
+        void ShowHarbours()
         {
             var s = S; var h = H;
             Frame("HARBOURS");

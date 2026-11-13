@@ -139,6 +139,7 @@ namespace ReelEmpire.Core
                 case Stage.Hall: h.hall += n; break;
                 default: h.market += n; break;
             }
+            State.levelsBought += n;
             FitCrew(h);
             int gained = Content.MilestonesAt(lv + n) - before;
             if (gained > 0) { h.stars += gained; MilestoneReached?.Invoke(stage, berth, lv + n); }

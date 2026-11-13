@@ -42,6 +42,7 @@ namespace ReelEmpire.Core
             new ProductDef { Id = "reelempire.gems.huge", Name = "Hold Full of Gems", Blurb = "1,600 gems: the best value", Gems = 1600, FallbackPrice = "$19.99" },
             new ProductDef { Id = "reelempire.starter", Name = "Deckhand's Pack", Blurb = "250 gems, plus an extra hauler and an extra truck in every harbour, for good.", Gems = 250, Once = true, FallbackPrice = "$2.99" },
             new ProductDef { Id = "reelempire.ledger", Name = "Captain's Ledger", Blurb = "All income doubled, for good, in every harbour.", Once = true, FallbackPrice = "$7.99" },
+            new ProductDef { Id = "reelempire.fleet", Name = "Second Boat Out", Blurb = "Send two voyages at once, for good.", Once = true, FallbackPrice = "$4.99" },
             new ProductDef { Id = "reelempire.nightcrew", Name = "Night Crew", Blurb = "The harbour earns for 4 more hours while you're away, for good.", Once = true, FallbackPrice = "$4.99" },
         };
 

@@ -125,9 +125,10 @@ namespace ReelEmpire.Core
             double now = RealNow();
             State.boostUsedAt.RemoveAll(t => now - t >= BoostEvery);
             if (State.boostUsedAt.Count >= BoostCharges) return false;
-            if (BoostLeft + BoostLasts > BoostCap + 1) return false;
+            double lasts = BoostLasts * (Logbook("tide") ? 1.5 : 1);
+            if (BoostLeft + lasts > BoostCap + 1) return false;
             State.boostUsedAt.Add(now);
-            State.boostUntil = Math.Max(State.boostUntil, now) + BoostLasts;
+            State.boostUntil = Math.Max(State.boostUntil, now) + lasts;
             Touch();
             return true;
         }

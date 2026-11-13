@@ -67,6 +67,10 @@ namespace ReelEmpire.Core
         public int renown, renownPaid, renovations;
         public double boostUntil;       // real time the Tide Boost runs out
         public List<double> boostUsedAt = new List<double>();
+        public long giftDay = -1; public int giftStreak;
+        public long taskDay = -1; public int taskClaimed; public List<double> taskBase = new List<double>();
+        public long levelsBought, voyagesDone;
+        public List<Voyage> voyages = new List<Voyage>();
 
         // The shop.
         public List<string> owned = new List<string>();
@@ -102,6 +106,8 @@ namespace ReelEmpire.Core
             if (playerName == null) playerName = "";
             if (achieved == null) achieved = new List<string>();
             if (boostUsedAt == null) boostUsedAt = new List<double>();
+            if (taskBase == null) taskBase = new List<double>();
+            if (voyages == null) voyages = new List<Voyage>();
             if (seed == 0) seed = 2463534242;
             at = Math.Max(0, Math.Min(at, harbours.Count - 1));
             foreach (var h in harbours)
