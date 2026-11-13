@@ -42,6 +42,9 @@ namespace ReelEmpire.Core
             new GoalDef { Id = "smoke", Text = "Build the Smokehouse", Have = s => s.OwnsGoods(s.H, 3) ? 1 : 0, Need = 1, Gems = 15, Point = Stage.Hall },
             new GoalDef { Id = "l100", Text = "Reach level 100 at any berth", Have = s => s.BestBerthLevel, Need = 100, Gems = 20 },
             new GoalDef { Id = "berth8", Text = "Open all eight berths", Have = s => s.H.berths.Count, Need = 8, Gems = 25 },
+            new GoalDef { Id = "can", Text = "Build the Cannery", Have = s => s.OwnsGoods(s.H, 4) ? 1 : 0, Need = 1, Gems = 25, Point = Stage.Hall },
+            new GoalDef { Id = "renovate", Text = "Renovate the harbour: tap its name at the top", Have = s => s.State.renovations, Need = 1, Gems = 50 },
+            new GoalDef { Id = "river", Text = "Open Alder River", Have = s => s.State.harbours.Count, Need = 2, Gems = 50 },
         };
 
         public GoalDef Goal { get { return State.goalIndex < Goals.Count ? Goals[State.goalIndex] : null; } }
@@ -73,6 +76,6 @@ namespace ReelEmpire.Core
         }
 
         /// <summary>Stars across every harbour: the measure of how far the empire has come.</summary>
-        public int Stars { get { int n = 0; foreach (var h in State.harbours) n += h.stars; return n; } }
+        public int Stars { get { int n = 0; foreach (var h in State.harbours) n += h.stars + h.renovations * 25; return n; } }
     }
 }

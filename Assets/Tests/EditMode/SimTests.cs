@@ -214,6 +214,85 @@ namespace ReelEmpire.Tests
         }
     }
 
+    public class ProgressTests
+    {
+        static Sim Rich()
+        {
+            var s = TestGame.New();
+            s.H.cash = 1e15;
+            while (s.H.berths.Count < Content.Berths.Length) s.UnlockBerth();
+            return s;
+        }
+
+        [Test]
+        public void RenovatingStartsTheHarbourAgainAtDoubleIncomeAndPaysRenown()
+        {
+            var s = TestGame.New();
+            Assert.That(s.Renovate(), Is.False);
+            s = Rich(); s.State.lifetime = 1e12;
+            double m = s.IncomeMult(s.H);
+            Assert.That(s.RenovationBlocked(s.H), Is.Null);
+            Assert.That(s.Renovate(), Is.True);
+            Assert.That(s.H.berths.Count, Is.EqualTo(1));
+            Assert.That(s.H.renovations, Is.EqualTo(1));
+            Assert.That(s.State.renown, Is.EqualTo(1264));
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 2 * (1 + 1264 * Sim.RenownEach)).Within(1e-6));
+            Assert.That(s.RenownWaiting, Is.EqualTo(0), "paid once");
+        }
+
+        [Test]
+        public void TheNextWaterOpensAfterARenovationAndHasItsOwnCash()
+        {
+            var s = Rich();
+            Assert.That(s.OpenNextHarbour(), Is.False, "not before a renovation");
+            s.Renovate();
+            s.H.cash = s.NextHarbourCost;
+            Assert.That(s.OpenNextHarbour(), Is.True);
+            Assert.That(s.State.harbours.Count, Is.EqualTo(2));
+            Assert.That(s.H.id, Is.EqualTo("river"));
+            Assert.That(s.H.cash, Is.EqualTo(Content.StartCash * 400));
+            Assert.That(s.Travel(0), Is.True);
+            Assert.That(s.H.id, Is.EqualTo("lake"));
+            s.TapBerth(0); s.Tick(5);
+            Assert.That(Book.Get(s.State.species[0].id).Harbour, Is.EqualTo("lake"));
+        }
+
+        [Test]
+        public void TheTideBoostDoublesIncomeForAnHourAndRecharges()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            double m = s.IncomeMult(s.H);
+            Assert.That(s.BoostReady, Is.EqualTo(3));
+            Assert.That(s.UseBoost(), Is.True);
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 2));
+            Assert.That(s.UseBoost(), Is.True); Assert.That(s.UseBoost(), Is.True);
+            Assert.That(s.BoostLeft, Is.EqualTo(3 * 3600).Within(1));
+            Assert.That(s.UseBoost(), Is.False, "three charges");
+            t += 3 * 3600 + 1;
+            Assert.That(s.Boosted, Is.False);
+            Assert.That(s.BoostReady, Is.EqualTo(0));
+            t += 3600;
+            Assert.That(s.BoostReady, Is.EqualTo(3));
+            Assert.That(s.UseBoost(), Is.True);
+        }
+    }
+
+    public class FormatTests
+    {
+        [Test]
+        public void MoneyReadsAsIdleGamesCount()
+        {
+            Assert.That(Format.Money(999), Is.EqualTo("999"));
+            Assert.That(Format.Money(1234), Is.EqualTo("1.23K"));
+            Assert.That(Format.Money(15.6e6), Is.EqualTo("15.6M"));
+            Assert.That(Format.Money(2e12), Is.EqualTo("2T"));
+            Assert.That(Format.Money(4.99e15), Is.EqualTo("4.99aa"));
+            Assert.That(Format.Money(3e18), Is.EqualTo("3ab"));
+            Assert.That(Format.Money(1e93), Is.EqualTo("1ba"));
+        }
+    }
+
     public class SaveTests
     {
         /// <summary>JsonUtility silently drops a field whose class isn't [Serializable]: walk the save and fail on one.</summary>

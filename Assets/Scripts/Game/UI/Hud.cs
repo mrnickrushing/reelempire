@@ -22,6 +22,13 @@ namespace ReelEmpire.Game
         readonly Text[] _chainRate = new Text[4];
         readonly Image[] _chainBox = new Image[4];
         double _shownCash;
+        Image _boostImg; Text _boostText;
+
+        void UseBoost()
+        {
+            if (S.UseBoost()) { Sfx.Play("star", 0.7f); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
+            else { Sfx.Play("error", 0.5f); Toast(S.BoostReady <= 0 ? "The next boost is ready in " + Format.Time(S.BoostNextIn) : "The boost is full: 8 hours at most"); }
+        }
 
         public static Hud Create()
         {
@@ -56,12 +63,21 @@ namespace ReelEmpire.Game
             _gems = Ui.Label("N", gems.transform, "0", 50, Ui.Ink, TextAnchor.MiddleCenter); _gems.rectTransform.Fill(); _gems.rectTransform.offsetMin = new Vector2(60, 8); _gems.rectTransform.offsetMax = new Vector2(-16, 0);
             var gem = Ui.ArtImg("Gem", _root, "gem", Color.white, 0); gem.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-190, -10), new Vector2(96, 100));
 
+            // The Tide Boost: a round button under the gems with its charges or the time left.
+            var boost = Ui.Button("Boost", _root, null, new Color(0, 0, 0, 0), UseBoost, 30);
+            var brt = (RectTransform)boost.transform; brt.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -122), new Vector2(112, 120));
+            _boostImg = boost.GetComponent<Image>(); _boostImg.sprite = Ui.Art("badge"); _boostImg.type = Image.Type.Simple; _boostImg.color = Ui.Blue;
+            var bx = Ui.Label("X", brt, "x2", 46, Color.white); bx.rectTransform.Fill(); bx.rectTransform.offsetMin = new Vector2(0, 12); bx.Stroke(2.5f);
+            var btag = Ui.ArtImg("Tag", _root, "tag", Color.white, 30); btag.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-150, -150), new Vector2(190, 58));
+            _boostText = Ui.Label("T", btag.transform, "", 26, Ui.Ink); _boostText.rectTransform.Fill(); _boostText.rectTransform.offsetMin = new Vector2(0, 4);
+
             // The harbour's name on a ribbon, the conditions on a tag under it.
             var cond = Ui.ArtImg("Cond", _root, "tag", Color.white, 30);
             cond.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -88), new Vector2(430, 58));
             _conditions = Ui.Label("Cond", cond.transform, "", 26, Ui.Ink, TextAnchor.MiddleCenter, false); _conditions.rectTransform.Fill(); _conditions.rectTransform.offsetMin = new Vector2(0, 4);
             var ribbon = Ui.Ribbon("Ribbon", _root, Ui.Coral);
             ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -8), new Vector2(580, 104));
+            ribbon.raycastTarget = true; ribbon.gameObject.AddComponent<Button>().onClick.AddListener(() => Open(Page.Harbours));
             _harbourName = Ui.Label("Name", ribbon.transform, "", 44, Color.white); _harbourName.rectTransform.Fill(); _harbourName.rectTransform.offsetMin = new Vector2(40, 22); _harbourName.rectTransform.offsetMax = new Vector2(-40, 0); _harbourName.Stroke(2.5f);
 
             // The chain along the bottom: boats, dock, hall, market, joined by arrows.
@@ -115,8 +131,13 @@ namespace ReelEmpire.Game
             _rate.text = idle > 0 ? "+" + Format.Money(idle) + "/s" : "TAP TO WORK";
             ((Image)_rate.transform.parent.GetComponent<Image>()).color = idle > 0 ? Ui.Green : Ui.Gold;
             _gems.text = s.State.gems.ToString("N0");
-            _harbourName.text = s.Def.Name.ToUpperInvariant();
+            _harbourName.text = s.Def.Name.ToUpperInvariant() + (h.renovations > 0 ? "  x" + Format.Money(Math.Pow(2, h.renovations)) : "");
             _conditions.text = (s.IsNight ? "Night" : "Day") + "  •  " + WeatherName(s.Weather) + "  •  " + Sim.SeasonNames[s.Season];
+
+            int ready = s.BoostReady;
+            _boostText.text = s.Boosted ? Format.Time(s.BoostLeft) : ready > 0 ? ready + " ready" : Format.Time(s.BoostNextIn);
+            _boostImg.color = ready > 0 ? Ui.Blue : s.Boosted ? Ui.Green : Ui.Off;
+            _boostImg.rectTransform.localScale = Vector3.one * (ready > 0 && !s.Boosted ? 1 + 0.05f * Mathf.Sin(Time.unscaledTime * 5) : 1);
 
             double fleet = s.FleetRate(h, true), dock = s.DockRate(h), hall = s.HallRate(h), market = s.MarketRate(h);
             _chainRate[0].text = Format.Money(fleet) + "\n/s"; _chainRate[1].text = Format.Money(dock) + "\n/s";

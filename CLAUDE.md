@@ -38,9 +38,15 @@ platform code, tools and conventions are the same.
   restore), MORE (sound, music, battery saver, reminders, statistics, Sign in with Apple, name, iCloud, Game Center,
   rate, privacy, support, credits, delete account). `Frame` + `Entry` build them; the in-game credits are
   `CreditsText`: keep them in step with `CREDITS.md`.
-- Not done yet (see DESIGN.md milestones): renovation and renown, crew cards, boosts, voyages, the
-  book and shop screens, settings and accounts UI, more harbours, derbies, the season pass, the tutorial, App Store
-  Connect setup. The rating prompt's App Store id is a placeholder until the app exists.
+- The long game (`Core/Sim.Progress.cs`): `Renovate` (all eight berths + cash; the harbour starts again at x2, up to
+  five times; pays renown = 40 x sqrt(lifetime / 1e9), +2% income everywhere each), `OpenNextHarbour` (after one
+  renovation, paid in the newest harbour's cash), `Travel`, and the Tide Boost (`UseBoost`: three free charges, one
+  back every 4 h, x2 for an hour each, 8 h at most; away earnings ignore it). UI: the ribbon opens HARBOURS
+  (`Hud.ShowHarbours`), the x2 badge under the gems is the boost. Each water has its own colours and plants
+  (`World/Layout.cs` `Theme.For`). Money reads K, M, B, T, aa, ab... (`Format.Money`).
+- Not done yet (see DESIGN.md milestones): the logbook (spending renown), crew cards, voyages, daily
+  gifts and tasks, derbies, the season pass, the trophy hall, the tutorial, the iCloud "newer save" offer
+  (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup. The rating prompt's App Store id is a placeholder until the app exists.
 
 ## Verify every change
 

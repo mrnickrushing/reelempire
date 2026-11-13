@@ -17,6 +17,8 @@ namespace ReelEmpire.Core
             var all = new List<Reminder>();
             if (IdleRate(H) > 0)
                 all.Add(new Reminder { In = AwayCap, Title = "The docks are full at " + Def.Name, Body = "Your crews have landed all they can hold. Come and collect." });
+            if (BoostFullIn > 600)
+                all.Add(new Reminder { In = BoostFullIn, Title = "The tide has turned", Body = "All three Tide Boosts are ready: double income for an hour each." });
             all.Add(new Reminder { In = 24 * 3600, Title = "A new day at " + Def.Name, Body = "The market has a new favourite today, and the boats are waiting." });
 
             var plan = new List<Reminder>();

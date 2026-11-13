@@ -13,8 +13,9 @@ namespace ReelEmpire.Core
         /// <summary>Everything that multiplies a sale.</summary>
         public double IncomeMult(HarbourState h)
         {
-            double m = Math.Pow(2, h.renovations);
+            double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach);
             if (Owns("reelempire.ledger")) m *= 2;
+            if (Boosted) m *= BoostMult;
             return m;
         }
 
@@ -70,7 +71,7 @@ namespace ReelEmpire.Core
         public double AwayEarnings(double seconds)
         {
             if (seconds < 60) return 0;
-            return IdleRate(H) * Math.Min(seconds, AwayCap);
+            return IdleRate(H) / (Boosted ? BoostMult : 1) * Math.Min(seconds, AwayCap);      // the boost is for playing, not for sleeping
         }
 
         /// <summary>Pays the time away: the harbour on screen gets <paramref name="mult"/> times its share, the others theirs.</summary>

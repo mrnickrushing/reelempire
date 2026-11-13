@@ -72,6 +72,7 @@ namespace ReelEmpire.Game
             go.transform.position = new Vector3(-200, 0, 0); go.transform.localScale = new Vector3(120, 1, 160);
             var sh = Resources.Load<Shader>("Shaders/Water") ?? Shader.Find("ReelEmpire/Water");
             var m = new Material(sh);
+            var th = Theme.For(H.id); m.SetColor("_Deep", th.Deep); m.SetColor("_Shallow", th.Shallow);
             go.GetComponent<MeshRenderer>().sharedMaterial = m;
             go.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
@@ -80,7 +81,7 @@ namespace ReelEmpire.Game
         {
             Models.Built("Land", _static, mb =>
             {
-                var grass = Palette.Hex(0x8FD05A); var sand = Palette.Hex(0xF2DFA4); var stone = Palette.Hex(0xB8AE9C); var planks = Palette.Hex(0xD9A066);
+                var th = Theme.For(H.id); var grass = th.Grass; var sand = th.Sand; var stone = Palette.Hex(0xB8AE9C); var planks = Palette.Hex(0xD9A066);
                 mb.Mat(0.02f);
                 mb.Surf = SurfaceKind.None;
                 mb.Box(new Vector3(310, -2.5f + Layout.QuayY / 2 - 0.02f, 0), new Vector3(600, 5 + Layout.QuayY, 900), grass, grass);       // the meadow

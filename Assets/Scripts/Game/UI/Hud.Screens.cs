@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -112,10 +112,52 @@ namespace ReelEmpire.Game
                 case Page.Awards: ShowAwards(); break;
                 case Page.Shop: ShowShop(); break;
                 case Page.Settings: ShowSettings(); break;
+                case Page.Harbours: ShowHarbours(); break;
             }
         }
 
-        public static Sprite SpeciesPicture(SpeciesDef sp) { return Resources.Load<Sprite>("UI/Species/" + sp.Id.Replace('.', '_')); }
+void ShowHarbours()
+        {
+            var s = S; var h = H;
+            Frame("HARBOURS");
+            float y = 0;
+            y = Heading(y, "RENOWN " + s.State.renown + ":  +" + Mathf.RoundToInt((float)(s.State.renown * Sim.RenownEach * 100)) + "% income in every harbour");
+            // Renovating the harbour on screen.
+            string blocked = s.RenovationBlocked(h);
+            if (h.renovations < Sim.MaxRenovations)
+            {
+                int gain = s.RenownWaiting;
+                y = Entry(y, Ui.Art("star"), Color.white, "Renovate " + s.Def.Name + "  (x" + Format.Money(Math.Pow(2, h.renovations)) + " ▸ x" + Format.Money(Math.Pow(2, h.renovations + 1)) + ")",
+                    "Start again from the Old Jetty, earning double here for good" + (gain > 0 ? ", and +" + gain + " renown." : ".") + (blocked != null ? "  " + blocked + "." : ""),
+                    Format.Money(s.RenovationCost(h)), Ui.Gold, blocked == null ? (Action)AskRenovate : null);
+            }
+            else y = Entry(y, Ui.Art("star"), Color.white, s.Def.Name + " is fully renovated", "x32 income here, for good.", null, Ui.Off, null, "DONE", true);
+            y = Heading(y, "YOUR WATERS");
+            for (int i = 0; i < s.State.harbours.Count; i++)
+            {
+                var hh = s.State.harbours[i]; var d = s.DefOf(hh); int k = i; bool here = i == s.State.at;
+                y = Entry(y, Resources.Load<Sprite>("UI/Species/" + Book.In(d.Id)[15].Id.Replace('.', '_')), Color.white, d.Name,
+                    d.Water + "  ·  " + hh.berths.Count + " berths  ·  x" + Format.Money(Math.Pow(2, hh.renovations)) + "  ·  " + (s.IdleRate(hh) > 0 ? "+" + Format.Money(s.IdleRate(hh)) + "/s" : "needs skippers to earn by itself"),
+                    here ? null : "SAIL THERE", Ui.Blue, here ? null : (Action)(() => { if (S.Travel(k)) { CloseScreen(); Toast("Welcome to " + d.Name); GameRoot.Instance.Save(); } }), here ? "YOU ARE HERE" : null, here);
+            }
+            var next = s.NextHarbour;
+            if (next != null)
+            {
+                string why = s.NextHarbourBlocked;
+                y = Entry(y, Ui.Ic("compass"), Ui.Ink, "Open " + next.Name, next.Blurb + (why != null ? "  " + why + "." : ""), Format.Money(s.NextHarbourCost), Ui.Green,
+                    why == null ? (Action)(() => { if (S.OpenNextHarbour()) { CloseScreen(); Sfx.Play("star"); Toast("Welcome to " + next.Name + "!"); GameRoot.Instance.Save(); } }) : null);
+            }
+            EndList(-y);
+        }
+
+        void AskRenovate()
+        {
+            var s = S; var h = H; int gain = s.RenownWaiting;
+            Confirm("RENOVATE?", s.Def.Name + " starts again from one jetty and a rowboat: its levels, berths, lines and cash go.\n\nFrom then on it earns x" + Format.Money(Math.Pow(2, h.renovations + 1)) + " for good" + (gain > 0 ? ", and you gain " + gain + " renown (+" + gain * 2 + "% income everywhere)" : "") + ". Gems, the book and your other harbours are kept.",
+                "RENOVATE", Ui.Gold, () => { if (S.Renovate()) { CloseScreen(); Sfx.Play("star"); Toast("Renovated! Everything here now earns double."); GameRoot.Instance.Save(); } });
+        }
+
+                public static Sprite SpeciesPicture(SpeciesDef sp) { return Resources.Load<Sprite>("UI/Species/" + sp.Id.Replace('.', '_')); }
         static readonly string[] RarityNames = { "COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY" };
         static readonly Color[] RarityInk = { new Color(0.42f, 0.5f, 0.58f), new Color(0.18f, 0.65f, 0.32f), new Color(0.1f, 0.55f, 0.85f), new Color(0.55f, 0.36f, 0.95f), new Color(0.95f, 0.6f, 0.05f) };
 

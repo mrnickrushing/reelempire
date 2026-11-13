@@ -247,7 +247,8 @@ namespace ReelEmpire.Game
         {
             var rnd = new System.Random(harbour.GetHashCode());
             System.Func<float, float, float> R = (a, b) => a + (float)rnd.NextDouble() * (b - a);
-            string[] trees = { "tree_a", "tree_b", "tree_c", "tree_d", "tree_pine", "tree_pine_b", "tree_b", "tree_d" };
+            var th = Theme.For(harbour);
+            string[] trees = th.Trees;
             float y = Layout.QuayY;
             for (int i = 0; i < 150; i++)
             {
@@ -257,13 +258,13 @@ namespace ReelEmpire.Game
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
                 int kind = rnd.Next(100);
-                if (kind < 62) Models.Kit(trees[rnd.Next(trees.Length)], parent, new Vector3(x, y, z), R(0, 360), R(6.5f, 11f));
+                if (kind < 62) { string tr = trees[rnd.Next(trees.Length)]; Models.Kit(tr, parent, new Vector3(x, y, z), R(0, 360), tr.StartsWith("rock") || tr.StartsWith("bush") ? R(3f, 6f) : R(6.5f, 11f)); }
                 else if (kind < 80) Models.Kit(rnd.Next(2) == 0 ? "bush" : "bush_b", parent, new Vector3(x, y, z), R(0, 360), R(1.6f, 3f));
                 else if (kind < 90) Models.Kit(rnd.Next(2) == 0 ? "rock_a" : "rock_d", parent, new Vector3(x, y, z), R(0, 360), R(1.5f, 3.5f));
-                else Models.Kit(rnd.Next(2) == 0 ? "flowers" : "grass", parent, new Vector3(x, y, z), R(0, 360), R(0.9f, 1.6f));
+                else if (!th.Ice) Models.Kit(rnd.Next(2) == 0 ? "flowers" : "grass", parent, new Vector3(x, y, z), R(0, 360), R(0.9f, 1.6f));
             }
             // Flowers and grass tufts near the buildings, where the eye rests.
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 40 && !th.Ice; i++)
                 Models.Kit(i % 3 == 0 ? "flowers" : "grass", parent, new Vector3(R(11, 60), y, R(8, 30) * (i % 2 == 0 ? 1 : -1)), R(0, 360), R(0.8f, 1.4f));
             // Rocks where the quay ends, in and out of the water.
             for (int i = 0; i < 22; i++)
@@ -273,7 +274,10 @@ namespace ReelEmpire.Game
             }
             // Buoys marking the channel, and lily pads in the shallows of the lake.
             for (int i = 0; i < 7; i++) Models.Kit("buoy", parent, new Vector3(-22 - i % 2 * 26, 0, -52 + i * 17), R(0, 360), 2.4f).AddComponent<Bobber>();
-            if (harbour == "lake" || harbour == "river")
+            if (th.Ice)
+                for (int i = 0; i < 30; i++) Models.Built("Floe", parent, mb => { mb.Mat(0.02f); mb.Cylinder(Vector3.zero, new Vector3(0, 0.5f, 0), 1, 0.85f, 7, Palette.Hex(0xEAF4FA)); }).transform.SetPositionAndRotation(new Vector3(R(-70, -16), -0.15f, R(-70, 70)), Quaternion.Euler(0, R(0, 360), 0));
+            if (th.Ice) foreach (Transform t in parent) if (t.name == "Floe") { float k = R(1.5f, 5f); t.localScale = new Vector3(k, 1, k * R(0.7f, 1.2f)); }
+            if (th.Lilies)
                 for (int i = 0; i < 26; i++) Models.Kit("lily", parent, new Vector3(R(-9, -1.5f), 0.05f, R(-48, 48)), R(0, 360), R(0.8f, 1.5f));
             // Barrels, crates and lamp posts along the quay.
             for (float z = -44; z <= 44; z += 11)

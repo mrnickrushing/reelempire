@@ -6,7 +6,14 @@ namespace ReelEmpire.Core
     /// <summary>Numbers for the screen: money that grows from tens to quintillions, and short durations.</summary>
     public static class Format
     {
-        static readonly string[] Suffix = { "", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc" };
+        static readonly string[] Named = { "", "K", "M", "B", "T" };
+        /// <summary>K, M, B, T, then aa, ab, ac... as idle games count.</summary>
+        static string SuffixOf(int tier)
+        {
+            if (tier < Named.Length) return Named[tier];
+            int n = tier - Named.Length;
+            return ((char)('a' + n / 26 % 26)).ToString() + (char)('a' + n % 26);
+        }
 
         /// <summary>1234 -> "1.23K", 15_600_000 -> "15.6M"; whole numbers below a thousand.</summary>
         public static string Money(double v)
@@ -15,21 +22,13 @@ namespace ReelEmpire.Core
             string sign = v < 0 ? "-" : "";
             v = Math.Abs(v);
             if (v < 1000) return sign + Math.Floor(v).ToString("0", CultureInfo.InvariantCulture);
-            int tier = Math.Min(Suffix.Length - 1, (int)Math.Floor(Math.Log10(v) / 3));
+            int tier = (int)Math.Floor(Math.Log10(v) / 3);
             double scaled = v / Math.Pow(1000, tier);
             // Three significant figures, never rounding up into the next thousand ("999.9K" not "1000K").
             string digits = scaled >= 100 ? Math.Floor(scaled).ToString("0", CultureInfo.InvariantCulture)
                 : scaled >= 10 ? (Math.Floor(scaled * 10) / 10).ToString("0.#", CultureInfo.InvariantCulture)
                 : (Math.Floor(scaled * 100) / 100).ToString("0.##", CultureInfo.InvariantCulture);
-            return sign + digits + Suffix[tier];
-        }
-
-        /// <summary>Passenger satisfaction as a share: "87%", never past "100%"; above every need met (shops and a
-        /// lounge take it to 150%) it reads "100%+" so the screen never shows more than all of them pleased.</summary>
-        public static string Satisfied(float sat)
-        {
-            int pct = (int)Math.Round(sat * 100, MidpointRounding.AwayFromZero);
-            return pct > 100 ? "100%+" : Math.Max(0, pct) + "%";
+            return sign + digits + SuffixOf(tier);
         }
 
         /// <summary>"45s", "3m 20s", "2h 05m", "1d 4h".</summary>

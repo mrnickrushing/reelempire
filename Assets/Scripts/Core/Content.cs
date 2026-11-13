@@ -21,8 +21,6 @@ namespace ReelEmpire.Core
     {
         public string Id, Name, Water, Blurb;
         public double Scale;            // every value and cost here is multiplied by this
-        public double UnlockCost;       // in the previous harbour's cash
-        public int UnlockStars;         // stars needed in the previous harbour
     }
 
     public sealed class BerthDef
@@ -87,11 +85,11 @@ namespace ReelEmpire.Core
         public static readonly HarbourDef[] Harbours =
         {
             new HarbourDef { Id = "lake", Name = "Stillwater Lake", Water = "Lake", Scale = 1, Blurb = "A quiet lake, an old jetty and one rowboat." },
-            new HarbourDef { Id = "river", Name = "Alder River", Water = "River", Scale = 400, UnlockCost = 5e9, UnlockStars = 8, Blurb = "Fast water under the alders: trout, salmon and sturgeon." },
-            new HarbourDef { Id = "coast", Name = "Gull Coast", Water = "Coast", Scale = 2e5, UnlockCost = 4e12, UnlockStars = 10, Blurb = "Salt wind, crab pots and the morning fleet." },
-            new HarbourDef { Id = "reef", Name = "Lantern Reef", Water = "Reef", Scale = 1e8, UnlockCost = 3e15, UnlockStars = 12, Blurb = "Clear warm shallows full of colour." },
-            new HarbourDef { Id = "deep", Name = "The Deep", Water = "Open ocean", Scale = 5e10, UnlockCost = 2e18, UnlockStars = 14, Blurb = "Blue water, long lines and very big fish." },
-            new HarbourDef { Id = "arctic", Name = "Frostmere", Water = "Arctic", Scale = 3e13, UnlockCost = 2e21, UnlockStars = 16, Blurb = "Ice floes, northern lights and the cold-water giants." },
+            new HarbourDef { Id = "river", Name = "Alder River", Water = "River", Scale = 400, Blurb = "Fast water under the alders: trout, salmon and sturgeon." },
+            new HarbourDef { Id = "coast", Name = "Gull Coast", Water = "Coast", Scale = 2e5, Blurb = "Salt wind, crab pots and the morning fleet." },
+            new HarbourDef { Id = "reef", Name = "Lantern Reef", Water = "Reef", Scale = 1e8, Blurb = "Clear warm shallows full of colour." },
+            new HarbourDef { Id = "deep", Name = "The Deep", Water = "Open ocean", Scale = 5e10, Blurb = "Blue water, long lines and very big fish." },
+            new HarbourDef { Id = "arctic", Name = "Frostmere", Water = "Arctic", Scale = 3e13, Blurb = "Ice floes, northern lights and the cold-water giants." },
         };
 
         public static HarbourDef Harbour(string id) { return Array.Find(Harbours, h => h.Id == id); }
