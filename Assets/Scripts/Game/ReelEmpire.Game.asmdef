@@ -1,0 +1,29 @@
+{
+    "name": "ReelEmpire.Game",
+    "rootNamespace": "ReelEmpire.Game",
+    "references": [
+        "ReelEmpire.Core",
+        "UnityEngine.UI",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.InputSystem",
+        "Unity.Notifications.iOS",
+        "AppleAuth",
+        "revenuecat.purchases-unity"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.revenuecat.purchases-unity",
+            "expression": "5.0.0",
+            "define": "REELEMPIRE_REVENUECAT"
+        }
+    ],
+    "noEngineReferences": false
+}
