@@ -27,7 +27,8 @@ namespace ReelEmpire.Game
             go.AddComponent<AudioListener>();
             // A phone is wider than a tablet: on a narrow screen stand further back so the whole chain is in view.
             float aspect = Screen.height > 0 ? (float)Screen.width / Screen.height : 1.78f;
-            if (aspect < 1.6f) rig.Distance = 210f;
+            rig.Distance = Mathf.Clamp(325f / aspect, 150f, 250f);      // the same width of harbour on every screen: jetty to market
+            if (aspect < 1.6f) rig.Focus.x += 8;      // a tall screen sees further down the shore, where the plots run off to the right
             rig._shown = rig.Distance;
             rig.Place();
             Instance = rig;

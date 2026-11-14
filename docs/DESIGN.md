@@ -199,3 +199,14 @@ As Crosswind: `Assets/Scripts/Core` has no Unity dependency (the save, the rules
 4. Platform: store, Sign in with Apple, iCloud, reminders, Game Center, rating prompt, settings.
 5. More harbours, derbies, season pass, trophy hall, conditions.
 6. Art pass with the free models, sound, tutorial, App Store listing.
+
+## Lessons
+
+The bigger parts of the game (crew, fishing by hand, works, bait, orders, research, voyages, renovation) are each
+introduced once by a card from Marta when they open (`Hud.Tutorial.cs`, `Lessons`), with a button that goes straight
+there. More → Settings → How it works lists them all again, and says what opens the ones still locked. Smaller
+things keep a one-line banner.
+
+Signs over the world never sit under the fixed HUD or off the screen (`Hud.ClearOfHud`); the works are small hammer
+tags so a phone is not covered in labels. The camera frames the same width of harbour on every screen
+(`CameraRig.Create`: distance 325 / aspect).

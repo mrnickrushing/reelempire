@@ -11,12 +11,18 @@ namespace ReelEmpire.Game
     {
         readonly List<Sign> _workSigns = new List<Sign>();
         Sign _chartSign;
-        static readonly float[] WorkSignUp = { 7.5f, 8f, 2f, 4.5f, 20f };
+        static readonly float[] WorkSignUp = { 7.5f, 8f, 2f, 4.5f, 3f };
 
         void BuildWorkSigns()
         {
             _workSigns.Clear();
-            for (int i = 0; i < Sim.Works.Length; i++) { int k = i; var sg = MakeSign(() => ShowWork(k), 262); sg.Label.fontSize = 26; _workSigns.Add(sg); }
+            // A small tag with a hammer on each plot: the card it opens says what the work is.
+            for (int i = 0; i < Sim.Works.Length; i++)
+            {
+                int k = i; var sg = MakeSign(() => ShowWork(k), 158); sg.Label.fontSize = 32; sg.Label.rectTransform.offsetMin = new Vector2(56, 8);
+                var ic = Ui.Img("I", sg.Rt, Ui.Ink); ic.sprite = Ui.Ic("hammer"); ic.preserveAspect = true; ic.raycastTarget = false; ic.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(16, 4), new Vector2(38, 38));
+                _workSigns.Add(sg);
+            }
             _chartSign = MakeSign(() => Open(Page.Research), 270); _chartSign.Up.gameObject.SetActive(false); _chartSign.Label.fontSize = 26; _chartSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
         }
 
@@ -27,22 +33,34 @@ namespace ReelEmpire.Game
             for (int i = 0; i < _workSigns.Count; i++)
             {
                 var w = Sim.Works[i]; var sg = _workSigns[i];
-                Put(sg.Rt, Layout.WorkPlot(w.Id) + Vector3.up * WorkSignUp[i], on);
+                Put(sg.Rt, Layout.WorkPlot(w.Id) + Vector3.up * WorkSignUp[i], on, true);
                 if (!on) continue;
                 int lv = s.WorkLevel(h, w.Id); double cost = s.WorkCost(h, w.Id); bool can = h.cash >= cost;
                 bool done = lv >= Sim.WorkLevels;
-                sg.Label.text = lv == 0 ? "+ " + w.Name.ToUpperInvariant() : w.Name.ToUpperInvariant() + "  " + (done ? "★" : lv.ToString());
+                sg.Label.text = lv == 0 ? "+" : done ? "★" : lv.ToString();
                 sg.Up.gameObject.SetActive(!done);
                 sg.Up.color = can ? Ui.Green : Ui.Off;
                 sg.Back.color = lv == 0 && can ? Ui.Gold : Color.white;
             }
+            // The bigger signs were there first: a work's tag that lands on one drops below it.
+            if (on) foreach (var sg in _workSigns) { StepBelow(sg.Rt, _orderSign.Rt); StepBelow(sg.Rt, _nextSign != null ? _nextSign.Rt : null); StepBelow(sg.Rt, _marketSign.Rt); StepBelow(sg.Rt, _hallSign.Rt); StepBelow(sg.Rt, _dockSign.Rt); }
             bool chart = s.Unlocked("research") && s.State.tutorialStep != 1;
-            Put(_chartSign.Rt, Layout.ChartRoom + Vector3.up * 10.5f, chart);
+            Put(_chartSign.Rt, Layout.ChartRoom + Vector3.up * 10.5f, chart, true);
             if (chart)
             {
                 _chartSign.Label.text = "RESEARCH  " + s.State.notes + (s.State.notes == 1 ? " note" : " notes");
                 _chartSign.Back.color = s.ResearchReady ? Ui.Gold : Color.white;
             }
+        }
+
+        static void StepBelow(RectTransform me, RectTransform other)
+        {
+            if (other == null || !me.gameObject.activeSelf || !other.gameObject.activeSelf) return;
+            Vector2 a = me.anchoredPosition, b = other.anchoredPosition;
+            float aw = me.rect.width, ah = me.rect.height, bw = other.rect.width, bh = other.rect.height;
+            float al = a.x - aw * me.pivot.x, bl = b.x - bw * other.pivot.x, ab = a.y - ah * me.pivot.y, bb = b.y - bh * other.pivot.y;
+            if (al > bl + bw || al + aw < bl || ab > bb + bh || ab + ah < bb) return;
+            me.anchoredPosition = new Vector2(a.x, bb - 6 - ah * (1 - me.pivot.y));
         }
 
         /// <summary>A work's card: what it does at this level and the next, and the button to build it.</summary>

@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders, Research }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders, Research, Guide }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -68,8 +68,11 @@ namespace ReelEmpire.Game
             {
                 if (_toast != null) break;       // let the last piece of news be read first
                 if (!s.Unlocked(f) || s.State.seenFeatures.Contains(f)) continue;
+                var lesson = LessonFor(f);
+                if (lesson != null && (SheetOpen || AnglingOpen)) break;      // Marta waits until the panel is put away
                 s.State.seenFeatures.Add(f);
-                Toast(Sim.FeatureNews(f)); Sfx.Play("star", 0.7f); Haptics.Success();
+                Sfx.Play("star", 0.7f); Haptics.Success();
+                if (lesson != null) ShowLesson(lesson, true); else Toast(Sim.FeatureNews(f));
                 if (_nav.ContainsKey(f)) _navPop[f] = 4; else if (f == "voyages" || f == "derby" || f == "season") _navPop["today"] = 4;
                 break;      // one piece of news at a time
             }
@@ -102,6 +105,7 @@ namespace ReelEmpire.Game
             { "SHOP", "Gems speed things up. Everything here is optional: the whole game can be played free." },
             { "SETTINGS", "Sound, reminders, your account and help." },
             { "RESEARCH", "The chart room turns what the harbour learns into lasting improvements. Each branch is learned in order." },
+            { "HOW IT WORKS", "Marta's notes on every part of the game. Tap READ to hear one again." },
             { "ORDERS", "The town wants fish. Fill an order for a big payment and gems on top of what the fish sell for." },
         };
 
@@ -141,8 +145,8 @@ namespace ReelEmpire.Game
             const float H = 122;
             var row = Ui.ArtImg("Row", _list, "card", lit ? new Color(0.72f, 0.93f, 0.76f) : Ui.Card, 26); row.rectTransform.Band(true, y, H - 10);
             if (icon != null) { var ic = Ui.Img("I", row.transform, iconTint); ic.sprite = icon; ic.preserveAspect = true; ic.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(20, 0), new Vector2(84, 84)); }
-            var n = Ui.Label("N", row.transform, name, 34, Ui.Ink, TextAnchor.UpperLeft); n.rectTransform.Fill(); n.rectTransform.offsetMin = new Vector2(124, 0); n.rectTransform.offsetMax = new Vector2(-330, -12);
-            var b = Ui.Label("B", row.transform, blurb, 25, Ui.Dim, TextAnchor.LowerLeft, false); b.rectTransform.Fill(); b.rectTransform.offsetMin = new Vector2(124, 12); b.rectTransform.offsetMax = new Vector2(-330, -50);
+            var n = Ui.Label("N", row.transform, name, 34, Ui.Ink, TextAnchor.UpperLeft); n.rectTransform.Fill(); n.rectTransform.offsetMin = new Vector2(124, 0); float right = button != null ? -330 : status != null ? -200 : -24; n.rectTransform.offsetMax = new Vector2(right, -12);
+            var b = Ui.Label("B", row.transform, blurb, 25, Ui.Dim, TextAnchor.LowerLeft, false); b.rectTransform.Fill(); b.rectTransform.offsetMin = new Vector2(124, 12); b.rectTransform.offsetMax = new Vector2(right, -50);
             b.resizeTextForBestFit = true; b.resizeTextMinSize = 17; b.resizeTextMaxSize = 25; b.verticalOverflow = VerticalWrapMode.Truncate;
             if (button != null)
             {
@@ -174,6 +178,7 @@ namespace ReelEmpire.Game
                 case Page.Derby: ShowDerby(); break;
                 case Page.Orders: ShowOrders(); break;
                 case Page.Research: ShowResearch(); break;
+                case Page.Guide: ShowGuide(); break;
             }
         }
 
@@ -543,6 +548,7 @@ void ShowToday()
             y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Game Center achievements", "Every award you earn here is kept on your Game Center profile.", "OPEN", Ui.Blue, GameCenter.Blocked == null ? (Action)GameCenter.ShowAchievements : () => Toast(GameCenter.Blocked));
 
             y = Heading(y, "MORE");
+            y = Entry(y, Ui.Ic("compass"), Ui.Ink, "How it works", "Every part of the game explained, and what opens next.", "READ", Ui.Blue, () => Open(Page.Guide));
             y = Entry(y, Ui.Art("star"), Color.white, "Enjoying Reel Empire?", "Rate it on the App Store.", "RATE", Ui.Gold, OpenStoreReview);
             y = Entry(y, Ui.Ic("lock"), Ui.Ink, "Privacy policy", "What the game keeps and what it never does.", "READ", Ui.Blue, () => Application.OpenURL(PrivacyUrl));
             y = Entry(y, Ui.Ic("bell"), Ui.Ink, "Help and support", "Questions, problems, a purchase that went wrong.", "OPEN", Ui.Blue, () => Application.OpenURL(SupportUrl));

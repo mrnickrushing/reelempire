@@ -54,17 +54,60 @@ namespace ReelEmpire.Game
             else { Sfx.Play("error", 0.5f); Toast("Not enough cash yet"); }
         }
 
-        void Put(RectTransform rt, Vector3 world, bool show = true)
+        void Put(RectTransform rt, Vector3 world, bool show = true, bool avoid = false)
         {
             Vector2 p;
             bool on = show && Project(world, out p) ? true : false;
-            if (on) { Project(world, out p); rt.anchoredPosition = p; }
+            if (on) { Project(world, out p); rt.anchoredPosition = avoid ? ClearOfHud(rt, p) : p; }
             if (rt.gameObject.activeSelf != on) rt.gameObject.SetActive(on);
+        }
+
+        /// <summary>
+        /// A sign never sits under the fixed parts of the screen (cash and goal, the harbour's name, the boost, the
+        /// buttons along the bottom): one that would steps out of the way by the shortest road toward the middle.
+        /// </summary>
+        Vector2 ClearOfHud(RectTransform rt, Vector2 p)
+        {
+            var c = ((RectTransform)transform).rect; float W = c.width, H = c.height;
+            float w = rt.rect.width * rt.localScale.x, h = rt.rect.height * rt.localScale.y;
+            float l = w * rt.pivot.x, r = w * (1 - rt.pivot.x), d = h * rt.pivot.y, u = h * (1 - rt.pivot.y);
+            const float G = 8;
+            p.y = Mathf.Clamp(p.y, d + G, H - u - G);       // on the screen first, then out from under what is fixed
+            // Top: push down (or sideways out of a corner). x0, x1 and the lowest y the block reaches.
+            p = Top(p, 0, 490, H - 392, true, l, r, u, G);
+            p = Top(p, W / 2 - 335, W / 2 + 335, H - 162, null, l, r, u, G);
+            p = Top(p, W - 390, W, H - 270, false, l, r, u, G);
+            // Bottom: push up.
+            p = Bottom(p, 0, 165, 380, true, l, r, d, G);
+            p = Bottom(p, 0, 500, 200, true, l, r, d, G);
+            p = Bottom(p, W / 2 - 400, W / 2 + 400, 212, null, l, r, d, G);
+            p = Bottom(p, W - 495, W, 200, false, l, r, d, G);
+            p.x = Mathf.Clamp(p.x, l + G, W - r - G);       // and never off the side of the screen
+            return p;
+        }
+
+        // corner: true = a left corner (may also leave to the right), false = a right corner, null = only up or down.
+        static Vector2 Top(Vector2 p, float x0, float x1, float y0, bool? corner, float l, float r, float u, float g)
+        {
+            if (p.x + r < x0 || p.x - l > x1 || p.y + u < y0) return p;
+            float down = p.y + u - y0 + g;
+            float side = corner == true ? x1 + g - (p.x - l) : corner == false ? p.x + r - (x0 - g) : float.MaxValue;
+            if (side < down) p.x += corner == true ? side : -side; else p.y -= down;
+            return p;
+        }
+
+        static Vector2 Bottom(Vector2 p, float x0, float x1, float y1, bool? corner, float l, float r, float d, float g)
+        {
+            if (p.x + r < x0 || p.x - l > x1 || p.y - d > y1) return p;
+            float up = y1 + g - (p.y - d);
+            float side = corner == true ? x1 + g - (p.x - l) : corner == false ? p.x + r - (x0 - g) : float.MaxValue;
+            if (side < up) p.x += corner == true ? side : -side; else p.y += up;
+            return p;
         }
 
         void SetSign(Sign s, Vector3 world, string text, bool canBuy)
         {
-            Put(s.Rt, world);
+            Put(s.Rt, world, true, true);
             s.Label.text = text;
             s.Up.color = canBuy ? Ui.Green : Ui.Off;
         }
@@ -82,7 +125,7 @@ namespace ReelEmpire.Game
             UpdateWorkSigns();
             // The order board by the market stalls: gold when something is ready to hand over.
             bool orders = s.Unlocked("orders");
-            Put(_orderSign.Rt, Layout.MarketCentre + new Vector3(-2, 6f, -17), orders);
+            Put(_orderSign.Rt, Layout.MarketCentre + new Vector3(-2, 6f, -17), orders, true);
             if (orders)
             {
                 int ready = s.OrdersReady;
@@ -92,7 +135,7 @@ namespace ReelEmpire.Game
             if (_nextSign != null)
             {
                 double cost = s.BerthUnlockCost(h); bool can = h.cash >= cost;
-                Put(_nextSign.Rt, view.NextBerthSign(h.berths.Count));
+                Put(_nextSign.Rt, view.NextBerthSign(h.berths.Count), true, true);
                 _nextSign.Label.text = can ? "+ DOCK  " + Format.Money(cost) : "+ DOCK  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
                 _nextSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
                 _nextSign.Back.color = can ? Ui.Gold : Color.white;
