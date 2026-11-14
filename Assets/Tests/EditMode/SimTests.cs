@@ -761,5 +761,14 @@ namespace ReelEmpire.Tests
             Assert.That(s.Unlocked("season"), Is.False);
             Assert.That(s.TodayWaiting, Is.False);
         }
+
+        [Test]
+        public void ANewGameOpensInDaylight()
+        {
+            var s = TestGame.New(1_700_000_000 + 1300);      // late in the 24-minute day by the clock
+            s.StartAtMorning();
+            Assert.That(s.Night, Is.EqualTo(0));
+            Assert.That(s.DayPhase, Is.EqualTo(0.08f).Within(0.001f));
+        }
     }
 }

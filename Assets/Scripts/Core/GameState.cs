@@ -68,6 +68,8 @@ namespace ReelEmpire.Core
         public double boostUntil;       // real time the Tide Boost runs out
         public List<double> boostUsedAt = new List<double>();
         public long giftDay = -1; public int giftStreak;
+        /// <summary>Seconds added to the clock for day and night, so a new game starts in the morning.</summary>
+        public double dayShift;
         public long taskDay = -1; public int taskClaimed; public List<double> taskBase = new List<double>();
         public long levelsBought, voyagesDone;
         public List<Voyage> voyages = new List<Voyage>();

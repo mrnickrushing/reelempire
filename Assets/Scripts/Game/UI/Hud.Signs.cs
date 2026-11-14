@@ -41,7 +41,7 @@ namespace ReelEmpire.Game
             var h = H; _signBerths = h.berths.Count;
             for (int i = 0; i < h.berths.Count; i++) { int k = i; _berthSigns.Add(MakeSign(() => OpenSheet(Stage.Berth, k))); }
             _dockSign = MakeSign(() => OpenSheet(Stage.Dock, 0)); _hallSign = MakeSign(() => OpenSheet(Stage.Hall, 0)); _marketSign = MakeSign(() => OpenSheet(Stage.Market, 0));
-            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 400) : null;
+            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 300) : null;
             if (_nextSign != null) _nextSign.Up.gameObject.SetActive(false);
             for (int i = 0; i < h.berths.Count + 2; i++) _tapBubbles.Add(MakeBubble());
         }
@@ -81,7 +81,7 @@ namespace ReelEmpire.Game
             {
                 double cost = s.BerthUnlockCost(h); bool can = h.cash >= cost;
                 Put(_nextSign.Rt, view.NextBerthSign(h.berths.Count));
-                _nextSign.Label.text = can ? "NEW DOCK  " + Format.Money(cost) : "NEW DOCK  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
+                _nextSign.Label.text = can ? "+ DOCK  " + Format.Money(cost) : "+ DOCK  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
                 _nextSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
                 _nextSign.Back.color = can ? Ui.Gold : Color.white;
             }
@@ -302,7 +302,8 @@ namespace ReelEmpire.Game
                 _guideText.rectTransform.sizeDelta = new Vector2(done ? 190 : 370, done ? 112 : 90);
                 // The hand points at what the step is about, for the first steps and while nothing else is open.
                 var view = HarbourView.Instance;
-                if (!done && view != null && s.State.goalIndex < 12 && !SheetOpen && !ModalOpen && !ScreenOpen && (g.Point != Stage.Berth || g.PointBerth >= 0))
+                bool away = g.Id == "cast" && H.berths[0].sailing;      // the boat is already out: nothing to tap
+                if (!done && !away && view != null && s.State.goalIndex < 12 && !SheetOpen && !ModalOpen && !ScreenOpen && (g.Point != Stage.Berth || g.PointBerth >= 0))
                 {
                     var h = H;
                     Vector3 at = g.Point == Stage.Dock ? (h.dockSkipper || g.Id == "dock5" || g.Id == "dockskipper" ? view.DockSign : view.HaulerAt(0))

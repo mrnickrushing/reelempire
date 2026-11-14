@@ -49,6 +49,7 @@ namespace ReelEmpire.Game
             bool fresh = state == null;
             if (fresh) state = GameState.New();
             Sim = new Sim(state) { UtcOffset = System.TimeZoneInfo.Local.GetUtcOffset(System.DateTime.Now).TotalSeconds };
+            if (fresh) Sim.StartAtMorning();
             if (!fresh && state.savedAt > 0) AwaySeconds = System.Math.Max(0, SaveSystem.Now - state.savedAt);
             Store.Start();
 
@@ -165,7 +166,7 @@ namespace ReelEmpire.Game
         {
             SaveSystem.Delete();
             CloudSave.Erase();
-            Rebuild(GameState.New());
+            Rebuild(GameState.New()); Sim.StartAtMorning();
         }
 
         void Rebuild(GameState state)

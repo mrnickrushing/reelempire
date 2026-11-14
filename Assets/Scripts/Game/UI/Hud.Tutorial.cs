@@ -21,7 +21,7 @@ namespace ReelEmpire.Game
             { "level5", "Tap the <b>number over the jetty</b>, then UPGRADE. Every level catches more." },
             { "skipper", "Tired of tapping? In the same panel, <b>hire a skipper</b>. The first one's on me." },
             { "level10", "Keep going to <b>level 10</b>: the catch doubles. Milestones at 10, 25, 50 and 100 are worth chasing." },
-            { "berth2", "Save up and tap <b>NEW DOCK</b> on the next pier. A new dock lands far more than the old one." },
+            { "berth2", "Save up and tap <b>+ DOCK</b> out on the next pier. A new dock lands far more than the old one." },
             { "dock5", "The four circles at the bottom are your harbour: boats, porters, hall, market. The <b>red one is too slow</b>. Tap it and upgrade the porters." },
             { "dockskipper", "A <b>head porter</b> keeps them moving without a tap. Hire one in the porters' panel." },
             { "clean", "Cleaned fish sell for half as much again. Buy the <b>Cleaning Line</b> in the hall." },
@@ -110,7 +110,7 @@ namespace ReelEmpire.Game
             _coach.localScale = Vector3.Lerp(_coach.localScale, Vector3.one, 1 - Mathf.Exp(-14 * Time.unscaledDeltaTime));
             // The upgrade sheet takes the bottom of the screen: step up out of its way.
             float y = Mathf.Lerp(196, 384, 1 - Mathf.Clamp01(_sheetY / SheetHide));
-            _coach.anchoredPosition = new Vector2(16, y);
+            _coach.anchoredPosition = new Vector2(-16, y);
         }
     }
 }

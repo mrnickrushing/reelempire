@@ -14,7 +14,10 @@ namespace ReelEmpire.Core
         public const double DayLength = 24 * 60, WeatherEvery = 3 * 3600, SeasonLength = 28 * 86400;
 
         /// <summary>0 at dawn, 0.5 mid-afternoon, 0.75 dusk, then night.</summary>
-        public float DayPhase { get { double t = RealNow() % DayLength; return (float)(t / DayLength); } }
+        public float DayPhase { get { double t = ((RealNow() + State.dayShift) % DayLength + DayLength) % DayLength; return (float)(t / DayLength); } }
+
+        /// <summary>A new game opens on a fresh morning, whatever the clock says.</summary>
+        public void StartAtMorning() { State.dayShift = 0.08 * DayLength - RealNow() % DayLength; }
 
         /// <summary>0 by day, 1 in the dark, easing through dusk and dawn.</summary>
         public float Night
