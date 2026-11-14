@@ -6,15 +6,16 @@ namespace ReelEmpire.Core
     /// <summary>The species book: what bites, and what has been caught.</summary>
     public sealed partial class Sim
     {
-        SpeciesDef PickSpecies(HarbourState h)
+        SpeciesDef PickSpecies(HarbourState h, BaitDef bait)
         {
+            var odds = bait.Odds ?? Content.RarityOdds;
             int roll = (int)(Roll() * 1000), r = 0, acc = 0;
-            for (; r < Content.RarityOdds.Length - 1; r++) { acc += Content.RarityOdds[r]; if (roll < acc) break; }
+            for (; r < odds.Length - 1; r++) { acc += odds[r]; if (roll < acc) break; }
             var all = Book.In(h.id);
             // The rolled rarity, or the nearest commoner one that is biting now.
             for (int want = r; want >= 0; want--)
             {
-                var pool = all.FindAll(s => (int)s.Rarity == want && Biting(s));
+                var pool = all.FindAll(s => (int)s.Rarity == want && (bait.AnyTime || Biting(s)));
                 if (pool.Count > 0) return pool[(int)(Roll() * pool.Count)];
             }
             return all[0];

@@ -770,5 +770,80 @@ namespace ReelEmpire.Tests
             Assert.That(s.Night, Is.EqualTo(0));
             Assert.That(s.DayPhase, Is.EqualTo(0.08f).Within(0.001f));
         }
+        static void Fish(Sim s, int trips)
+        {
+            for (int i = 0; i < trips; i++) { s.TapBerth(0); s.Tick(s.TripOf(s.H, 0) + 0.5); s.H.berths[0].crate = 0; }
+        }
+
+        [Test]
+        public void GroundbaitBringsNothingRareAndSpinnersBringMore()
+        {
+            var s = TestGame.New();
+            s.H.berths[0].level = 25;
+            int rare = 0; s.Caught += (b, sp, kg, units, first) => { if (sp.Rarity >= Rarity.Rare) rare++; };
+            Assert.That(s.SetBait(0, 1), Is.True);
+            Fish(s, 600);
+            Assert.That(rare, Is.EqualTo(0));
+            Assert.That(s.SetBait(0, 2), Is.True);
+            Fish(s, 600);
+            Assert.That(rare, Is.GreaterThan(60));       // about 16% of trips, against 5% on worms
+        }
+
+        [Test]
+        public void ABaitNeedsItsDockLevel()
+        {
+            var s = TestGame.New();
+            Assert.That(s.SetBait(0, 1), Is.False);
+            s.H.berths[0].level = 10;
+            Assert.That(s.SetBait(0, 1), Is.True);
+            Assert.That(s.BerthRate(s.H, 0), Is.GreaterThan(s.CatchOf(s.H, 0) * Content.RarityMean / s.TripOf(s.H, 0)));
+            s.H.berths[0].level = 1;                      // as after a renovation: back to worms until it is earned again
+            Assert.That(s.BaitOf(s.H, 0).Id, Is.EqualTo("worm"));
+        }
+
+        [Test]
+        public void GlowBaitBringsNightFishByDay()
+        {
+            var s = TestGame.New(); s.StartAtMorning();
+            s.H.berths[0].level = 50;
+            int night = 0; s.Caught += (b, sp, kg, units, first) => { if (sp.When == Bite.Night) night++; };
+            Fish(s, 400);
+            Assert.That(night, Is.EqualTo(0));
+            s.SetBait(0, 3);
+            Fish(s, 400);
+            Assert.That(night, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void TheOrderBoardOpensWithThreeAndPaysWhenFilled()
+        {
+            var s = TestGame.New();
+            while (s.H.berths.Count < 4) s.H.berths.Add(new BerthState());
+            s.Tick(1);
+            Assert.That(s.State.orders.Count, Is.EqualTo(Sim.OrderSlots));
+            Assert.That(s.ClaimOrder(0), Is.EqualTo(0));              // not filled yet
+            var o = s.State.orders[0]; o.have = o.need;
+            Assert.That(s.OrdersReady, Is.EqualTo(1));
+            double before = s.H.cash; int gems = s.State.gems;
+            Assert.That(s.ClaimOrder(0), Is.GreaterThan(0));
+            Assert.That(s.H.cash, Is.GreaterThan(before));
+            Assert.That(s.State.gems, Is.GreaterThan(gems));
+            Assert.That(s.State.orders.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void FishLandedAndSoldCountTowardOrders()
+        {
+            var s = TestGame.New();
+            while (s.H.berths.Count < 4) s.H.berths.Add(new BerthState());
+            s.Tick(1);
+            s.State.orders.Clear();
+            s.State.orders.Add(new Order { kind = (int)OrderKind.Rarity, harbour = s.H.id, rarity = 0, need = 3, cashSeconds = 60 });
+            s.State.orders.Add(new Order { kind = (int)OrderKind.Product, harbour = s.H.id, goods = 0, need = 5, cashSeconds = 60 });
+            for (int i = 0; i < 4; i++) { s.TapBerth(0); s.Tick(s.TripOf(s.H, 0) + 0.5); }
+            Assert.That(s.State.orders[0].have, Is.EqualTo(3));
+            s.TapDock(); s.Tick(Content.HaulRound + 1); s.TapMarket(); s.Tick(Content.TruckRound + 1);
+            Assert.That(s.State.orders[1].have, Is.GreaterThan(0));
+        }
     }
 }

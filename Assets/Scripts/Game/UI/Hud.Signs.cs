@@ -13,7 +13,7 @@ namespace ReelEmpire.Game
         sealed class Sign { public RectTransform Rt; public Text Label; public Image Back; public Image Up; }
         readonly List<Sign> _berthSigns = new List<Sign>();
         readonly List<RectTransform> _tapBubbles = new List<RectTransform>();
-        Sign _dockSign, _hallSign, _marketSign, _nextSign;
+        Sign _dockSign, _hallSign, _marketSign, _nextSign; Sign _orderSign;
         int _signBerths = -1;
 
         Sign MakeSign(Action tap, float width = 132)
@@ -42,6 +42,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < h.berths.Count; i++) { int k = i; _berthSigns.Add(MakeSign(() => OpenSheet(Stage.Berth, k))); }
             _dockSign = MakeSign(() => OpenSheet(Stage.Dock, 0)); _hallSign = MakeSign(() => OpenSheet(Stage.Hall, 0)); _marketSign = MakeSign(() => OpenSheet(Stage.Market, 0));
             _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 278) : null;
+            _orderSign = MakeSign(() => Open(Page.Orders), 250); _orderSign.Up.gameObject.SetActive(false); _orderSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
             if (_nextSign != null) { _nextSign.Up.gameObject.SetActive(false); _nextSign.Rt.pivot = new Vector2(1, 0); }      // it reaches out over the water from the pier's end
             for (int i = 0; i < h.berths.Count + 2; i++) _tapBubbles.Add(MakeBubble());
         }
@@ -77,6 +78,15 @@ namespace ReelEmpire.Game
             SetSign(_dockSign, view.DockSign, h.dock.ToString(), s.Affordable(h, Stage.Dock) > 0);
             SetSign(_hallSign, view.HallSign, h.hall.ToString(), s.Affordable(h, Stage.Hall) > 0);
             SetSign(_marketSign, view.MarketSign, h.market.ToString(), s.Affordable(h, Stage.Market) > 0);
+            // The order board by the market stalls: gold when something is ready to hand over.
+            bool orders = s.Unlocked("orders");
+            Put(_orderSign.Rt, Layout.MarketCentre + new Vector3(-2, 6f, -17), orders);
+            if (orders)
+            {
+                int ready = s.OrdersReady;
+                _orderSign.Label.text = ready > 0 ? "ORDER READY!" : "ORDERS  " + s.State.orders.Count + "/" + Sim.OrderSlots;
+                _orderSign.Back.color = ready > 0 ? Ui.Gold : Color.white;
+            }
             if (_nextSign != null)
             {
                 double cost = s.BerthUnlockCost(h); bool can = h.cash >= cost;

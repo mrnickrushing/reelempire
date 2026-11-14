@@ -91,6 +91,17 @@ namespace ReelEmpire.Game
             var t = Ui.Label("Title", left, title, 44, Ui.Ink, TextAnchor.UpperLeft); t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(138, -6), new Vector2(270, 100));
             t.resizeTextForBestFit = true; t.resizeTextMinSize = 28; t.resizeTextMaxSize = 44;
             var st = Ui.Label("Sub", left, sub, 24, Ui.Dim, TextAnchor.UpperLeft, false); st.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, -142), new Vector2(400, 60));
+            if (stage == Stage.Berth)
+            {
+                // What this dock fishes with: a button once the first bait is unlocked, a promise before that.
+                if (lv >= Sim.Baits[1].Level)
+                {
+                    st.text = "";
+                    var bait = Ui.Button("Bait", left, "BAIT:  " + s.BaitOf(h, berth).Name.ToUpperInvariant() + "  ▸", Ui.Blue, () => ShowBaits(berth), 26);
+                    ((RectTransform)bait.transform).Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, -138), new Vector2(400, 60));
+                }
+                else st.text = sub + "\nBait to choose at level " + Sim.Baits[1].Level;
+            }
             int next = Content.NextMilestone(lv), prev = 1; foreach (var m in Content.Milestones) if (m <= lv) prev = m;
             bool speedNext = stage == Stage.Berth && Array.IndexOf(Content.SpeedMilestones, next) >= 0;
             bool crewNext = stage != Stage.Berth && stage != Stage.Hall && Array.IndexOf(Content.CrewMilestones, next) >= 0;
@@ -110,7 +121,7 @@ namespace ReelEmpire.Game
             float y = 0;
             if (stage == Stage.Berth)
             {
-                Row(mid, y, "Catch a trip", Format.Money(s.CatchOf(h, berth)), after(() => Format.Money(s.CatchOf(h, berth)))); y -= 76;
+                Row(mid, y, "Catch a trip", Format.Money(s.CatchOf(h, berth) * s.BaitOf(h, berth).Catch), after(() => Format.Money(s.CatchOf(h, berth) * s.BaitOf(h, berth).Catch))); y -= 76;
                 Row(mid, y, "Trip", s.TripOf(h, berth).ToString("0.#") + "s", after(() => s.TripOf(h, berth).ToString("0.#") + "s")); y -= 76;
                 Row(mid, y, "Lands", Format.Money(s.BerthRate(h, berth)) + "/s", after(() => Format.Money(s.BerthRate(h, berth)) + "/s"));
             }

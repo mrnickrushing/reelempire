@@ -141,6 +141,7 @@ namespace ReelEmpire.Core
             {
                 // Only what the page can show: the season and the derby count once they have opened.
                 if (GiftReady || VoyageBack) return true;
+                if (Unlocked("orders") && OrdersReady > 0) return true;
                 if (Unlocked("season") && SeasonWaiting > 0) return true;
                 if (Unlocked("derby"))
                 {

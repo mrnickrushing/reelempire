@@ -11,6 +11,7 @@ namespace ReelEmpire.Core
         public bool sailing;            // out on a trip
         public float trip;              // seconds left of it
         public double crate;            // fish waiting on the quay for the haulers (units)
+        public int bait;                // index into Sim.Baits
     }
 
     /// <summary>A hauler or a truck on its round.</summary>
@@ -82,6 +83,7 @@ namespace ReelEmpire.Core
         public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
         public long doubleDay = -1;
         public bool starterOffered;
+        public List<Order> orders = new List<Order>(); public double orderAt; public long ordersDone;
         public long firstDay = -1;      // the day the game was first played
         public List<string> seenFeatures = new List<string>();
         public long seasonIndex = -1, seasonPoints, seasonPremiumIndex = -1; public int seasonFree, seasonPaid;

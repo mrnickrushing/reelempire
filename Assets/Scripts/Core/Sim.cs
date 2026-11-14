@@ -46,6 +46,7 @@ namespace ReelEmpire.Core
         {
             if (dt <= 0) return;
             RollTasks();        // the day's counts start when the day does, not when the page is first opened
+            TickOrders();
             TickBonus(dt);
             if (State.firstDay < 0) State.firstDay = Today;
             State.played += dt;
@@ -138,11 +139,12 @@ namespace ReelEmpire.Core
             {
                 double v = h.doneValue * (take / h.done);
                 h.done -= take; h.doneValue -= v; c.load += take; c.value += v;
+                OrderSold(h, h.goods, take);
                 if (h.done < 1e-9) { h.done = 0; h.doneValue = 0; }
             }
             double spare = h.goods > 0 ? h.raw - HallRate(h) * Content.TruckRound : h.raw;
             double fresh = Math.Min(cap - c.load, Math.Max(0, spare));
-            if (fresh > 0) { h.raw -= fresh; c.load += fresh; c.value += fresh * GoodsValue(h, 0); }
+            if (fresh > 0) { h.raw -= fresh; c.load += fresh; c.value += fresh * GoodsValue(h, 0); OrderSold(h, 0, fresh); }
         }
 
         /// <summary>What a truck could take right now.</summary>
@@ -172,13 +174,15 @@ namespace ReelEmpire.Core
         void Land(HarbourState h, int berth)
         {
             var b = h.berths[berth];
-            var sp = PickSpecies(h);
+            var bait = BaitOf(h, berth);
+            var sp = PickSpecies(h, bait);
             float kg = sp.MinKg + (sp.MaxKg - sp.MinKg) * (float)Math.Pow(Roll(), 2.2);
-            double units = CatchOf(h, berth) * Content.RarityValue[(int)sp.Rarity];
+            double units = CatchOf(h, berth) * bait.Catch * Content.RarityValue[(int)sp.Rarity];
             b.crate += units;
             State.trips++; State.fish++;
             bool first = Record(sp, kg);
             DerbyCatch(sp.Rarity);
+            OrderCatch(h, sp);
             if (first) AddSeasonPoints(20);
             Caught?.Invoke(berth, sp, kg, units, first);
         }
