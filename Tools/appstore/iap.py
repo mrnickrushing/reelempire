@@ -21,18 +21,22 @@ import urllib.request
 
 import jwt
 
-BUNDLE_ID = "com.rushingtech.reelempire"
+BUNDLE_ID = "com.rushingtech.reel"
 API = "https://api.appstoreconnect.apple.com"
 SCREENSHOT = os.environ.get("IAP_SCREENSHOT") or \
     "https://raw.githubusercontent.com/mrnickrushing/reelempire/main/docs/appstore/iap_review.png"
 
 # productId, type, price (USD), display name (<= 30), description (<= 45)
 PRODUCTS = [
-    ("reelempire.gems.small", "CONSUMABLE", "1.99", "Handful of Gems", "80 gems"),
-    ("reelempire.gems.medium", "CONSUMABLE", "9.99", "Case of Gems", "500 gems"),
-    ("reelempire.gems.large", "CONSUMABLE", "19.99", "Vault of Gems", "1,400 gems"),
-    ("reelempire.starter", "NON_CONSUMABLE", "4.99", "Founder's Pack", "300 gems and a third building crew for good"),
-    ("reelempire.double", "NON_CONSUMABLE", "9.99", "Golden Runway", "All income doubled for good, at every airport"),
+    ("reelempire.gems.small", "CONSUMABLE", "1.99", "Handful of Gems", "100 gems"),
+    ("reelempire.gems.medium", "CONSUMABLE", "4.99", "Bucket of Gems", "300 gems"),
+    ("reelempire.gems.large", "CONSUMABLE", "9.99", "Crate of Gems", "700 gems"),
+    ("reelempire.gems.huge", "CONSUMABLE", "19.99", "Hold Full of Gems", "1,600 gems"),
+    ("reelempire.starter", "NON_CONSUMABLE", "2.99", "Deckhand's Pack", "250 gems, an extra hauler and truck for good"),
+    ("reelempire.ledger", "NON_CONSUMABLE", "7.99", "Captain's Ledger", "All income doubled for good, in every harbour"),
+    ("reelempire.fleet", "NON_CONSUMABLE", "4.99", "Second Boat Out", "Send two voyages at once, for good"),
+    ("reelempire.nightcrew", "NON_CONSUMABLE", "4.99", "Night Crew", "4 more hours of away earnings, for good"),
+    ("reelempire.season", "NON_RENEWING_SUBSCRIPTION", "7.99", "Season Pass", "Premium rewards for the current season"),
 ]
 
 

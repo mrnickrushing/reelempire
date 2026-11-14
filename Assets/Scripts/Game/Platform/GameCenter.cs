@@ -9,14 +9,14 @@ using UnityEngine.SocialPlatforms.GameCenter;
 namespace ReelEmpire.Game
 {
     /// <summary>
-    /// Apple's Game Center: four leaderboards and the game's achievements, mirrored. The player signs in with their
+    /// Apple's Game Center: five leaderboards and the game's achievements, mirrored. The player signs in with their
     /// own Game Center account (iOS asks once); nothing goes through our servers. Ids must match the ones created in
     /// App Store Connect by Tools/appstore/gamecenter.py: leaderboards <c>reelempire.board.*</c>, achievements
     /// <c>reelempire.ach.&lt;achievement id&gt;</c>. Does nothing in the Editor.
     /// </summary>
     public static class GameCenter
     {
-        public const string Earnings = "reelempire.board.earnings", Species = "reelempire.board.species", Stars = "reelempire.board.stars", Heaviest = "reelempire.board.heaviest";
+        public const string Earnings = "reelempire.board.earnings", Species = "reelempire.board.species", Stars = "reelempire.board.stars", Heaviest = "reelempire.board.heaviest", Derby = "reelempire.board.derby";
         public const string AchievementPrefix = "reelempire.ach.";
         const string SentKey = "gc.sent";
 
@@ -48,7 +48,8 @@ namespace ReelEmpire.Game
             Score(Earnings, s.State.lifetime > 1 ? (long)(System.Math.Log10(s.State.lifetime) * 100) : 0);
             Score(Species, s.SpeciesCaught);
             Score(Stars, s.Stars);
-            Score(Heaviest, (long)(s.HeaviestKg * 10));
+            Score(Heaviest, (long)s.HeaviestKg);
+            Score(Derby, System.Math.Max(s.State.derbyScore, s.State.derbyLastScore));
             if (_sent == null) _sent = new HashSet<string>(PlayerPrefs.GetString(SentKey, "").Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries));
             foreach (var a in Sim.Achievements)
             {

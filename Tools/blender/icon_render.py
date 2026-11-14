@@ -8,7 +8,7 @@ jobs = json.load(open(sys.argv[sys.argv.index("--") + 1]))
 SIZE = 512
 
 
-def reset():
+def reset(size=512):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"
@@ -17,7 +17,7 @@ def reset():
     sc.cycles.use_denoising = True
     sc.cycles.max_bounces = 4
     sc.render.film_transparent = True
-    sc.render.resolution_x = sc.render.resolution_y = SIZE
+    sc.render.resolution_x = sc.render.resolution_y = size
     sc.render.image_settings.file_format = "PNG"; sc.render.image_settings.color_mode = "RGBA"
     sc.view_settings.view_transform = "Standard"; sc.view_settings.look = "None"
     world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
@@ -54,7 +54,7 @@ def load(path):
 
 
 for job in jobs:
-    sc = reset()
+    sc = reset(job.get("size", SIZE))
     yaw, pitch = math.radians(job.get("yaw", 0)), math.radians(job.get("pitch", 22))
     all_meshes, x = [], 0.0
     for path in job["files"]:

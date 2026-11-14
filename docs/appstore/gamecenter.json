@@ -1,0 +1,336 @@
+{
+ "leaderboards": [
+  {
+   "id": "reelempire.board.earnings",
+   "ref": "earnings",
+   "name": "Empire Score",
+   "description": "Grows with everything your harbours have ever earned.",
+   "suffix": " points",
+   "singular": " point",
+   "glyph": "coins",
+   "tier": 3,
+   "image": "gamecenter/board_earnings.png"
+  },
+  {
+   "id": "reelempire.board.species",
+   "ref": "species",
+   "name": "Species Caught",
+   "description": "Different species in the book.",
+   "suffix": " species",
+   "singular": " species",
+   "glyph": "book",
+   "tier": 2,
+   "image": "gamecenter/board_species.png"
+  },
+  {
+   "id": "reelempire.board.stars",
+   "ref": "stars",
+   "name": "Harbour Stars",
+   "description": "Stars earned across every harbour.",
+   "suffix": " stars",
+   "singular": " star",
+   "glyph": "star",
+   "tier": 2,
+   "image": "gamecenter/board_stars.png"
+  },
+  {
+   "id": "reelempire.board.heaviest",
+   "ref": "heaviest",
+   "name": "Heaviest Fish",
+   "description": "The heaviest fish in the book, in kilograms.",
+   "suffix": " kg",
+   "singular": " kg",
+   "glyph": "fish",
+   "tier": 1,
+   "image": "gamecenter/board_heaviest.png"
+  },
+  {
+   "id": "reelempire.board.derby",
+   "ref": "derby",
+   "name": "Best Derby",
+   "description": "The most points scored in one weekend derby.",
+   "suffix": " points",
+   "singular": " point",
+   "glyph": "trophy",
+   "tier": 3,
+   "image": "gamecenter/board_derby.png"
+  }
+ ],
+ "achievements": [
+  {
+   "id": "reelempire.ach.firstcatch",
+   "ref": "firstcatch",
+   "name": "First Bite",
+   "before": "Land your first fish.",
+   "after": "Done: land your first fish.",
+   "points": 5,
+   "glyph": "fish",
+   "tier": 0,
+   "image": "gamecenter/firstcatch.png"
+  },
+  {
+   "id": "reelempire.ach.trips1k",
+   "ref": "trips1k",
+   "name": "Old Hand",
+   "before": "Bring 1,000 trips home.",
+   "after": "Done: bring 1,000 trips home.",
+   "points": 10,
+   "glyph": "fish",
+   "tier": 0,
+   "image": "gamecenter/trips1k.png"
+  },
+  {
+   "id": "reelempire.ach.trips25k",
+   "ref": "trips25k",
+   "name": "Salt in the Blood",
+   "before": "Bring 25,000 trips home.",
+   "after": "Done: bring 25,000 trips home.",
+   "points": 25,
+   "glyph": "fish",
+   "tier": 2,
+   "image": "gamecenter/trips25k.png"
+  },
+  {
+   "id": "reelempire.ach.berths4",
+   "ref": "berths4",
+   "name": "Working Waterfront",
+   "before": "Open four berths in one harbour.",
+   "after": "Done: open four berths in one harbour.",
+   "points": 10,
+   "glyph": "anchor",
+   "tier": 0,
+   "image": "gamecenter/berths4.png"
+  },
+  {
+   "id": "reelempire.ach.berths8",
+   "ref": "berths8",
+   "name": "Full Quay",
+   "before": "Open all eight berths in one harbour.",
+   "after": "Done: open all eight berths in one harbour.",
+   "points": 25,
+   "glyph": "anchor",
+   "tier": 2,
+   "image": "gamecenter/berths8.png"
+  },
+  {
+   "id": "reelempire.ach.skippers",
+   "ref": "skippers",
+   "name": "Hands Off",
+   "before": "Have a skipper at every stage of a harbour.",
+   "after": "Done: have a skipper at every stage of a harbour.",
+   "points": 10,
+   "glyph": "users",
+   "tier": 0,
+   "image": "gamecenter/skippers.png"
+  },
+  {
+   "id": "reelempire.ach.level100",
+   "ref": "level100",
+   "name": "Centurion",
+   "before": "Take a berth to level 100.",
+   "after": "Done: take a berth to level 100.",
+   "points": 15,
+   "glyph": "star",
+   "tier": 1,
+   "image": "gamecenter/level100.png"
+  },
+  {
+   "id": "reelempire.ach.level400",
+   "ref": "level400",
+   "name": "As Far As It Goes",
+   "before": "Take a berth to level 400.",
+   "after": "Done: take a berth to level 400.",
+   "points": 50,
+   "glyph": "star",
+   "tier": 2,
+   "image": "gamecenter/level400.png"
+  },
+  {
+   "id": "reelempire.ach.smokehouse",
+   "ref": "smokehouse",
+   "name": "Up in Smoke",
+   "before": "Build a Smokehouse.",
+   "after": "Done: build a Smokehouse.",
+   "points": 10,
+   "glyph": "hammer",
+   "tier": 0,
+   "image": "gamecenter/smokehouse.png"
+  },
+  {
+   "id": "reelempire.ach.cannery",
+   "ref": "cannery",
+   "name": "Canned Goods",
+   "before": "Build a Cannery.",
+   "after": "Done: build a Cannery.",
+   "points": 20,
+   "glyph": "hammer",
+   "tier": 1,
+   "image": "gamecenter/cannery.png"
+  },
+  {
+   "id": "reelempire.ach.species10",
+   "ref": "species10",
+   "name": "Keen Eye",
+   "before": "Catch 10 species.",
+   "after": "Done: catch 10 species.",
+   "points": 10,
+   "glyph": "book",
+   "tier": 0,
+   "image": "gamecenter/species10.png"
+  },
+  {
+   "id": "reelempire.ach.species40",
+   "ref": "species40",
+   "name": "Naturalist",
+   "before": "Catch 40 species.",
+   "after": "Done: catch 40 species.",
+   "points": 25,
+   "glyph": "book",
+   "tier": 2,
+   "image": "gamecenter/species40.png"
+  },
+  {
+   "id": "reelempire.ach.species96",
+   "ref": "species96",
+   "name": "The Whole Book",
+   "before": "Catch every species.",
+   "after": "Done: catch every species.",
+   "points": 100,
+   "glyph": "book",
+   "tier": 3,
+   "image": "gamecenter/species96.png"
+  },
+  {
+   "id": "reelempire.ach.legend",
+   "ref": "legend",
+   "name": "The One They Talk About",
+   "before": "Catch a legendary fish.",
+   "after": "Done: catch a legendary fish.",
+   "points": 25,
+   "glyph": "crown",
+   "tier": 2,
+   "image": "gamecenter/legend.png"
+  },
+  {
+   "id": "reelempire.ach.million",
+   "ref": "million",
+   "name": "First Million",
+   "before": "Earn 1M in all.",
+   "after": "Done: earn 1M in all.",
+   "points": 10,
+   "glyph": "coins",
+   "tier": 0,
+   "image": "gamecenter/million.png"
+  },
+  {
+   "id": "reelempire.ach.trillion",
+   "ref": "trillion",
+   "name": "Fish Baron",
+   "before": "Earn 1T in all.",
+   "after": "Done: earn 1T in all.",
+   "points": 25,
+   "glyph": "coins",
+   "tier": 2,
+   "image": "gamecenter/trillion.png"
+  },
+  {
+   "id": "reelempire.ach.trophy5",
+   "ref": "trophy5",
+   "name": "Wall of Fame",
+   "before": "Mount 5 trophies.",
+   "after": "Done: mount 5 trophies.",
+   "points": 20,
+   "glyph": "trophy",
+   "tier": 1,
+   "image": "gamecenter/trophy5.png"
+  },
+  {
+   "id": "reelempire.ach.derbytop3",
+   "ref": "derbytop3",
+   "name": "On the Podium",
+   "before": "Finish a derby in the top three.",
+   "after": "Done: finish a derby in the top three.",
+   "points": 40,
+   "glyph": "trophy",
+   "tier": 2,
+   "image": "gamecenter/derbytop3.png"
+  },
+  {
+   "id": "reelempire.ach.crew6",
+   "ref": "crew6",
+   "name": "All Hands",
+   "before": "Sign on six of the crew.",
+   "after": "Done: sign on six of the crew.",
+   "points": 20,
+   "glyph": "users",
+   "tier": 1,
+   "image": "gamecenter/crew6.png"
+  },
+  {
+   "id": "reelempire.ach.crew12",
+   "ref": "crew12",
+   "name": "Full Complement",
+   "before": "Sign on all twelve of the crew.",
+   "after": "Done: sign on all twelve of the crew.",
+   "points": 50,
+   "glyph": "users",
+   "tier": 2,
+   "image": "gamecenter/crew12.png"
+  },
+  {
+   "id": "reelempire.ach.voyages10",
+   "ref": "voyages10",
+   "name": "Sea Legs",
+   "before": "Bring 10 voyages home.",
+   "after": "Done: bring 10 voyages home.",
+   "points": 15,
+   "glyph": "compass",
+   "tier": 1,
+   "image": "gamecenter/voyages10.png"
+  },
+  {
+   "id": "reelempire.ach.renovate1",
+   "ref": "renovate1",
+   "name": "Fresh Paint",
+   "before": "Renovate a harbour.",
+   "after": "Done: renovate a harbour.",
+   "points": 25,
+   "glyph": "hammer",
+   "tier": 2,
+   "image": "gamecenter/renovate1.png"
+  },
+  {
+   "id": "reelempire.ach.renovate5",
+   "ref": "renovate5",
+   "name": "Master Builder",
+   "before": "Renovate five times in all.",
+   "after": "Done: renovate five times in all.",
+   "points": 50,
+   "glyph": "hammer",
+   "tier": 2,
+   "image": "gamecenter/renovate5.png"
+  },
+  {
+   "id": "reelempire.ach.harbour2",
+   "ref": "harbour2",
+   "name": "Upriver",
+   "before": "Open Alder River.",
+   "after": "Done: open Alder River.",
+   "points": 20,
+   "glyph": "ship",
+   "tier": 1,
+   "image": "gamecenter/harbour2.png"
+  },
+  {
+   "id": "reelempire.ach.harbour6",
+   "ref": "harbour6",
+   "name": "Six Waters",
+   "before": "Open every harbour.",
+   "after": "Done: open every harbour.",
+   "points": 100,
+   "glyph": "ship",
+   "tier": 3,
+   "image": "gamecenter/harbour6.png"
+  }
+ ]
+}
