@@ -12,6 +12,7 @@ Shader "ReelEmpire/VertexLit"
         _DetailStrength ("Detail Strength", Range(0,1)) = 0
         _KitSurface ("Ignore uv2 surface (kit models)", Float) = 0
         _Tint ("Tint", Color) = (1, 1, 1, 1)
+        _HueShift ("Hue shift (turns)", Float) = 0
     }
 
     // ------------------------------------------------------------------ URP (Universal Render Pipeline)
@@ -29,6 +30,7 @@ Shader "ReelEmpire/VertexLit"
             float _DetailStrength;
             float _KitSurface;  // 1 = the mesh has no surface channel (free kit models): matte, no detail
             float4 _Tint;
+            float _HueShift;    // repaints the coloured parts (a red barn goes blue); white and grey stay as they are
         CBUFFER_END
         float _NightGlow;
         float4 _GlowColor;
@@ -123,6 +125,12 @@ Shader "ReelEmpire/VertexLit"
                     albedo *= lerp(1, d * 1.6 + 0.2, _DetailStrength);
                 }
                 albedo = saturate(albedo * _Tint.rgb);
+                if (_HueShift != 0)
+                {
+                    // Turn the colour round the grey axis.
+                    float a = _HueShift * 6.2831853; float3 k = float3(0.57735, 0.57735, 0.57735);
+                    albedo = saturate(albedo * cos(a) + cross(k, albedo) * sin(a) + k * dot(k, albedo) * (1 - cos(a)));
+                }
                 float glow = 1 - i.color.a;
                 float3 normalWS = normalize(i.normalWS);
                 // The meadow: flat green ground goes lighter and darker in broad soft patches, with a little yellow in it.

@@ -124,14 +124,16 @@ namespace ReelEmpire.Game
         public static float HallYaw = -90, MarketYaw = -90;
         /// <summary>How much the industrial kit's dark buildings are brightened, a little toward warm.</summary>
         static readonly Color Lift = new Color(1.55f, 1.5f, 1.45f);
+        /// <summary>The colour this harbour's barns are painted, as a turn of the kit's red (set before the harbour is built).</summary>
+        public static float Paint;
 
         public static void Hall(Transform parent, HarbourState h)
         {
             // The hall: a big red barn with its doors on the quay, the smokehouse silo behind it.
-            var hall = Models.Kit("big_barn", parent, new Vector3(Layout.HallCentre.x, Layout.QuayY, Layout.HallCentre.z), HallYaw, 17f, Lift);
+            var hall = Models.Kit("big_barn", parent, new Vector3(Layout.HallCentre.x, Layout.QuayY, Layout.HallCentre.z), HallYaw, 17f, Lift, Paint);
             if (hall != null)
             {
-                Models.Kit("silo_house", parent, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY, Layout.HallCentre.z + 14), HallYaw, 11f, Lift);
+                Models.Kit("silo_house", parent, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY, Layout.HallCentre.z + 14), HallYaw, 11f, Lift, Paint);
                 Models.Kit("container_red", parent, new Vector3(Layout.HallCentre.x + 10, Layout.QuayY, Layout.HallCentre.z + 12), 0, 6f);
                 Models.Kit("pallet", parent, new Vector3(Layout.HallCentre.x + 11, Layout.QuayY, Layout.HallCentre.z + 7), 20, 2.2f);
                 for (int i = 0; i < 4; i++) Models.Kit("barrel", parent, Layout.HallDoor + new Vector3(-1.2f + i % 2 * 1.3f, 0, -7.5f - i / 2 * 1.3f), i * 40, 1.3f);
@@ -164,12 +166,12 @@ namespace ReelEmpire.Game
         public static void Market(Transform parent)
         {
             // The market: a barn for the fishmonger, stalls and stands along the road in front of it.
-            var market = Models.Kit("barn", parent, new Vector3(Layout.MarketCentre.x + 5, Layout.QuayY, Layout.MarketCentre.z + 3), MarketYaw, 14f, Lift);
+            var market = Models.Kit("barn", parent, new Vector3(Layout.MarketCentre.x + 5, Layout.QuayY, Layout.MarketCentre.z + 3), MarketYaw, 14f, Lift, Paint);
             if (market != null)
             {
-                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, Lift);
-                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, Lift);
-                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, Lift);
+                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, Lift, Paint);
+                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, Lift, Paint);
+                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, Lift, Paint);
                 Models.Kit("bucket_fish", parent, new Vector3(Layout.MarketCentre.x - 9.5f, Layout.QuayY, Layout.MarketCentre.z + 1), 30, 1.6f);
                 Models.Kit("flag", parent, new Vector3(Layout.MarketCentre.x - 10, Layout.QuayY, Layout.MarketCentre.z + 16), 0, 8f);
                 return;
@@ -321,9 +323,9 @@ namespace ReelEmpire.Game
             }
             Models.Kit("signpost", parent, new Vector3(9.5f, y, -11), 200, 2.4f);
             Models.Kit("log_stack", parent, new Vector3(12, y, 28), 80, 3.4f);
-            Models.Kit("open_barn", parent, new Vector3(36, y, 17), -90, 10f, Lift);
-            Models.Kit("small_barn", parent, new Vector3(20, y, -34), -90, 10f, Lift);
-            Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift);
+            Models.Kit("open_barn", parent, new Vector3(36, y, 17), -90, 10f, Lift, Paint);
+            Models.Kit("small_barn", parent, new Vector3(20, y, -34), -90, 10f, Lift, Paint);
+            Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift, Paint);
             Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
             // Everything here stands still except what floats: draw the trees, rocks and props as a few big meshes.
             var still = new System.Collections.Generic.List<GameObject>();

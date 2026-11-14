@@ -41,6 +41,7 @@ namespace ReelEmpire.Game
             _moving = new GameObject("Moving").transform; _moving.SetParent(transform, false);
             var h = H;
             _berths = h.berths.Count; _nHaul = h.haulers.Count; _nTruck = h.trucks.Count; _harbour = h.id;
+            Scenery.Paint = Theme.For(h.id).Paint;
             BuildSea();
             BuildLand();
             for (int i = 0; i < Content.Berths.Length; i++) BuildPier(i, i < h.berths.Count);

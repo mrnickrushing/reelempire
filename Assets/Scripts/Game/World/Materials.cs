@@ -29,13 +29,13 @@ namespace ReelEmpire.Game
 
         static readonly Dictionary<string, Material> _tinted = new Dictionary<string, Material>();
         /// <summary>The kit material with its colours multiplied (the industrial kit's buildings are painted for a night city: lifted here).</summary>
-        public static Material KitTint(Color tint)
+        public static Material KitTint(Color tint, float hue = 0)
         {
-            string key = tint.ToString();
+            string key = tint.ToString() + hue;
             Material m;
             if (_tinted.TryGetValue(key, out m)) return m;
             m = new Material(Kit) { name = "Kit " + key };
-            m.SetColor("_Tint", tint);
+            m.SetColor("_Tint", tint); m.SetFloat("_HueShift", hue);
             return _tinted[key] = m;
         }
 

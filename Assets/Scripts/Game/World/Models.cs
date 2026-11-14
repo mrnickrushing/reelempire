@@ -21,10 +21,10 @@ namespace ReelEmpire.Game
         }
 
         /// <summary>A kit model with its colours lifted (the farm and dock models are painted darker than the kits' boats).</summary>
-        public static GameObject Kit(string id, Transform parent, Vector3 at, float yaw, float size, Color tint)
+        public static GameObject Kit(string id, Transform parent, Vector3 at, float yaw, float size, Color tint, float hue = 0)
         {
             var go = Kit(id, parent, at, yaw, size);
-            if (go != null) go.GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(tint);
+            if (go != null) go.GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(tint, hue);
             return go;
         }
 
