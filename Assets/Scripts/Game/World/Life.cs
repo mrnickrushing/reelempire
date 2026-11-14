@@ -48,9 +48,9 @@ namespace ReelEmpire.Game
             var go = new GameObject("Wake"); go.transform.SetParent(boat, false); go.transform.localPosition = new Vector3(0, 0.12f, -length * 0.42f);
             var ps = go.AddComponent<ParticleSystem>();
             var main = ps.main; main.simulationSpace = ParticleSystemSimulationSpace.World; main.startSpeed = 0; main.startLifetime = 2.4f; main.maxParticles = 200;
-            main.startSize = new ParticleSystem.MinMaxCurve(length * 0.28f, length * 0.4f); main.startColor = new Color(1, 1, 1, 0.75f);
+            main.startSize = new ParticleSystem.MinMaxCurve(length * 0.4f, length * 0.55f); main.startColor = new Color(1, 1, 1, 0.75f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
-            var em = ps.emission; em.rateOverTime = 0; em.rateOverDistance = 3.2f;
+            var em = ps.emission; em.rateOverTime = 0; em.rateOverDistance = 4f;
             var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(length * 0.22f, 0, 0.2f);
             var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0.5f), new Keyframe(1, 1.9f)));
             var col = ps.colorOverLifetime; col.enabled = true;
@@ -66,9 +66,9 @@ namespace ReelEmpire.Game
             var go = new GameObject("Smoke"); go.transform.SetParent(parent, false); go.transform.position = at; go.transform.rotation = Quaternion.Euler(-90, 0, 0);
             var ps = go.AddComponent<ParticleSystem>();
             var main = ps.main; main.simulationSpace = ParticleSystemSimulationSpace.World; main.startSpeed = new ParticleSystem.MinMaxCurve(1.6f, 2.4f); main.startLifetime = new ParticleSystem.MinMaxCurve(4.5f, 6.5f);
-            main.startSize = new ParticleSystem.MinMaxCurve(1.2f, 1.9f); main.startColor = new Color(0.96f, 0.96f, 0.98f, 0.55f); main.maxParticles = 60;
+            main.startSize = new ParticleSystem.MinMaxCurve(1.6f, 2.4f); main.startColor = new Color(0.97f, 0.97f, 0.99f, 0.85f); main.maxParticles = 80;
             main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
-            var em = ps.emission; em.rateOverTime = 4;
+            var em = ps.emission; em.rateOverTime = 6;
             var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Cone; shape.angle = 7; shape.radius = 0.25f;
             var force = ps.forceOverLifetime; force.enabled = true; force.space = ParticleSystemSimulationSpace.World; force.x = 0.7f; force.z = 0.35f;     // the breeze off the water
             var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0.5f), new Keyframe(1, 3.2f)));

@@ -250,6 +250,9 @@ namespace ReelEmpire.Game
             var th = Theme.For(harbour);
             string[] trees = th.Trees;
             float y = Layout.QuayY;
+            bool farm = harbour == "lake" || harbour == "river" || harbour == "coast";      // fields grow where there is soil
+            // On the ice the rocks are bare stone: the kit's other rocks are capped with grass.
+            System.Func<string, string> Rk = id => !th.Ice ? id : id == "rock_c" ? "stone_tall" : id == "rock_b" ? "stone_big" : id == "rock_a" ? "rock_d" : id;
             for (int i = 0; i < 150; i++)
             {
                 float x = R(11, 150), z = R(-130, 130);
@@ -257,12 +260,12 @@ namespace ReelEmpire.Game
                 if (x < 42 && Mathf.Abs(z) < 24) continue;                                      // the hall and its yard
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
-                if (!th.Ice && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
+                if (farm && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
                 if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp
                 int kind = rnd.Next(100);
-                if (kind < 62) { string tr = trees[rnd.Next(trees.Length)]; Models.Kit(tr, parent, new Vector3(x, y, z), R(0, 360), tr.StartsWith("rock") || tr.StartsWith("bush") ? R(3f, 6f) : R(6.5f, 11f)); }
+                if (kind < 62) { string tr = Rk(trees[rnd.Next(trees.Length)]); Models.Kit(tr, parent, new Vector3(x, y, z), R(0, 360), tr.StartsWith("rock") || tr.StartsWith("stone") || tr.StartsWith("bush") ? R(3f, 6f) : R(6.5f, 11f)); }
                 else if (kind < 80) Models.Kit(rnd.Next(2) == 0 ? "bush" : "bush_b", parent, new Vector3(x, y, z), R(0, 360), R(1.6f, 3f));
-                else if (kind < 90) Models.Kit(rnd.Next(2) == 0 ? "rock_a" : "rock_d", parent, new Vector3(x, y, z), R(0, 360), R(1.5f, 3.5f));
+                else if (kind < 90) Models.Kit(Rk(rnd.Next(2) == 0 ? "rock_a" : "rock_d"), parent, new Vector3(x, y, z), R(0, 360), R(1.5f, 3.5f));
                 else if (!th.Ice) Models.Kit(Wild[rnd.Next(Wild.Length)], parent, new Vector3(x, y, z), R(0, 360), R(0.9f, 1.6f));
             }
             // Flowers and grass tufts near the buildings, where the eye rests.
@@ -272,7 +275,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < 22; i++)
             {
                 float z = (i % 2 == 0 ? 1 : -1) * R(49, 80), x = R(-9, 5);
-                Models.Kit(i % 3 == 0 ? "rock_c" : i % 3 == 1 ? "rock_b" : "rocks_a", parent, new Vector3(x, x < 0 ? -0.6f : y - 0.3f, z), R(0, 360), R(3f, 7f));
+                Models.Kit(Rk(i % 3 == 0 ? "rock_c" : i % 3 == 1 ? "rock_b" : "rocks_a"), parent, new Vector3(x, x < 0 ? -0.6f : y - 0.3f, z), R(0, 360), R(3f, 7f));
             }
             // Buoys marking the channel, and lily pads in the shallows of the lake.
             for (int i = 0; i < 7; i++) Models.Kit("buoy", parent, new Vector3(-22 - i % 2 * 26, 0, -52 + i * 17), R(0, 360), 2.4f).AddComponent<Bobber>();
@@ -287,7 +290,7 @@ namespace ReelEmpire.Game
                 Models.Kit("barrel", parent, new Vector3(8.2f, y, z + 1.2f), 0, 1.2f);
                 if (((int)z & 1) == 0) Models.Kit("crate", parent, new Vector3(8.1f, y, z - 0.4f), 20, 1.3f);
             }
-            if (!th.Ice && Resources.Load<Mesh>("Models/wheat") != null)
+            if (farm && Resources.Load<Mesh>("Models/wheat") != null)
             {
                 // A fenced field behind the market: rows of wheat with a strip of corn, and a gap in the fence for the gate.
                 const float x0 = 46, x1 = 68, z0 = -36, z1 = -20;

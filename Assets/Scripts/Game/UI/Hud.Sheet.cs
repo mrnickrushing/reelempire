@@ -15,7 +15,7 @@ namespace ReelEmpire.Game
         Stage _sheetStage; int _sheetBerth = -1; bool _sheetOpen; float _sheetY = SheetHide;
         int _buyMode;       // 0: x1, 1: x10, 2: to the next milestone, 3: all the cash buys
         static readonly string[] BuyNames = { "x1", "x10", "NEXT", "MAX" };
-        Button _upgrade; Text _upgradeLabel, _upgradeCost;
+        Button _upgrade; Text _upgradeLabel, _upgradeCost; RectTransform _upgradeCoin;
         readonly List<Action> _live = new List<Action>();
 
         public bool SheetOpen { get { return _sheetOpen; } }
@@ -128,7 +128,7 @@ namespace ReelEmpire.Game
             }
             else
             {
-                st.text = "Works " + Format.Money(s.HallRate(h)) + "/s" + (n > 0 ? "  ▸  " + after(() => Format.Money(s.HallRate(h)) + "/s") : "") + "\nComes in " + Format.Money(Math.Min(s.FleetRate(h, true), s.DockRate(h))) + "/s";
+                st.text = "Handles " + Format.Money(s.HallRate(h)) + "/s" + (n > 0 ? "  ▸  " + after(() => Format.Money(s.HallRate(h)) + "/s") : "") + "\nof the " + Format.Money(Math.Min(s.FleetRate(h, true), s.DockRate(h))) + "/s coming in";
                 int shown = 0;
                 for (int g = 0; g < Content.Goods.Length; g++)
                 {
@@ -143,12 +143,12 @@ namespace ReelEmpire.Game
                     else
                     {
                         double cost = s.GoodsCost(h, g);
-                        var b = Ui.Button("B", row.transform, owned ? "RUN" : Format.Money(cost), owned ? Ui.Blue : Ui.Green, () =>
+                        var b = Ui.Button("B", row.transform, owned ? "RUN" : "BUY  " + Format.Money(cost), owned ? Ui.Blue : Ui.Green, () =>
                         {
                             if (owned ? S.SetGoods(k) : S.BuyGoods(k)) { Sfx.Play(owned ? "confirm" : "build", 0.7f); GameRoot.Instance.Save(); }
                             else { Sfx.Play("error", 0.5f); Toast("Not enough cash yet"); }
                         }, 26);
-                        ((RectTransform)b.transform).Place(new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-4, 0), new Vector2(140, 54));
+                        ((RectTransform)b.transform).Place(new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-4, 0), new Vector2(owned ? 140 : 210, 54));
                         if (!owned) { var bi = b.GetComponent<Image>(); _live.Add(() => bi.color = H.cash >= cost ? Ui.Green : Ui.Off); }
                     }
                     y -= 60;
@@ -188,16 +188,18 @@ namespace ReelEmpire.Game
             ((RectTransform)_upgrade.transform).Band(false, 0, stage == Stage.Hall ? 190 : 124);
             _upgradeLabel = Ui.Label("L", _upgrade.transform, "", 40, Color.white, TextAnchor.UpperCenter); _upgradeLabel.rectTransform.Fill(); _upgradeLabel.rectTransform.offsetMax = new Vector2(0, -14); _upgradeLabel.Stroke(2.5f);
             _upgradeCost = Ui.Label("C", _upgrade.transform, "", 36, Color.white, TextAnchor.LowerCenter); _upgradeCost.rectTransform.Fill(); _upgradeCost.rectTransform.offsetMin = new Vector2(0, 26); _upgradeCost.Stroke(2f);
+            var coin = Ui.ArtImg("Coin", _upgrade.transform, "coin", Color.white, 0); _upgradeCoin = coin.rectTransform; _upgradeCoin.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f), new Vector2(0, 48), new Vector2(40, 40)); coin.raycastTarget = false;
             var upImg = _upgrade.GetComponent<Image>();
             int shownCount = n;
             _live.Add(() =>
             {
                 var hh = H; int count = BuyCount();
                 if (_buyMode == 3 && count != shownCount) { _dirty = true; return; }
-                if (S.LevelOf(hh, stage, berth) >= Content.MaxLevel) { _upgradeLabel.text = "MAX LEVEL"; _upgradeCost.text = ""; upImg.color = Ui.Off; return; }
+                if (S.LevelOf(hh, stage, berth) >= Content.MaxLevel) { _upgradeLabel.text = "MAX LEVEL"; _upgradeCost.text = ""; _upgradeCoin.gameObject.SetActive(false); upImg.color = Ui.Off; return; }
                 double cost = S.LevelCost(hh, stage, berth, count);
                 _upgradeLabel.text = "UPGRADE" + (count > 1 ? " +" + count : "");
-                _upgradeCost.text = Format.Money(cost);
+                _upgradeCost.text = "     " + Format.Money(cost);       // room for the coin in front
+                _upgradeCoin.gameObject.SetActive(true); _upgradeCoin.anchoredPosition = new Vector2(-_upgradeCost.preferredWidth / 2 + 2, 48);
                 upImg.color = hh.cash >= cost ? Ui.Green : Ui.Off;
             });
         }

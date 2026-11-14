@@ -137,7 +137,7 @@ namespace ReelEmpire.Game
                 c.Rt.localScale = Vector3.one * (t < 0.12f ? Mathf.Lerp(0.5f, 1.15f, t / 0.12f) : Mathf.Lerp(1.15f, 1f, Mathf.Clamp01((t - 0.12f) / 0.15f)));
                 var col = c.Label.color; col.a = t > 0.7f ? 1 - (t - 0.7f) / 0.3f : 1; c.Label.color = col;
             }
-            if (_toastHeld != null && !ModalOpen) { var held = _toastHeld; _toastHeld = null; Toast(held); }
+            if (_toastHeld != null && !ModalOpen && !ScreenOpen) { var held = _toastHeld; _toastHeld = null; Toast(held); }
             if (_toast != null)
             {
                 _toastAge += Time.unscaledDeltaTime;
@@ -156,7 +156,8 @@ namespace ReelEmpire.Game
             if (first && sp.Rarity >= Rarity.Rare || sp.Rarity >= Rarity.Epic) { BigCatch(sp, kg, first); return; }
             if (first)
             {
-                Toast("New species: " + sp.Name + "  +" + Content.RarityGems[(int)sp.Rarity] + " gems");
+                string news = "New species: " + sp.Name + "  +" + Content.RarityGems[(int)sp.Rarity] + " gems";
+                if (ScreenOpen) _toastHeld = news; else Toast(news);      // not across a page someone is reading
                 Sfx.Play("star", 0.6f);
             }
             if (sp.Rarity >= Rarity.Rare || first) Pop(view.BoatAt(berth) + Vector3.up * 2, sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg", RarityColor(sp.Rarity), 34, 2f, SpeciesPicture(sp));
@@ -185,7 +186,7 @@ namespace ReelEmpire.Game
         void BigCatch(SpeciesDef sp, float kg, bool first)
         {
             Sfx.Play("star", 1f); Haptics.Success();
-            if (ModalOpen || ScreenOpen) { Toast((first ? "New species: " : "") + sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg"); return; }
+            if (ModalOpen || ScreenOpen) { _toastHeld = (first ? "New species: " : "") + sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg"; return; }
             var card = Card(760, 640, sp.Rarity == Rarity.Legendary ? "A LEGEND!" : sp.Rarity == Rarity.Epic ? "EPIC CATCH!" : "RARE CATCH!");
             var rays = Ui.ArtImg("Rays", card, "rays", RarityInk[(int)sp.Rarity], 0); rays.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 60), new Vector2(520, 520));
             rays.gameObject.AddComponent<Spinner>();

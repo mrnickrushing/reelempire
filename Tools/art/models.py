@@ -21,6 +21,7 @@ MODELS = {  # id: (source, "size" | "height"[, pose, extra args...])
     "rock_a": (NAT + "rock_largeA.glb", "size"), "rock_b": (NAT + "rock_largeC.glb", "size"), "rock_c": (NAT + "rock_tallB.glb", "size"), "rock_d": (NAT + "stone_largeB.glb", "size"),
     "lily": (NAT + "lily_large.glb", "size"), "log_stack": (NAT + "log_stackLarge.glb", "size"), "flowers": (NAT + "flower_yellowA.glb", "size"), "grass": (NAT + "grass_large.glb", "size"),
     "buoy": (WAT + "buoy-flag.glb", "height"),
+    "stone_tall": (NAT + "stone_tallB.glb", "size"), "stone_big": (NAT + "stone_largeA.glb", "size"),
     "fence": (NAT + "fence_simple.glb", "size"), "wheat": (NAT + "crops_wheatStageB.glb", "height"), "corn": (NAT + "crops_cornStageD.glb", "height"),
     "flowers_red": (NAT + "flower_redA.glb", "size"), "flowers_purple": (NAT + "flower_purpleA.glb", "size"), "mushrooms": (NAT + "mushroom_redGroup.glb", "size"),
     "stump": (NAT + "stump_old.glb", "size"), "tent": (NAT + "tent_detailedOpen.glb", "size"), "campfire": (NAT + "campfire_stones.glb", "size"), "canoe": (NAT + "canoe.glb", "size"),

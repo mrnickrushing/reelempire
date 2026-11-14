@@ -96,7 +96,7 @@ namespace ReelEmpire.Game
             { "WEEKEND DERBY", "Every fish landed this weekend scores points. Reach the marks for gems and beat the other skippers." },
             { "HARBOURS", "Your waters. Open the next one, or renovate this one to earn more from the start." },
             { "SPECIES BOOK", "Every kind of fish you've landed. A new one pays gems; a full page earns 10% more in that water." },
-            { "AWARDS", "Prizes for things you've done. Each one taken adds 1% to everything you earn." },
+            { "AWARDS", "Prizes for things you've done in your harbours. Tap a green one to take it." },
             { "SHOP", "Gems speed things up. Everything here is optional: the whole game can be played free." },
             { "SETTINGS", "Sound, reminders, your account and help." },
         };
@@ -274,7 +274,7 @@ void ShowToday()
             var prem = Sim.Product("reelempire.season");
             y = Entry(y, Ui.Art("star"), Color.white, "Tier " + s.SeasonTier + " of " + Sim.SeasonTiers + (need > 0 ? "  ·  " + have + " / " + need + " points" : ""),
                 "Points come from playing: every level bought, new species, daily tasks, voyages and derby goals. Ends in " + Format.Time(s.SeasonLeft) + ".",
-                s.SeasonPremium ? null : Store.Price(prem), Ui.Green, s.SeasonPremium ? null : (Action)(() => Store.Buy(prem, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Season) ShowSeason(); })), s.SeasonPremium ? "PREMIUM" : null, s.SeasonPremium);
+                s.SeasonPremium ? null : "PASS  " + Store.Price(prem), Ui.Green, s.SeasonPremium ? null : (Action)(() => Store.Buy(prem, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Season) ShowSeason(); })), s.SeasonPremium ? "PREMIUM" : null, s.SeasonPremium);
             if (!s.SeasonPremium) { var note = Ui.Label("N", _list, "The Season Pass adds the premium reward on every tier of this season, including the tiers you've already reached.", 24, Ui.Dim, TextAnchor.MiddleLeft, false); note.rectTransform.Band(true, y, 40, 10); y -= 48; }
             int tier = s.SeasonTier;
             for (int t = 0; t < Sim.SeasonTiers; t++)
@@ -423,7 +423,6 @@ void ShowToday()
             var all = Book.In(_bookHarbour);
             int trophyPct = Mathf.RoundToInt((float)((s.TrophyMult - 1) * 100));
             var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (s.PageComplete(_bookHarbour) ? "  +10% here" : "") + (trophyPct > 0 ? "   +" + trophyPct + "%" : ""), 28, Ui.Ink, TextAnchor.MiddleRight);
-            if (!s.PageComplete(_bookHarbour)) { var hint = Ui.Label("Hint", p, "Catch all " + all.Count + " here for +10% income in this harbour", 22, Ui.Dim, TextAnchor.MiddleLeft, false); hint.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(44, 8), new Vector2(900, 32)); } count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -78), new Vector2(330, 50));
             // Tiles, six across.
             const int cols = 6; const float w = 236, hgt = 250;
             for (int i = 0; i < all.Count; i++)
