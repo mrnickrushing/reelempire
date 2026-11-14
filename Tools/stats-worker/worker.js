@@ -31,8 +31,8 @@ export default {
       "INSERT INTO events (received, sent, user, session, type, test, value, step, step_index, level, location, day, minutes, version, platform, model, payload) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     await env.DB.batch(rows.map(r => stmt.bind(now, r.sent, r.user, r.session, r.type, r.test, r.value,
-      r.p["Game.goal"] ?? null, int(r.p["Game.goalIndex"]), int(r.p["Game.stars"]), r.p["Game.map"] ?? null,
-      int(r.p["Game.airports"]), int(r.p["Game.minutesPlayed"]), r.p["App.version"] ?? null,
+      r.p["Game.goal"] ?? null, int(r.p["Game.goalIndex"]), int(r.p["Game.stars"]), r.p["Game.harbour"] ?? null,
+      int(r.p["Game.harbours"]), int(r.p["Game.minutesPlayed"]), r.p["App.version"] ?? null,
       r.p["Device.platform"] ?? null, r.p["Device.model"] ?? null, JSON.stringify(r.p))));
     return new Response(String(rows.length));
   },

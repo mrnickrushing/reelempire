@@ -25,9 +25,10 @@ store isn't working (never free). `Sim.BeginPurchase` notes a purchase before it
 App Store transaction, `Sim.ReconcilePurchases` delivers one that was charged but never reported, and
 `Sim.RestoreOwned` brings the one-time products back (SHOP > Restore purchases).
 
-**RevenueCat is not set up yet.** `RevenueCatStore.ApiKey` is a placeholder; until a RevenueCat project for
-`com.rushingtech.reel` exists and its public Apple SDK key is put there, the shop on a device says it can't reach the
-App Store. The game buys and restores by product id, so no entitlements or offerings are needed.
+RevenueCat: project **Reel Empire** (`4fd96cbf`), App Store app `app75547cba02` for `com.rushingtech.reel`, using the
+team's in-app purchase key (8V5W657NH4). Its public Apple SDK key is `RevenueCatStore.ApiKey` (made to ship in the
+app). The game buys and restores by product id, so no entitlements or offerings are needed; once the products exist
+in App Store Connect, import them in RevenueCat (Product catalog > Products > Import) so its charts name them.
 
 ## Game Center
 
@@ -35,6 +36,11 @@ App Store. The game buys and restores by product id, so no entitlements or offer
 `.stars`, `.heaviest`, `.derby`) and every in-game achievement (`reelempire.ach.<id>`, points = its gems). They are
 created from `docs/appstore/gamecenter.json` (pictures in `docs/appstore/gamecenter/`, painted by
 `Tools/art/gc_badges.py`); `GameCenterTests` fails if the file and `Sim.Achievements` drift apart.
+
+## Play statistics
+
+`Tools/stats-worker` is deployed as the Cloudflare Worker `reelempire-stats`
+(https://reelempire-stats.mrnickrushing.workers.dev, D1 database `reelempire-stats`); see its README to query it.
 
 ## Setting App Store Connect up
 

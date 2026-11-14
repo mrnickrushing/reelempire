@@ -4,7 +4,7 @@ The game (`Assets/Scripts/Game/App/Telemetry.cs`) POSTs batches of anonymous eve
 and stores them in the D1 database `reelempire-stats`. Nothing can be read over HTTP; query with wrangler.
 
 The table is shared in shape with Last Tide's, so the columns read: `step` = the guide goal id, `step_index` = its
-number, `level` = stars, `location` = the airport (map id), `day` = airports sold so far, `minutes` = minutes played.
+number, `level` = stars, `location` = the harbour on screen, `day` = harbours open, `minutes` = minutes played.
 
 ```bash
 cd Tools/stats-worker
