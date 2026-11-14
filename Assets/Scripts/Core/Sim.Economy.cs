@@ -61,13 +61,20 @@ namespace ReelEmpire.Core
         {
             if (!h.dockSkipper || !h.marketSkipper) return 0;
             // A skill is a burst while someone is playing: away earnings, time warps and the other harbours go by the steady pace.
-            _steady = true;
+            bool was = _steady; _steady = true;
             try { return ValueOf(h, Flow(h)) * IncomeMult(h); }
-            finally { _steady = false; }
+            finally { _steady = was; }
         }
 
         /// <summary>Cash a second if every stage ran flat out (what the HUD shows as the harbour's pace).</summary>
         public double FullRate(HarbourState h) { return ValueOf(h, Flow(h, true)) * IncomeMult(h); }
+
+        /// <summary>The harbour's pace without any skill running: what rewards are sized by, so a skill can't inflate them.</summary>
+        public double RewardRate(HarbourState h)
+        {
+            bool was = _steady; _steady = true;
+            try { return FullRate(h); } finally { _steady = was; }
+        }
 
         double ValueOf(HarbourState h, double flow)
         {

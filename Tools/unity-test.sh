@@ -26,7 +26,7 @@ if [ "$open_editor" != "True" ] && pgrep -f -- "-projectpath $ROOT( |\$)" >/dev/
 fi
 
 if [ "$open_editor" = "True" ]; then
-  RESULTS="$HOME/.config/unity3d/Rushing Technologies/ReelEmpire/TestResults.xml"
+  RESULTS="$HOME/.config/unity3d/Rushing Technologies/Reel Empire/TestResults.xml"
   unity status --until-ready --project-path "$ROOT" >/dev/null 2>&1 || true
   "${U[@]}" script eval --result-only 'UnityEditor.EditorApplication.isPlaying = false; return 0;' >/dev/null
   idle=0

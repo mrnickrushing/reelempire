@@ -47,13 +47,13 @@ namespace ReelEmpire.Game
         {
             var go = new GameObject("Wake"); go.transform.SetParent(boat, false); go.transform.localPosition = new Vector3(0, 0.12f, -length * 0.42f);
             var ps = go.AddComponent<ParticleSystem>();
-            var main = ps.main; main.simulationSpace = ParticleSystemSimulationSpace.World; main.startSpeed = 0; main.startLifetime = 2.4f; main.maxParticles = 200;
-            main.startSize = new ParticleSystem.MinMaxCurve(length * 0.4f, length * 0.55f); main.startColor = new Color(1, 1, 1, 0.75f);
+            var main = ps.main; main.simulationSpace = ParticleSystemSimulationSpace.World; main.startSpeed = 0; main.startLifetime = 1.5f; main.maxParticles = 200;
+            main.startSize = new ParticleSystem.MinMaxCurve(length * 0.22f, length * 0.3f); main.startColor = new Color(1, 1, 1, 0.6f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
             var em = ps.emission; em.rateOverTime = 0; em.rateOverDistance = 4f; em.enabled = false;
             go.AddComponent<WakeStart>();      // a boat is put in its place after it is made: no foam for that jump
             var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(length * 0.22f, 0, 0.2f);
-            var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0.5f), new Keyframe(1, 1.9f)));
+            var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0.6f), new Keyframe(1, 1.5f)));
             var col = ps.colorOverLifetime; col.enabled = true;
             var g = new Gradient(); g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.12f), new GradientAlphaKey(0, 1) });
             col.color = g;
@@ -113,11 +113,18 @@ namespace ReelEmpire.Game
         }
     }
 
-    /// <summary>Lets a wake begin once its boat has been put where it belongs.</summary>
+    /// <summary>Foam only while the boat is making way: not when it is put in its place, nor while it turns on the spot over the fishing grounds.</summary>
     public sealed class WakeStart : MonoBehaviour
     {
-        int _frames;
-        void Update() { if (++_frames < 3) return; var em = GetComponent<ParticleSystem>().emission; em.enabled = true; Destroy(this); }
+        int _frames; Vector3 _last; ParticleSystem _ps;
+        void Start() { _ps = GetComponent<ParticleSystem>(); _last = transform.parent.position; }
+        void Update()
+        {
+            var p = transform.parent.position; var d = p - _last; d.y = 0; _last = p;
+            float speed = Time.deltaTime > 0 ? d.magnitude / Time.deltaTime : 0;
+            bool under = ++_frames > 3 && speed > 2f && speed < 60;
+            var em = _ps.emission; if (em.enabled != under) em.enabled = under;
+        }
     }
 
     public sealed class Beam : MonoBehaviour

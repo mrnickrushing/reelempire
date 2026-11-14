@@ -975,5 +975,71 @@ namespace ReelEmpire.Tests
             Assert.That(s.H.cash, Is.EqualTo(cash + c.Cash).Within(1e-9));
             Assert.That(s.State.handCaught, Is.EqualTo(1));
         }
+        [Test]
+        public void ASkillDoesNotInflateRewards()
+        {
+            double now = 1_700_000_000;
+            var s = new Sim(GameState.New()); s.RealNow = () => now;
+            foreach (var id in new[] { "finn", "pip", "nell", "dot" }) { s.State.crew.Add(new CrewState { id = id }); s.Assign(Sim.CrewById(id).Stage, id); }
+            double reward = s.RewardRate(s.H);
+            for (int st = 0; st < 4; st++) s.UseSkill((Stage)st);
+            Assert.That(s.FullRate(s.H), Is.GreaterThan(reward));
+            Assert.That(s.RewardRate(s.H), Is.EqualTo(reward).Within(1e-9));
+        }
+
+        [Test]
+        public void NothingNewIsThrownInWhileTheGuideIsTeaching()
+        {
+            var s = TestGame.New();
+            while (s.H.berths.Count < 3) s.H.berths.Add(new BerthState());
+            s.H.berths[0].level = 10; s.State.goalIndex = 8;
+            foreach (var f in new[] { "bait", "works", "angling" }) Assert.That(s.Unlocked(f), Is.False, f);
+            s.State.goalIndex = 12;
+            foreach (var f in new[] { "bait", "works", "angling" }) Assert.That(s.Unlocked(f), Is.True, f);
+        }
+
+        /// <summary>Three hours of someone using everything, in every harbour: nothing throws, nothing goes negative or not-a-number.</summary>
+        [Test]
+        public void ALongSessionWithEverythingInUseStaysSane()
+        {
+            double now = 1_700_000_000;
+            var s = new Sim(GameState.New()); s.RealNow = () => now; s.StartAtMorning();
+            s.State.goalIndex = 99; s.State.tutorialStep = 2;
+            var rnd = new System.Random(42);
+            for (int step = 0; step < 3 * 3600 / 2; step++)
+            {
+                now += 2; s.Tick(2); s.TickOthers(2);
+                var h = s.H;
+                s.TapBerth(rnd.Next(h.berths.Count)); s.TapDock(); s.TapMarket();
+                switch (rnd.Next(14))
+                {
+                    case 0: s.Upgrade((Stage)rnd.Next(4), rnd.Next(h.berths.Count), 1 + rnd.Next(5)); break;
+                    case 1: s.UnlockBerth(); break;
+                    case 2: s.HireSkipper((Stage)rnd.Next(4), rnd.Next(h.berths.Count)); break;
+                    case 3: s.SetBait(rnd.Next(h.berths.Count), rnd.Next(Sim.Baits.Length)); break;
+                    case 4: for (int i = s.State.orders.Count - 1; i >= 0; i--) s.ClaimOrder(i); if (rnd.Next(30) == 0) s.DismissOrder(0); break;
+                    case 5: s.UseSkill((Stage)rnd.Next(4)); break;
+                    case 6: s.BuildWork(Sim.Works[rnd.Next(Sim.Works.Length)].Id); break;
+                    case 7: s.DoResearch(Sim.Research[rnd.Next(Sim.Research.Length)].Id); break;
+                    case 8: s.LandByHand(s.HandBite(rnd.NextDouble())); break;
+                    case 9: s.OpenChest(); s.OpenChest(true); break;
+                    case 10: s.BuyGoods(rnd.Next(Content.Goods.Length)); s.SetGoods(rnd.Next(Content.Goods.Length)); break;
+                    case 11: if (s.Renovate()) { } else if (s.OpenNextHarbour()) { } break;
+                    case 12: s.Travel(rnd.Next(s.State.harbours.Count)); break;
+                    case 13: s.ClaimGoal(); s.ClaimBonus(); break;
+                }
+                if (step % 200 == 0) h.cash += s.FullRate(h) * 600 + 1e3 * s.DefOf(h).Scale;      // a welcome-back now and then
+                foreach (var x in s.State.harbours)
+                {
+                    Assert.That(double.IsNaN(x.cash) || double.IsInfinity(x.cash) || x.cash < 0, Is.False, "cash at step " + step);
+                    Assert.That(x.raw >= -1e-6 && x.done >= -1e-6, Is.True, "floor at step " + step);
+                }
+                Assert.That(s.State.gems >= 0 && s.State.notes >= 0, Is.True, "gems/notes at step " + step);
+                Assert.That(s.State.orders.Count, Is.LessThanOrEqualTo(s.OrderSlotCount));
+            }
+            // The save goes out and comes back the same.
+            Assert.That(s.State.species.Count, Is.GreaterThan(5));
+            Assert.That(s.State.ordersDone, Is.GreaterThan(0));
+        }
     }
 }

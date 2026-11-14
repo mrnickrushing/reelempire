@@ -34,7 +34,7 @@ namespace ReelEmpire.Game
         void UpdateSkills()
         {
             var s = S; if (s == null || _skillRt[0] == null) return;
-            bool on = s.Unlocked("crew") && s.State.tutorialStep != 1;
+            bool on = s.Unlocked("crew") && s.State.tutorialStep != 1 && !ModalOpen && !ScreenOpen;      // never over a card or a page
             for (int i = 0; i < 4; i++)
             {
                 var d = on ? s.OnDuty((Stage)i) : null;

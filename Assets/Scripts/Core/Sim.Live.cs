@@ -92,7 +92,7 @@ namespace ReelEmpire.Core
         public double VoyageSeconds(VoyageDef v) { return v.Seconds * (Logbook("charts") ? 0.8 : 1); }
         public double VoyageLeft(Voyage v) { return Math.Max(0, v.doneAt - RealNow()); }
         /// <summary>What a voyage of this kind brings home, at the harbour's present pace.</summary>
-        public double VoyageCash(VoyageDef v) { return Math.Max(FullRate(H) / (Boosted ? BoostMult : 1) * 0.5, 2 * Def.Scale) * v.CashHours * 3600; }
+        public double VoyageCash(VoyageDef v) { return Math.Max(RewardRate(H) / (Boosted ? BoostMult : 1) * 0.5, 2 * Def.Scale) * v.CashHours * 3600; }
 
         public bool StartVoyage(int kind)
         {

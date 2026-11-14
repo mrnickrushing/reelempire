@@ -87,7 +87,7 @@ namespace ReelEmpire.Core
             bool first = Record(sp, kg);
             DerbyCatch(sp.Rarity); OrderCatch(h, sp);
             if (first) AddSeasonPoints(20);
-            double cash = Math.Max(4 * DefOf(h).Scale, 8 * FullRate(h)) * Content.RarityValue[(int)sp.Rarity];
+            double cash = Math.Max(4 * DefOf(h).Scale, 8 * RewardRate(h)) * Content.RarityValue[(int)sp.Rarity];
             Pay(h, cash);
             State.handCaught++; State.fish++;
             Touch();

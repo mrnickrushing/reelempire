@@ -84,7 +84,7 @@ namespace ReelEmpire.Core
             if (r < 0.70)
             {
                 p.Kind = BonusKind.Cash;
-                p.Cash = Math.Max(FullRate(H) / (Boosted ? BoostMult : 1) * (180 + Roll() * 300), 20 * Def.Scale);
+                p.Cash = Math.Max(RewardRate(H) / (Boosted ? BoostMult : 1) * (180 + Roll() * 300), 20 * Def.Scale);
                 Pay(H, p.Cash);
             }
             else if (r < 0.90) { p.Kind = BonusKind.Gems; p.Gems = 2 + (int)(Roll() * 4); State.gems += p.Gems; }
@@ -130,6 +130,7 @@ namespace ReelEmpire.Core
         public bool Unlocked(string feature)
         {
             int berths = MostBerths; bool veteran = State.renovations > 0 || State.harbours.Count > 1;
+            bool coached = State.goalIndex >= 12;       // Marta's twelve steps come first: nothing new is thrown in while she is teaching
             switch (feature)
             {
                 case "book": return State.trips > 0;
@@ -141,9 +142,9 @@ namespace ReelEmpire.Core
                 case "derby": return berths >= 5 || veteran;
                 case "season": return berths >= 6 || veteran;
                 case "harbours": return berths >= 7 || veteran;
-                case "bait": return BestBerthLevel >= 10 || veteran;
-                case "works": return berths >= 3 || veteran;
-                case "angling": return berths >= 2 || veteran;
+                case "bait": return BestBerthLevel >= 10 && coached || veteran;
+                case "works": return berths >= 3 && coached || veteran;
+                case "angling": return berths >= 2 && coached || veteran;
                 case "research": return State.notes > 0 || State.research.Count > 0 || veteran;
                 case "orders": return berths >= 4 || State.ordersDone > 0 || State.orders.Count > 0 || veteran;
             }

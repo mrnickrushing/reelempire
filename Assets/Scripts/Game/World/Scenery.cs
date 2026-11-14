@@ -263,7 +263,7 @@ namespace ReelEmpire.Game
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
                 if (Mathf.Abs(x - Layout.ChartRoom.x) < 5 && Mathf.Abs(z - Layout.ChartRoom.z) < 5) continue;       // the chart room
-                if (Mathf.Abs(x - 36) < 8 && Mathf.Abs(z - 17) < 8 || Mathf.Abs(x - 20) < 8 && Mathf.Abs(z + 34) < 8 || Mathf.Abs(x - 60) < 7 && Mathf.Abs(z + 48) < 7) continue;   // the boat shed and net loft plots
+                if (Mathf.Abs(x - 36) < 8 && Mathf.Abs(z - 17) < 8 || Mathf.Abs(x - 20) < 8 && Mathf.Abs(z + 34) < 8 || Mathf.Abs(x - 52) < 6 && Mathf.Abs(z + 53) < 6) continue;   // the boat shed and net loft plots
                 if (farm && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
                 if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp
                 int kind = rnd.Next(100);
@@ -318,7 +318,7 @@ namespace ReelEmpire.Game
                 Models.Kit("tent", parent, new Vector3(42, y, -50), 150, 6f);
                 Models.Kit("campfire", parent, new Vector3(40, y, -44), 0, 2.2f);
                 Models.Kit("stump", parent, new Vector3(37.6f, y, -43), 30, 1.2f); Models.Kit("stump", parent, new Vector3(41.4f, y, -42), 200, 1.1f);
-                Models.Kit("log_stack", parent, new Vector3(46, y, -45), 20, 2.6f);
+                Models.Kit("log_stack", parent, new Vector3(35, y, -47), 20, 2.6f);
                 if (!th.Ice) for (int i = 0; i < 5; i++) Models.Kit("mushrooms", parent, new Vector3(R(32, 48), y, R(-55, -41)), R(0, 360), R(0.7f, 1.1f));
                 // Canoes pulled up on the sand past the end of the quay.
                 Models.Kit("canoe", parent, new Vector3(3.5f, y + 0.05f, -56), 70, 6f); Models.Kit("canoe", parent, new Vector3(5.5f, y + 0.05f, -60), 95, 6f);

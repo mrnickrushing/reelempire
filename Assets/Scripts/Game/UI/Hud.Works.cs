@@ -11,12 +11,12 @@ namespace ReelEmpire.Game
     {
         readonly List<Sign> _workSigns = new List<Sign>();
         Sign _chartSign;
-        static readonly float[] WorkSignUp = { 7.5f, 8f, 6.5f, 4.5f, 20f };
+        static readonly float[] WorkSignUp = { 7.5f, 8f, 2f, 4.5f, 20f };
 
         void BuildWorkSigns()
         {
             _workSigns.Clear();
-            for (int i = 0; i < Sim.Works.Length; i++) { int k = i; var sg = MakeSign(() => ShowWork(k), 290); sg.Label.fontSize = 26; _workSigns.Add(sg); }
+            for (int i = 0; i < Sim.Works.Length; i++) { int k = i; var sg = MakeSign(() => ShowWork(k), 262); sg.Label.fontSize = 26; _workSigns.Add(sg); }
             _chartSign = MakeSign(() => Open(Page.Research), 270); _chartSign.Up.gameObject.SetActive(false); _chartSign.Label.fontSize = 26; _chartSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
         }
 

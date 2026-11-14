@@ -50,7 +50,7 @@ namespace ReelEmpire.Core
         public GoalDef Goal { get { return State.goalIndex < Goals.Count ? Goals[State.goalIndex] : Generated(); } }
         public double GoalHave { get { var g = Goal; return g == null ? 0 : Math.Min(g.Need, g.Have(this)); } }
         public bool GoalDone { get { var g = Goal; return g != null && g.Have(this) >= g.Need; } }
-        public double GoalCash(GoalDef g) { return Math.Max(g.Floor * Def.Scale, g.CashSeconds * FullRate(H)); }
+        public double GoalCash(GoalDef g) { return Math.Max(g.Floor * Def.Scale, g.CashSeconds * RewardRate(H)); }
         public int BestBerthLevel { get { int n = 0; foreach (var b in H.berths) n = Math.Max(n, b.level); return n; } }
 
         /// <summary>Takes the finished step's reward and moves to the next. False if it isn't done.</summary>

@@ -26,7 +26,7 @@ namespace ReelEmpire.Game
             {
                 case "netloft": return new Vector3(20, QuayY, -34);
                 case "shipyard": return new Vector3(36, QuayY, 17);
-                case "icehouse": return new Vector3(60, QuayY, -48);
+                case "icehouse": return new Vector3(52, QuayY, -53);
                 case "auction": return MarketCentre + new Vector3(15, 0, -5);
                 case "lamp": return new Vector3(3, QuayY, 62);
             }

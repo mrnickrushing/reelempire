@@ -133,7 +133,7 @@ namespace ReelEmpire.Core
             }
         }
 
-        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * FullRate(h)) * (Researched("haggle") ? 1.25 : 1); }
+        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * RewardRate(h)) * (Researched("haggle") ? 1.25 : 1); }
 
         /// <summary>Hands a finished order over. Returns the cash paid (0 if it isn't finished).</summary>
         public double ClaimOrder(int index)

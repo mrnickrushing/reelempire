@@ -66,6 +66,7 @@ namespace ReelEmpire.Game
             if (ModalOpen || ScreenOpen || s.State.tutorialStep == 0) return;
             foreach (var f in Sim.Features)
             {
+                if (_toast != null) break;       // let the last piece of news be read first
                 if (!s.Unlocked(f) || s.State.seenFeatures.Contains(f)) continue;
                 s.State.seenFeatures.Add(f);
                 Toast(Sim.FeatureNews(f)); Sfx.Play("star", 0.7f); Haptics.Success();
