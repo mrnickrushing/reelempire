@@ -76,6 +76,12 @@ def ensure(kind, existing, detail, item, attributes, loc_attributes):
             "type": "gameCenter%sLocalizations" % kind, "attributes": attrs,
             "relationships": {"version": {"data": {"type": "gameCenter%sVersions" % kind, "id": version["id"]}}}}})["data"]
         print("  %s text" % LOCALE)
+    else:
+        changed = {k: v for k, v in loc_attributes.items() if loc["attributes"].get(k) != v}
+        if changed:       # the wording changed since it was created
+            call("PATCH", "/v2/gameCenter%sLocalizations/%s" % (kind, loc["id"]), {"data": {
+                "type": "gameCenter%sLocalizations" % kind, "id": loc["id"], "attributes": changed}})
+            print("  %s text updated: %s" % (LOCALE, ", ".join(sorted(changed))))
     image = call("GET", "/v2/gameCenter%sLocalizations/%s/image" % (kind, loc["id"]), ok404=True)
     state = ((image or {}).get("data") or {}).get("attributes", {}).get("assetDeliveryState") or {}
     if image and image.get("data") and state.get("state") in ("FAILED", "AWAITING_UPLOAD"):

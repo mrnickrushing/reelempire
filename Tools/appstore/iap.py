@@ -138,6 +138,13 @@ def main():
                 "attributes": {"locale": "en-US", "name": name, "description": desc},
                 "relationships": {"inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": iap}}}}})
             print("  en-US name and description")
+        else:
+            # The wording changed since it was created: bring the store's text in step with the game's.
+            loc = next(l for l in locs if l["attributes"]["locale"] == "en-US")
+            if loc["attributes"].get("name") != name or loc["attributes"].get("description") != desc:
+                call("PATCH", "/v1/inAppPurchaseLocalizations/" + loc["id"], {"data": {
+                    "type": "inAppPurchaseLocalizations", "id": loc["id"], "attributes": {"name": name, "description": desc}}})
+                print("  en-US text updated")
 
         sched = call("GET", "/v2/inAppPurchases/%s/iapPriceSchedule?include=manualPrices" % iap, ok404=True)
         if not (sched and sched.get("included")):
