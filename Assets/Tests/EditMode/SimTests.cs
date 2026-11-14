@@ -938,5 +938,42 @@ namespace ReelEmpire.Tests
             s.ClaimOrder(0);
             Assert.That(s.State.notes, Is.EqualTo(2));
         }
+        static FightState Play(Rarity r, uint seed, System.Func<Fight, bool> hold)
+        {
+            var f = new Fight(r, seed);
+            for (int i = 0; i < 60 * 90 && f.State == FightState.Fighting; i++) f.Step(1f / 60, hold(f));
+            return f.State;
+        }
+
+        [Test]
+        public void AFishIsLandedByKeepingTheLineInTheBand()
+        {
+            // Someone who reels below the middle of the band and eases off above it lands fish of every size.
+            foreach (Rarity r in System.Enum.GetValues(typeof(Rarity)))
+                for (uint seed = 1; seed <= 20; seed++)
+                    Assert.That(Play(r, seed, f => f.Tension < (f.Running ? 0.5f : 0.62f)), Is.EqualTo(FightState.Landed), r + " " + seed);
+        }
+
+        [Test]
+        public void HoldingAllTheTimeSnapsTheLineAndNeverHoldingLosesTheFish()
+        {
+            Assert.That(Play(Rarity.Rare, 7, f => true), Is.EqualTo(FightState.Snapped));
+            Assert.That(Play(Rarity.Rare, 7, f => false), Is.EqualTo(FightState.Escaped));
+        }
+
+        [Test]
+        public void AHandCaughtFishGoesInTheBookAndPays()
+        {
+            var s = TestGame.New(); s.StartAtMorning();
+            int better = 0;
+            for (int i = 0; i < 400; i++) if (s.HandBite(1).Rarity >= Rarity.Rare) better++;
+            Assert.That(better, Is.GreaterThan(60));                 // about a quarter, against a twentieth from the boats
+            var sp = s.HandBite(0.5); double cash = s.H.cash;
+            var c = s.LandByHand(sp);
+            Assert.That(c.First, Is.True);
+            Assert.That(s.Entry(sp.Id).count, Is.EqualTo(1));
+            Assert.That(s.H.cash, Is.EqualTo(cash + c.Cash).Within(1e-9));
+            Assert.That(s.State.handCaught, Is.EqualTo(1));
+        }
     }
 }

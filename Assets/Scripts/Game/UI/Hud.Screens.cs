@@ -22,6 +22,7 @@ namespace ReelEmpire.Game
             _nav["book"] = NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
             _nav["awards"] = NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
             _nav["today"] = NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
+            _nav["angling"] = NavButton(new Vector2(0, 0), new Vector2(84, 176), "FISH", Resources.Load<Sprite>("UI/Species/lake_northern_pike"), Color.white, OpenAngling, false);
             _nav["crew"] = NavButton(new Vector2(1, 0), new Vector2(-368, 16), "CREW", Resources.Load<Sprite>("UI/Faces/crew_brannock"), Color.white, () => Open(Page.Crew), true);
             NavButton(new Vector2(1, 0), new Vector2(-226, 16), "SHOP", Ui.Art("gem"), Color.white, () => Open(Page.Shop), false);
             NavButton(new Vector2(1, 0), new Vector2(-84, 16), "MORE", Ui.Ic("gear"), Ui.Ink, () => Open(Page.Settings), false);

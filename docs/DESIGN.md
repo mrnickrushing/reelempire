@@ -97,6 +97,25 @@ Throughput of the chain is the minimum of its stages; the HUD's chain bar shows 
     player's iCloud, account deletion, restore purchases. No server of our own beyond anonymous play statistics.
 16. **Rating prompt.** Once, at a happy moment, as in every Rushing Technologies game.
 
+## Depth: decisions on top of the chain
+
+Added after the first TestFlight build, when the game was "upgrade and wait" and little else:
+
+- **Bait** (`Sim.Bait`): each dock picks what it fishes with from level 10, free to change. Groundbait for money
+  (x1.5, nothing rare), spinners and chum for rare fish, glow bait for the night, rain, storm and season fish.
+- **Orders** (`Sim.Orders`): from the fourth dock the town asks for things, three at a time: so much of a product (run
+  that line), so many of a species, so many uncommon or rare fish (bait matters). Nothing expires. Cash, gems, notes.
+- **Crew skills** (`Sim.Skills`): the hand on duty at each stage has a burst to call on from the main screen, then
+  rests. It pays at the stage that is holding the harbour up; the Epic and Legendary ones always pay. Never counted
+  in away earnings or time warps.
+- **Works** (`Sim.Works`): five plots round the harbour, three levels each, in that harbour's cash: Net Loft, Boat
+  Shed, Ice House, Auction Stand, Lighthouse Lamp. Cleared by a renovation.
+- **Research** (`Sim.Works`): notes from filled orders and new species buy twelve lasting improvements in three
+  branches at the chart room. Never lost.
+- **Fishing by hand** (`Sim.Angling`, `Fight`): cast for the gold water, strike on the bite, hold to reel and ease
+  off when the fish runs. Unlimited (no energy). Better odds than the boats, heavier fish (records), counts for the
+  book, orders and the derby, pays about eight seconds of the harbour's pace times the fish's rarity.
+
 ## Purchases
 
 | Product id | Type | Price | What it gives |

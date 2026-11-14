@@ -169,6 +169,7 @@ namespace ReelEmpire.Game
 
             UpdateSigns();
             UpdateSkills();
+            UpdateAngling();
             UpdateGuide();
             UpdateSheet();
             UpdateFx();

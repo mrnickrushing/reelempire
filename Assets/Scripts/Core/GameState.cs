@@ -84,7 +84,7 @@ namespace ReelEmpire.Core
         public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
         public long doubleDay = -1;
         public bool starterOffered;
-        public long skillsUsed, worksBuilt;
+        public long skillsUsed, worksBuilt, handCaught;
         public int notes; public List<string> research = new List<string>();
         public List<Order> orders = new List<Order>(); public double orderAt; public long ordersDone;
         public long firstDay = -1;      // the day the game was first played
