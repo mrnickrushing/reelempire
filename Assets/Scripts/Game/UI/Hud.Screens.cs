@@ -92,7 +92,7 @@ namespace ReelEmpire.Game
         static readonly Dictionary<string, string> About = new Dictionary<string, string>
         {
             { "TODAY", "Free things to collect each day: a gift, three tasks, and boats you can send away for cash and gems." },
-            { "THE CREW", "Crew cards make a part of the harbour faster. Open the free chest, then put a card to work." },
+            { "THE CREW", "A hand on duty speeds up their part of the harbour and has a skill to call on from the main screen." },
             { "WEEKEND DERBY", "Every fish landed this weekend scores points. Reach the marks for gems and beat the other skippers." },
             { "HARBOURS", "Your waters. Open the next one, or renovate this one to earn more from the start." },
             { "SPECIES BOOK", "Every kind of fish you've landed. A new one pays gems; a full page earns 10% more in that water." },
@@ -262,10 +262,10 @@ void ShowToday()
                     var own = s.Owned(d.Id); bool duty = s.OnDuty(stage) == d; string id = d.Id;
                     string rarity = "<color=#" + ColorUtility.ToHtmlStringRGB(RarityInk[(int)d.Rarity]) + ">" + CrewRarity[(int)d.Rarity] + "</color>";
                     if (own == null)
-                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), new Color(0.086f, 0.196f, 0.31f, 0.3f), "???  " + rarity, d.Role + ": +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, 1) * 100) + "% " + StageNames[st].ToLowerInvariant(), null, Ui.Off, null, "IN A CHEST");
+                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), new Color(0.086f, 0.196f, 0.31f, 0.3f), "???  " + rarity, d.Role + ": +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, 1) * 100) + "% " + StageNames[st].ToLowerInvariant() + "  ·  Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb, null, Ui.Off, null, "IN A CHEST");
                     else
                         y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), Color.white, d.Name + "  " + rarity,
-                            d.Role + "  ·  level " + own.level + "  ·  +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, own.level) * 100) + "% " + StageNames[st].ToLowerInvariant() + (own.level < Sim.CrewMaxLevel ? "  ·  " + own.copies + "/" + Sim.CopiesFor(own.level) + " copies to level " + (own.level + 1) : "  ·  top level"),
+                            "Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb + " for " + Format.Time(Sim.SkillSeconds(d, own.level)) + ".\n" + d.Role + "  ·  level " + own.level + "  ·  +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, own.level) * 100) + "% " + StageNames[st].ToLowerInvariant() + (own.level < Sim.CrewMaxLevel ? "  ·  " + own.copies + "/" + Sim.CopiesFor(own.level) + " copies to level " + (own.level + 1) : "  ·  top level"),
                             duty ? null : "PUT ON DUTY", Ui.Blue, duty ? null : (Action)(() => { if (S.Assign(stage, id)) { Sfx.Play("confirm", 0.7f); GameRoot.Instance.Save(); ShowCrew(); } }), duty ? "ON DUTY" : null, duty);
                 }
             }

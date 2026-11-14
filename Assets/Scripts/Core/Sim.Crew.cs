@@ -11,7 +11,7 @@ namespace ReelEmpire.Core
     }
 
     [Serializable]
-    public sealed class CrewState { public string id; public int level = 1; public int copies; }
+    public sealed class CrewState { public string id; public int level = 1; public int copies; public double skillUntil, skillReady; }
 
     /// <summary>
     /// The crew: twelve people who come as cards from the crew chest (free every four hours, or for gems). One can
@@ -60,7 +60,7 @@ namespace ReelEmpire.Core
         double DutyMult(Stage stage)
         {
             var d = OnDuty(stage); if (d == null) return 1;
-            var o = Owned(d.Id); return o == null ? 1 : 1 + CrewBonus(d, o.level);
+            var o = Owned(d.Id); return o == null ? 1 : (1 + CrewBonus(d, o.level)) * SkillMult(stage);
         }
 
         /// <summary>Puts an owned card on duty at its own stage (null: nobody).</summary>

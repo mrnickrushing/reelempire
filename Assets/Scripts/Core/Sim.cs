@@ -121,7 +121,7 @@ namespace ReelEmpire.Core
                 if (!c.turned && c.t >= Content.TruckRound / 2)
                 {
                     c.turned = true;
-                    double cash = c.value * IncomeMult(h);
+                    double cash = c.value * IncomeMult(h) * (SkillRunning("price") ? 2 : 1);
                     c.load = 0; c.value = 0;
                     Pay(h, cash);
                     if (cash > 0) { State.sales++; Sold?.Invoke(cash); }

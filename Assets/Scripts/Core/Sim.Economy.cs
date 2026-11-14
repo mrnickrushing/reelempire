@@ -59,7 +59,10 @@ namespace ReelEmpire.Core
         public double IdleRate(HarbourState h)
         {
             if (!h.dockSkipper || !h.marketSkipper) return 0;
-            return ValueOf(h, Flow(h)) * IncomeMult(h);
+            // A skill is a burst while someone is playing: away earnings, time warps and the other harbours go by the steady pace.
+            _steady = true;
+            try { return ValueOf(h, Flow(h)) * IncomeMult(h); }
+            finally { _steady = false; }
         }
 
         /// <summary>Cash a second if every stage ran flat out (what the HUD shows as the harbour's pace).</summary>

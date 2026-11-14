@@ -155,7 +155,7 @@ namespace ReelEmpire.Core
                 case "awards": return "NEW: Awards. Each one pays gems and +1% income for good.";
                 case "today": return "NEW: Today. A gift every day, and three tasks.";
                 case "boost": return "NEW: the Tide Boost. Double income for an hour, free.";
-                case "crew": return "NEW: the Crew. Open your free chest!";
+                case "crew": return "NEW: the Crew. Open your free chest, then use their skills!";
                 case "voyages": return "NEW: Voyages. Send a spare boat out from TODAY.";
                 case "derby": return "NEW: the Weekend Derby. See TODAY.";
                 case "season": return "NEW: the Season. Thirty tiers of rewards, in TODAY.";

@@ -845,5 +845,35 @@ namespace ReelEmpire.Tests
             s.TapDock(); s.Tick(Content.HaulRound + 1); s.TapMarket(); s.Tick(Content.TruckRound + 1);
             Assert.That(s.State.orders[1].have, Is.GreaterThan(0));
         }
+        [Test]
+        public void ASkillRunsThenRestsAndNeverCountsWhileAway()
+        {
+            double now = 1_700_000_000;
+            var s = new Sim(GameState.New()); s.RealNow = () => now;
+            s.State.crew.Add(new CrewState { id = "finn" }); s.Assign(Stage.Berth, "finn");
+            s.H.dockSkipper = s.H.marketSkipper = true; s.H.berths[0].skipper = true;
+            double steady = s.BerthRate(s.H, 0), away = s.IdleRate(s.H);
+            Assert.That(s.UseSkill(Stage.Berth), Is.True);
+            Assert.That(s.BerthRate(s.H, 0), Is.EqualTo(steady * 2).Within(1e-9));
+            Assert.That(s.IdleRate(s.H), Is.EqualTo(away).Within(1e-9));
+            Assert.That(s.UseSkill(Stage.Berth), Is.False);                 // running
+            now += 61;
+            Assert.That(s.BerthRate(s.H, 0), Is.EqualTo(steady).Within(1e-9));
+            Assert.That(s.UseSkill(Stage.Berth), Is.False);                 // resting
+            now += 600;
+            Assert.That(s.UseSkill(Stage.Berth), Is.True);
+        }
+
+        [Test]
+        public void TheOldGroundsBringOnlyRareFish()
+        {
+            double now = 1_700_000_000;
+            var s = new Sim(GameState.New()); s.RealNow = () => now;
+            s.State.crew.Add(new CrewState { id = "brannock" }); s.Assign(Stage.Berth, "brannock");
+            int common = 0; s.Caught += (b, sp, kg, units, first) => { if (sp.Rarity < Rarity.Rare) common++; };
+            s.UseSkill(Stage.Berth);
+            Fish(s, 12);
+            Assert.That(common, Is.EqualTo(0));
+        }
     }
 }

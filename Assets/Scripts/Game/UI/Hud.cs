@@ -107,6 +107,7 @@ namespace ReelEmpire.Game
             var flag = Ui.ArtImg("Slow", _chain, "tag", Ui.Coral, 30); _slowFlag = flag.rectTransform; _slowFlag.Place(new Vector2(0, 0), new Vector2(0.5f, 0), new Vector2(95, 168), new Vector2(170, 44));
             var fl = Ui.Label("T", flag.transform, "TOO SLOW", 24, Color.white); fl.rectTransform.Fill(); fl.rectTransform.offsetMin = new Vector2(0, 4); fl.Stroke(2f);
 
+            BuildSkills();
             BuildGuide();
             BuildNav();
             BuildSheet();
@@ -167,6 +168,7 @@ namespace ReelEmpire.Game
             _chain.anchoredPosition = new Vector2(0, Mathf.Lerp(14, -220, 1 - Mathf.Clamp01(_sheetY / SheetHide)));
 
             UpdateSigns();
+            UpdateSkills();
             UpdateGuide();
             UpdateSheet();
             UpdateFx();
