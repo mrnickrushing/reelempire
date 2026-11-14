@@ -83,6 +83,7 @@ namespace ReelEmpire.Core
         public int goalKind, goalBerth; public double goalTarget; public long goalFrom;
         public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
         public long doubleDay = -1;
+        public long adDay = -1; public int adCount;      // rewarded adverts watched on a day (Sim.Ads)
         public bool starterOffered;
         public long skillsUsed, worksBuilt, handCaught;
         public int notes; public List<string> research = new List<string>();

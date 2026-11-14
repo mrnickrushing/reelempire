@@ -115,6 +115,8 @@ namespace ReelEmpire.Game
             Sim.Tick(Time.deltaTime * Speed);
             Sim.TickOthers(Time.deltaTime * Speed);
             GameCenter.Sync(Sim);
+            if (Sim.State.tutorialStep == 2) Ads.Start();      // no advert SDK while Marta is still teaching
+            Ads.Tick();
             Sfx.TickMusic(Sim.Night, Time.unscaledDeltaTime);
             Sfx.TickAmbience(Sim.Night, Time.unscaledDeltaTime);
             if ((_saveIn -= Time.unscaledDeltaTime) <= 0) { _saveIn = 10f; Save(); }

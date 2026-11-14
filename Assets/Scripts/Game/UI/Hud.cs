@@ -27,6 +27,16 @@ namespace ReelEmpire.Game
         void UseBoost()
         {
             if (S.UseBoost()) { Sfx.Play("star", 0.7f); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
+            else if (S.AdOffered(AdReward.Boost) && Ads.Ready)
+            {
+                // Out of charges: an advert is another way to one, if the player wants it.
+                Confirm("TIDE BOOST", "Your boosts are spent: the next is ready in " + Format.Time(S.BoostNextIn) + ".\n\nWatch a short advert for an hour of double income now? (" + S.AdsLeft + " left today)", "WATCH", Ui.Green, () =>
+                    Ads.Show(ok =>
+                    {
+                        if (ok && S.BoostByAd()) { Sfx.Play("star", 0.7f); Haptics.Success(); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
+                        else if (!ok) Toast("The advert wasn't finished, so there's no boost.");
+                    }), "NOT NOW");
+            }
             else { Sfx.Play("error", 0.5f); Toast(S.BoostReady <= 0 ? "The next boost is ready in " + Format.Time(S.BoostNextIn) : "The boost is full: 8 hours at most"); }
         }
 
@@ -269,15 +279,27 @@ int missed = S.WelcomeHome(secs);
             }, 44);
             ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-205, 44), new Vector2(380, 124));
             bool free = S.DoubleFree;
+            bool byAd = !free && S.AdOffered(AdReward.Double) && Ads.Ready;       // after the free one: an advert instead of gems
             var d = Ui.Button("Double", card, null, Ui.Green, () =>
             {
+                if (byAd)
+                {
+                    Ads.Show(ok =>
+                    {
+                        if (!ok) { Toast("The advert wasn't finished: collect, or try again."); return; }
+                        if (!S.CollectAwayByAd(secs)) return;
+                        GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
+                        Reminders.AskOnce();
+                    });
+                    return;
+                }
                 if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Not enough gems for another double today"); return; }
                 GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
                 Reminders.AskOnce();
             }, 44);
             ((RectTransform)d.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(205, 44), new Vector2(380, 124));
             var dl = Ui.Label("L", d.transform, "DOUBLE IT", 42, Color.white, TextAnchor.UpperCenter); dl.rectTransform.Fill(); dl.rectTransform.offsetMax = new Vector2(0, -14); dl.Stroke(2.5f);
-            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : DoubleCost(), 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
+            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : byAd ? "WATCH AN ADVERT" : DoubleCost(), 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
         }
 
         static string DoubleCost() { return Sim.DoubleGems + " GEMS"; }

@@ -210,3 +210,13 @@ things keep a one-line banner.
 Signs over the world never sit under the fixed HUD or off the screen (`Hud.ClearOfHud`); the works are small hammer
 tags so a phone is not covered in labels. The camera frames the same width of harbour on every screen
 (`CameraRig.Create`: distance 325 / aspect).
+
+## Adverts
+
+Rewarded only, never shown unasked (`Core/Sim.Ads.cs`, `Game/Platform/Ads.cs`, Google AdMob through
+`com.google.ads.mobile`, a Swift package in the Xcode project). Two places: after the free DOUBLE of the day is used,
+the welcome-back card's DOUBLE IT button offers an advert instead of gems; and with the Tide Boost's charges spent,
+tapping it offers an advert for another hour. Six a day (`AdsPerDay`), requests non-personalised (`npa`), the SDK
+starts only once Marta's tutorial is over. `Ads.RewardedUnit` and the App ID in
+`Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset` are Google's public test ids until the game has its
+own in AdMob. The Night Crew purchase keeps its free doubles, so its owners never see the advert there.
