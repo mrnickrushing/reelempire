@@ -4,7 +4,7 @@ in the train app).
 
   python3 Tools/appstore/capabilities.py   # needs APP_STORE_CONNECT_PRIVATE_KEY / _KEY_IDENTIFIER / _ISSUER_ID and PyJWT
 
-  - ICLOUD (key-value storage: the airport's save follows the player's iCloud, Game/Platform/CloudSave.cs)
+  - ICLOUD (key-value storage: the harbour's save follows the player's iCloud, Game/Platform/CloudSave.cs)
   - APPLE_ID_AUTH (Sign in with Apple, Game/Platform/AppleAccount.cs; primary App ID)
   - GAME_CENTER (leaderboards and achievements, Game/Platform/GameCenter.cs)
 
