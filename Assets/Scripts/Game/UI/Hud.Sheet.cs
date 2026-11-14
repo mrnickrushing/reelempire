@@ -76,8 +76,8 @@ namespace ReelEmpire.Game
             Ui.Clear(_sheetBody); _live.Clear();
             var s = S; var h = H; var stage = _sheetStage; int berth = stage == Stage.Berth ? Mathf.Min(_sheetBerth, h.berths.Count - 1) : 0;
             int lv = s.LevelOf(h, stage, berth);
-            string title = stage == Stage.Berth ? Content.Berths[berth].Name : stage == Stage.Dock ? "The Dock" : stage == Stage.Hall ? "Processing Hall" : "Fish Market";
-            string sub = stage == Stage.Berth ? Content.Berths[berth].Boat + " · berth " + (berth + 1) : stage == Stage.Dock ? "Haulers carry the catch to the hall" : stage == Stage.Hall ? "Turns fish into what sells for more" : "Trucks sell what the hall puts out";
+            string title = stage == Stage.Berth ? Content.Berths[berth].Name : stage == Stage.Dock ? "The Porters" : stage == Stage.Hall ? "Processing Hall" : "Fish Market";
+            string sub = stage == Stage.Berth ? Content.Berths[berth].Boat + " · dock " + (berth + 1) : stage == Stage.Dock ? "Porters carry the catch to the hall" : stage == Stage.Hall ? "Turns fish into what sells for more" : "Trucks sell what the hall puts out";
 
             var left = Ui.Rect("Left", _sheetBody); left.anchorMin = new Vector2(0, 0); left.anchorMax = new Vector2(0, 1); left.pivot = new Vector2(0, 0.5f); left.offsetMin = Vector2.zero; left.offsetMax = new Vector2(400, 0);
             var mid = Ui.Rect("Mid", _sheetBody); mid.anchorMin = new Vector2(0, 0); mid.anchorMax = new Vector2(0, 1); mid.pivot = new Vector2(0, 0.5f); mid.offsetMin = new Vector2(430, 0); mid.offsetMax = new Vector2(900, 0);
@@ -94,7 +94,7 @@ namespace ReelEmpire.Game
             int next = Content.NextMilestone(lv), prev = 1; foreach (var m in Content.Milestones) if (m <= lv) prev = m;
             bool speedNext = stage == Stage.Berth && Array.IndexOf(Content.SpeedMilestones, next) >= 0;
             bool crewNext = stage != Stage.Berth && stage != Stage.Hall && Array.IndexOf(Content.CrewMilestones, next) >= 0;
-            string prize = lv >= Content.MaxLevel ? "As far as it goes" : "Level " + next + ":  " + (speedNext ? "boat twice as fast" : "x2") + (crewNext ? (stage == Stage.Dock ? " + a hauler" : " + a truck") : "");
+            string prize = lv >= Content.MaxLevel ? "As far as it goes" : "Level " + next + ":  " + (speedNext ? "boat twice as fast" : "x2") + (crewNext ? (stage == Stage.Dock ? " + a porter" : " + a truck") : "");
             var star = Ui.ArtImg("Star", left, "star", Color.white, 0); star.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(-4, 36), new Vector2(50, 52));
             var ms = Ui.Label("Ms", left, prize, 26, Ui.Ink, TextAnchor.MiddleLeft); ms.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(54, 42), new Vector2(346, 40));
             var back = Ui.ArtImg("BarBack", left, "well", Ui.Faint, 20); back.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(400, 34));
@@ -117,7 +117,7 @@ namespace ReelEmpire.Game
             else if (stage == Stage.Dock)
             {
                 Row(mid, y, "Carries", Format.Money(s.DockRate(h)) + "/s", after(() => Format.Money(s.DockRate(h)) + "/s")); y -= 76;
-                Row(mid, y, "Haulers", h.haulers.Count.ToString(), after(() => Content.CrewAt(h.dock).ToString())); y -= 76;
+                Row(mid, y, "Porters", h.haulers.Count.ToString(), after(() => Content.CrewAt(h.dock).ToString())); y -= 76;
                 Row(mid, y, "The boats land", Format.Money(s.FleetRate(h, true)) + "/s", null);
             }
             else if (stage == Stage.Market)
@@ -161,7 +161,7 @@ namespace ReelEmpire.Game
             {
                 bool has = s.HasSkipper(h, stage, berth);
                 var row = Ui.ArtImg("Skipper", right, "card", has ? new Color(0.72f, 0.93f, 0.76f) : Ui.Card, 26); row.rectTransform.Band(true, 0, 84);
-                string who = stage == Stage.Berth ? "Skipper" : stage == Stage.Dock ? "Dock foreman" : "Market manager";
+                string who = stage == Stage.Berth ? "Skipper" : stage == Stage.Dock ? "Head porter" : "Market manager";
                 var nm = Ui.Label("N", row.transform, who, 30, Ui.Ink, TextAnchor.UpperLeft); nm.rectTransform.Fill(); nm.rectTransform.offsetMin = new Vector2(20, 0); nm.rectTransform.offsetMax = new Vector2(0, -8);
                 var w = Ui.Label("W", row.transform, has ? "On the job: no taps needed" : "Works without tapping", 22, Ui.Dim, TextAnchor.LowerLeft, false); w.rectTransform.Fill(); w.rectTransform.offsetMin = new Vector2(20, 12);
                 if (!has)

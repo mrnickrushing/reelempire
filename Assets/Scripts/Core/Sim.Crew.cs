@@ -26,7 +26,7 @@ namespace ReelEmpire.Core
             new CrewDef { Id = "odile", Name = "Odile Marsh", Role = "Net mender", Rarity = Rarity.Rare, Stage = Stage.Berth, Face = "character-female-a" },
             new CrewDef { Id = "brannock", Name = "Captain Brannock", Role = "Old salt", Rarity = Rarity.Legendary, Stage = Stage.Berth, Face = "character-male-f" },
             new CrewDef { Id = "pip", Name = "Pip Reyes", Role = "Barrow runner", Rarity = Rarity.Common, Stage = Stage.Dock, Face = "character-male-b" },
-            new CrewDef { Id = "greta", Name = "Greta Lund", Role = "Dock foreman", Rarity = Rarity.Rare, Stage = Stage.Dock, Face = "character-female-c" },
+            new CrewDef { Id = "greta", Name = "Greta Lund", Role = "Head porter", Rarity = Rarity.Rare, Stage = Stage.Dock, Face = "character-female-c" },
             new CrewDef { Id = "samson", Name = "Samson Okoye", Role = "Crane hand", Rarity = Rarity.Epic, Stage = Stage.Dock, Face = "character-male-d" },
             new CrewDef { Id = "nell", Name = "Nell Hartwell", Role = "Fish cleaner", Rarity = Rarity.Common, Stage = Stage.Hall, Face = "character-female-d" },
             new CrewDef { Id = "ivo", Name = "Ivo Castellan", Role = "Smokehouse keeper", Rarity = Rarity.Rare, Stage = Stage.Hall, Face = "character-male-c" },

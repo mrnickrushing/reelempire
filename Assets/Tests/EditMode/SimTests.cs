@@ -750,5 +750,16 @@ namespace ReelEmpire.Tests
             Assert.That(s.State.gems, Is.EqualTo(300));
             Assert.That(s.HasPendingPurchases, Is.False);
         }
+
+        [Test]
+        public void TodaysDotOnlyCountsWhatThePageShows()
+        {
+            var s = TestGame.New();
+            s.ClaimGift();
+            s.AddSeasonPoints(100000);                 // tiers earned long before the season page opens
+            Assert.That(s.SeasonWaiting, Is.GreaterThan(0));
+            Assert.That(s.Unlocked("season"), Is.False);
+            Assert.That(s.TodayWaiting, Is.False);
+        }
     }
 }

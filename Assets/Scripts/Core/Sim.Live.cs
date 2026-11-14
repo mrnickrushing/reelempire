@@ -126,7 +126,7 @@ namespace ReelEmpire.Core
             new LogbookDef { Id = "watch2", Renown = 150, Name = "Second Watch", Blurb = "1 more hour of away earnings" },
             new LogbookDef { Id = "charts", Renown = 300, Name = "Better Charts", Blurb = "Voyages take a fifth less time" },
             new LogbookDef { Id = "watch3", Renown = 600, Name = "Dog Watch", Blurb = "2 more hours of away earnings" },
-            new LogbookDef { Id = "yard", Renown = 1200, Name = "Friends at the Yard", Blurb = "New berths cost 15% less" },
+            new LogbookDef { Id = "yard", Renown = 1200, Name = "Friends at the Yard", Blurb = "New docks cost 15% less" },
             new LogbookDef { Id = "watch4", Renown = 2500, Name = "Harbour Lights", Blurb = "2 more hours of away earnings" },
             new LogbookDef { Id = "trade", Renown = 5000, Name = "Bulk Orders", Blurb = "Every level costs 10% less" },
         };
@@ -139,8 +139,14 @@ namespace ReelEmpire.Core
         {
             get
             {
-                if (GiftReady || VoyageBack || SeasonWaiting > 0 || DerbyPrizeWaiting >= 0) return true;
-                for (int i = 0; i < DerbyGoals.Length; i++) if (DerbyGoalDone(i) && !DerbyGoalClaimed(i)) return true;
+                // Only what the page can show: the season and the derby count once they have opened.
+                if (GiftReady || VoyageBack) return true;
+                if (Unlocked("season") && SeasonWaiting > 0) return true;
+                if (Unlocked("derby"))
+                {
+                    if (DerbyPrizeWaiting >= 0) return true;
+                    for (int i = 0; i < DerbyGoals.Length; i++) if (DerbyGoalDone(i) && !DerbyGoalClaimed(i)) return true;
+                }
                 for (int i = 0; i < Tasks.Length; i++) if (TaskDone(i) && !TaskClaimed(i)) return true;
                 return false;
             }

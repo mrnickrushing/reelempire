@@ -170,7 +170,7 @@ void ShowToday()
                 "OPEN", Ui.Blue, () => Open(Page.Derby), null, prize || s.DerbyOn);
 
             if (s.Unlocked("voyages")) y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
-            else y = Heading(y, "VOYAGES open with your fourth berth  ·  THE DERBY with your fifth  ·  THE SEASON with your sixth");
+            else y = Heading(y, "VOYAGES open with your fourth dock  ·  THE DERBY with your fifth  ·  THE SEASON with your sixth");
             for (int i = 0; i < s.State.voyages.Count; i++)
             {
                 var v = s.State.voyages[i]; var d = Sim.Voyages[v.kind]; int k = i; double left = s.VoyageLeft(v);
@@ -203,7 +203,7 @@ void ShowToday()
             EndList(-y);
         }
 
-        static readonly string[] StageNames = { "Boats", "Dock", "Hall", "Market" };
+        static readonly string[] StageNames = { "Boats", "Porters", "Hall", "Market" };
         static readonly string[] CrewRarity = { "COMMON", "", "RARE", "EPIC", "LEGENDARY" };
 
         void ShowCrew()
@@ -337,7 +337,7 @@ void ShowToday()
             st.starterOffered = true;
             var card = Card(900, 560, "A HAND ON DECK?");
             var star = Ui.ArtImg("Star", card, "gem", Color.white, 0); star.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(60, 30), new Vector2(170, 176));
-            var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra hauler and an extra truck in every harbour, for good.\n\nOne time only. You can always find it in the SHOP.", 32, Ui.Ink, TextAnchor.UpperLeft, false);
+            var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra porter and an extra truck in every harbour, for good.\n\nOne time only. You can always find it in the SHOP.", 32, Ui.Ink, TextAnchor.UpperLeft, false);
             t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(270, -100), new Vector2(580, 280));
             var buy = Ui.Button("Buy", card, Store.Price(prod), Ui.Green, () => { CloseCard(); Store.Buy(prod, (ok, msg) => { Toast(msg); if (ok) { Sfx.Play("confirm"); Haptics.Success(); } }); }, 44);
             ((RectTransform)buy.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(215, 40), new Vector2(400, 116));
@@ -365,7 +365,7 @@ void ShowToday()
             {
                 var hh = s.State.harbours[i]; var d = s.DefOf(hh); int k = i; bool here = i == s.State.at;
                 y = Entry(y, Resources.Load<Sprite>("UI/Species/" + Book.In(d.Id)[15].Id.Replace('.', '_')), Color.white, d.Name,
-                    d.Water + "  ·  " + hh.berths.Count + " berths  ·  x" + Format.Money(Math.Pow(2, hh.renovations)) + "  ·  " + (s.IdleRate(hh) > 0 ? "+" + Format.Money(s.IdleRate(hh)) + "/s" : "needs skippers to earn by itself"),
+                    d.Water + "  ·  " + hh.berths.Count + " docks  ·  x" + Format.Money(Math.Pow(2, hh.renovations)) + "  ·  " + (s.IdleRate(hh) > 0 ? "+" + Format.Money(s.IdleRate(hh)) + "/s" : "needs skippers to earn by itself"),
                     here ? null : "SAIL THERE", Ui.Blue, here ? null : (Action)(() => { if (S.Travel(k)) { CloseScreen(); Toast("Welcome to " + d.Name); GameRoot.Instance.Save(); } }), here ? "YOU ARE HERE" : null, here);
             }
             var next = s.NextHarbour;
@@ -381,7 +381,7 @@ void ShowToday()
         void AskRenovate()
         {
             var s = S; var h = H; int gain = s.RenownWaiting;
-            Confirm("RENOVATE?", s.Def.Name + " starts again from one jetty and a rowboat: its levels, berths, lines and cash go.\n\nFrom then on it earns x" + Format.Money(Math.Pow(2, h.renovations + 1)) + " for good" + (gain > 0 ? ", and you gain " + gain + " renown (+" + gain * 2 + "% income everywhere)" : "") + ". Gems, the book and your other harbours are kept.",
+            Confirm("RENOVATE?", s.Def.Name + " starts again from one jetty and a rowboat: its levels, docks, lines and cash go.\n\nFrom then on it earns x" + Format.Money(Math.Pow(2, h.renovations + 1)) + " for good" + (gain > 0 ? ", and you gain " + gain + " renown (+" + gain * 2 + "% income everywhere)" : "") + ". Gems, the book and your other harbours are kept.",
                 "RENOVATE", Ui.Gold, () => { if (S.Renovate()) { CloseScreen(); Sfx.Play("star"); Toast("Renovated! Everything here now earns double."); GameRoot.Instance.Save(); } });
         }
 
@@ -555,7 +555,7 @@ void ShowToday()
 
         const string CreditsText =
             "Reel Empire: Idle Tycoon is made by Rushing Technologies.\n\n" +
-            "<b>Models</b>\nBoats, the truck, trees, rocks, props and the dock hands: Kenney (kenney.nl), CC0.\n" +
+            "<b>Models</b>\nBoats, the truck, trees, rocks, props and the porters: Kenney (kenney.nl), CC0.\n" +
             "Barns, market stalls, docks, fish and sea creatures: Quaternius (quaternius.com), CC0. Lighthouse: MaverickFX, CC0.\n" +
             "Octopus, Lobster and Eel: Poly by Google, CC BY 3.0. Shrimp: jeremy, CC BY 3.0. (poly.pizza)\n\n" +
             "<b>Fonts</b>\nLilita One by Juan Montoreano and Fredoka by Milena Brandão and Hafontia, SIL Open Font License.\n\n" +

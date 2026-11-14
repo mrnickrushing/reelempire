@@ -16,17 +16,17 @@ namespace ReelEmpire.Game
         static readonly Dictionary<string, string> Coach = new Dictionary<string, string>
         {
             { "cast", "That's your rowboat. <b>Tap it</b> and off it goes fishing!" },
-            { "haul", "Fish on the quay! <b>Tap the dock hand</b> to carry the crate up to the hall." },
+            { "haul", "Fish on the quay! <b>Tap the porter</b> to carry the crate up to the hall." },
             { "sell", "Now <b>tap the truck</b>. It takes the fish to market, and that's money." },
             { "level5", "Tap the <b>number over the jetty</b>, then UPGRADE. Every level catches more." },
             { "skipper", "Tired of tapping? In the same panel, <b>hire a skipper</b>. The first one's on me." },
             { "level10", "Keep going to <b>level 10</b>: the catch doubles. Milestones at 10, 25, 50 and 100 are worth chasing." },
-            { "berth2", "Save up and tap <b>OPEN</b> on the next pier. A new berth lands far more than the old one." },
-            { "dock5", "See the badges at the bottom? The <b>coral one</b> is what's holding the harbour back. Upgrade the dock." },
-            { "dockskipper", "A <b>dock foreman</b> keeps the hands moving without a tap. Hire one in the dock's panel." },
+            { "berth2", "Save up and tap <b>NEW DOCK</b> on the next pier. A new dock lands far more than the old one." },
+            { "dock5", "See the badges at the bottom? The <b>coral one</b> is what's holding the harbour back. Upgrade the porters." },
+            { "dockskipper", "A <b>head porter</b> keeps them moving without a tap. Hire one in the porters' panel." },
             { "clean", "Cleaned fish sell for half as much again. Buy the <b>Cleaning Line</b> in the hall." },
             { "marketskipper", "One more: a <b>market manager</b> for the trucks. Then the harbour earns while you're away." },
-            { "berth3", "You're running a real harbour now. Open the <b>third berth</b> and I'll leave you to it." },
+            { "berth3", "You're running a real harbour now. Open the <b>third dock</b> and I'll leave you to it." },
         };
         const string LastCoached = "berth3";
 
@@ -91,7 +91,7 @@ namespace ReelEmpire.Game
                 {
                     var card = Card(880, 470, "YOU'VE GOT IT!");
                     var p = Portrait(card, 190); p.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(46, 10), p.rectTransform.sizeDelta);
-                    var t = Ui.Label("T", card, "Three berths, crews on every stage and money coming in by itself.\n\nThe GOAL card will always tell you what's next. Fair winds, skipper!", 32, Ui.Ink, TextAnchor.UpperLeft, false);
+                    var t = Ui.Label("T", card, "Three docks, crews on every stage and money coming in by itself.\n\nThe GOAL card will always tell you what's next. Fair winds, skipper!", 32, Ui.Ink, TextAnchor.UpperLeft, false);
                     t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(266, -90), new Vector2(570, 230));
                     var ok = Ui.Button("Ok", card, "AYE AYE!", Ui.Green, CloseCard, 44); ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(100, 36), new Vector2(380, 110));
                     Sfx.Play("star", 0.8f);

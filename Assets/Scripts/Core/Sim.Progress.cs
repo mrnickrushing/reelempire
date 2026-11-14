@@ -20,7 +20,7 @@ namespace ReelEmpire.Core
         public string RenovationBlocked(HarbourState h)
         {
             if (h.renovations >= MaxRenovations) return "Renovated as far as it goes";
-            if (h.berths.Count < Content.Berths.Length) return "Open all eight berths first";
+            if (h.berths.Count < Content.Berths.Length) return "Open all eight docks first";
             if (h.cash < RenovationCost(h)) return "Needs " + Format.Money(RenovationCost(h));
             return null;
         }

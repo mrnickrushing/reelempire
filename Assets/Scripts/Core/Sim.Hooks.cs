@@ -24,7 +24,7 @@ namespace ReelEmpire.Core
             switch (kind)
             {
                 case 0: return new GoalDef { Id = "g.berth", Text = "Take " + Content.Berths[berth].Name + " to level " + (int)target, Have = s => s.H.berths[Math.Min(berth, s.H.berths.Count - 1)].level, Need = target, Gems = 3, CashSeconds = 60, Point = Stage.Berth, PointBerth = berth };
-                case 1: return new GoalDef { Id = "g.dock", Text = "Upgrade the dock to level " + (int)target, Have = s => s.H.dock, Need = target, Gems = 3, CashSeconds = 60, Point = Stage.Dock };
+                case 1: return new GoalDef { Id = "g.dock", Text = "Upgrade the porters to level " + (int)target, Have = s => s.H.dock, Need = target, Gems = 3, CashSeconds = 60, Point = Stage.Dock };
                 case 2: return new GoalDef { Id = "g.market", Text = "Upgrade the market to level " + (int)target, Have = s => s.H.market, Need = target, Gems = 3, CashSeconds = 60, Point = Stage.Market };
                 case 3: return new GoalDef { Id = "g.trips", Text = "Bring " + Format.Money(target - State.goalFrom) + " more trips home", Have = s => s.State.trips - s.State.goalFrom, Need = target - State.goalFrom, Gems = 4, CashSeconds = 90 };
                 case 4: return new GoalDef { Id = "g.species", Text = "Catch " + (int)target + " different species", Have = s => s.SpeciesCaught, Need = target, Gems = 8, CashSeconds = 60 };
@@ -174,9 +174,9 @@ namespace ReelEmpire.Core
             double keep = h.cash; h.cash = cash;
             int n; string what;
             if (neck == Stage.Berth) { int best = 0; for (int i = 1; i < h.berths.Count; i++) if (h.berths[i].level < h.berths[best].level) best = i; n = Affordable(h, Stage.Berth, best); what = Content.Berths[best].Name; }
-            else { n = Affordable(h, neck); what = neck == Stage.Dock ? "the dock" : "the market"; }
+            else { n = Affordable(h, neck); what = neck == Stage.Dock ? "the porters" : "the market"; }
             h.cash = keep;
-            return n > 0 ? "Enough for " + n + " level" + (n > 1 ? "s" : "") + " of " + what + "." : null;
+            return n > 0 ? "Enough to upgrade " + what + (n > 1 ? " " + n + " times." : ".") : null;
         }
     }
 }

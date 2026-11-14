@@ -79,12 +79,12 @@ namespace ReelEmpire.Game
             _conditions = Ui.Label("Cond", cond.transform, "", 26, Ui.Ink, TextAnchor.MiddleCenter, false); _conditions.rectTransform.Fill(); _conditions.rectTransform.offsetMin = new Vector2(0, 4);
             var ribbon = Ui.Ribbon("Ribbon", _root, Ui.Coral);
             ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -8), new Vector2(580, 104));
-            ribbon.raycastTarget = true; ribbon.gameObject.AddComponent<Button>().onClick.AddListener(() => { if (S.Unlocked("harbours")) Open(Page.Harbours); else Toast("Open seven berths here and this is where you renovate and sail on"); });
+            ribbon.raycastTarget = true; ribbon.gameObject.AddComponent<Button>().onClick.AddListener(() => { if (S.Unlocked("harbours")) Open(Page.Harbours); else Toast("Open seven docks here and this is where you renovate and sail on"); });
             _harbourName = Ui.Label("Name", ribbon.transform, "", 44, Color.white); _harbourName.rectTransform.Fill(); _harbourName.rectTransform.offsetMin = new Vector2(40, 22); _harbourName.rectTransform.offsetMax = new Vector2(-40, 0); _harbourName.Stroke(2.5f);
 
             // The chain along the bottom: boats, dock, hall, market, joined by arrows.
             _chain = Ui.Rect("Chain", _root); _chain.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 8), new Vector2(760, 180));
-            string[] names = { "BOATS", "DOCK", "HALL", "MARKET" };
+            string[] names = { "BOATS", "PORTERS", "HALL", "MARKET" };
             for (int i = 0; i < 4; i++)
             {
                 int k = i;

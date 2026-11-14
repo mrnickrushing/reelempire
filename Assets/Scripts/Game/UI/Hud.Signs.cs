@@ -81,7 +81,7 @@ namespace ReelEmpire.Game
             {
                 double cost = s.BerthUnlockCost(h); bool can = h.cash >= cost;
                 Put(_nextSign.Rt, view.NextBerthSign(h.berths.Count));
-                _nextSign.Label.text = can ? "OPEN  " + Format.Money(cost) : "OPEN  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
+                _nextSign.Label.text = can ? "NEW DOCK  " + Format.Money(cost) : "NEW DOCK  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
                 _nextSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
                 _nextSign.Back.color = can ? Ui.Gold : Color.white;
             }
