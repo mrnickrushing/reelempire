@@ -199,15 +199,16 @@ def _():
         print("  already set")
         return
     # Not China mainland: games with in-app purchases need a game approval (ISBN) number there.
-    ts = [t["id"] for t in pages("/v1/territories?limit=200") if t["id"] != "CHN"]
+    # Apple wants every territory named, so China is listed as not available.
+    ts = [t["id"] for t in pages("/v1/territories?limit=200")]
     call("POST", "/v2/appAvailabilities", {
         "data": {"type": "appAvailabilities", "attributes": {"availableInNewTerritories": True}, "relationships": {
             "app": {"data": {"type": "apps", "id": APP}},
             "territoryAvailabilities": {"data": [{"type": "territoryAvailabilities", "id": "${%s}" % t} for t in ts]}}},
         "included": [{"type": "territoryAvailabilities", "id": "${%s}" % t,
-                      "attributes": {"available": True, "releaseDate": None, "preOrderEnabled": False},
+                      "attributes": {"available": t != "CHN", "releaseDate": None, "preOrderEnabled": False},
                       "relationships": {"territory": {"data": {"type": "territories", "id": t}}}} for t in ts]})
-    print("  %d territories" % len(ts))
+    print("  %d territories" % (len(ts) - 1))
 
 
 def upload(set_id, name, data):
