@@ -23,7 +23,7 @@ VIEW = {"crab": 20, "octopus": 20, "lobster": 60, "shrimp": 60, "squid": 60}    
 S = {
     "lake": {"Bluegill": ("tang", 150, .8, 1), "Yellow Perch": ("snapper", 45, 1, 1.05), "Roach": ("tetra", 0, .5, 1.05), "Crappie": ("butterfly", 200, .3, .95), "Bream": ("idol", 20, .35, 1),
              "Tench": ("grouper", 90, .7, .8), "Rudd": ("goldfish", -15, .9, 1), "Largemouth Bass": ("grouper", 110, .8, .85), "Common Carp": ("koi", 30, .5, .8), "Walleye": ("snapper", 60, .5, .8),
-             "Channel Catfish": ("catfish", 0, .6, .9), "Northern Pike": ("swordfish", 110, .7, .8), "Mirror Carp": ("koi", 25, .8, 1), "Burbot": ("catfish", 30, .5, .7), "Muskellunge": ("swordfish", 80, .6, .7), "Golden Koi": ("koi", 20, 1.4, 1.25)},
+             "Channel Catfish": ("catfish", 0, .6, .9), "Northern Pike": ("swordfish", 110, .7, .8), "Mirror Carp": ("koi", 25, .8, 1), "Burbot": ("catfish", 30, .5, .7), "Muskellunge": ("swordfish", 80, .6, .7), "Golden Koi": ("koi", 0, 1, 1.25)},
     "river": {"Brown Trout": ("tuna", 190, .6, .85), "Chub": ("tetra", 30, .4, .9), "Dace": ("tetra", 180, .4, 1.1), "Grayling": ("tuna", 240, .3, 1), "Barbel": ("catfish", 20, .7, 1), "Smallmouth Bass": ("grouper", 70, .7, .8),
               "Minnow": ("tetra", 0, 1, 1), "Rainbow Trout": ("tuna", 120, .9, 1.05), "River Eel": ("eel", 0, 1, 1), "Zander": ("snapper", 80, .4, .9), "Brook Char": ("tuna", 170, 1, .9), "Atlantic Salmon": ("tuna", 150, .5, 1.1),
               "Steelhead": ("tuna", 0, .5, 1.1), "Wels Catfish": ("catfish", -20, .5, .6), "White Sturgeon": ("goblin", 0, .4, 1), "Ghost Salmon": ("tuna", 0, .1, 1.5)},
@@ -40,6 +40,10 @@ S = {
                "Northern Shrimp": ("shrimp", 0, 1, 1), "Greenland Halibut": ("flatfish", 200, .3, .7), "King Crab": ("crab", 0, 1.2, 1), "Wolffish": ("blobfish", 180, .5, .8), "Arctic Skate": ("turbot", 190, .4, 1),
                "Sablefish": ("grouper", 220, .3, .5), "Giant Pacific Octopus": ("octopus", -20, 1.2, .9), "Toothfish": ("piranha", 200, .3, .8), "Greenland Shark": ("goblin", 200, .3, .7), "Aurora Char": ("tuna", 100, 1.5, 1.3)},
 }
+
+
+# Legends that gleam: (hue, least saturation, saturation kept) painted over the whole fish.
+GLEAM = {"Golden Koi": (0.115, 0.75, 1.0), "Ghost Salmon": (0.55, 0.0, 0.12), "Aurora Char": (0.45, 0.6, 1.0), "Blue Lobster": (0.6, 0.8, 1.0)}
 
 
 def fetch():
@@ -83,6 +87,7 @@ def species():
             box = im.getbbox()
             if box: im = im.crop(box)
             side = max(im.size); sq = Image.new("RGBA", (side, side), (0, 0, 0, 0)); sq.paste(im, ((side - im.width) // 2, (side - im.height) // 2)); im = sq.resize((256, 256), Image.LANCZOS)
+            wash = GLEAM.get(name)
             if True:
                 px = im.load()
                 for y in range(256):
@@ -90,6 +95,7 @@ def species():
                         r, g, b, a = px[x, y]
                         if a == 0: continue
                         h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                        if wash and v > 0.16: h, s = wash[0], max(wash[1], s * wash[2])      # the whole fish in one metal, the eye left dark
                         r2, g2, b2 = colorsys.hsv_to_rgb((h + hue / 360) % 1, min(1, s * sat * 1.3), min(1, v * val * 1.12))
                         px[x, y] = (int(r2 * 255), int(g2 * 255), int(b2 * 255), a)
             sid = harbour + "_" + name.lower().replace(" ", "_").replace("'", "")

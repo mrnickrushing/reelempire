@@ -11,6 +11,8 @@ namespace ReelEmpire.Game
     public sealed class Look : MonoBehaviour
     {
         public static Look Instance { get; private set; }
+        /// <summary>Lightning: set to 1 and it fades in a blink.</summary>
+        public static float Flash;
         ColorAdjustments _grade;
         Bloom _bloom;
         Light _sun;
@@ -44,6 +46,7 @@ namespace ReelEmpire.Game
         {
             var sim = GameRoot.Sim;
             if (sim == null) return;
+            Flash = Mathf.MoveTowards(Flash, 0, Time.unscaledDeltaTime * 7);
             var w = sim.Weather;
             const bool inside = false;
             float want = inside || w == Core.Weather.Clear ? 0 : w == Core.Weather.Rain ? 0.45f : w == Core.Weather.Fog ? 0.6f : 0.9f;
@@ -63,6 +66,7 @@ namespace ReelEmpire.Game
                 _sun.transform.rotation = Quaternion.Euler(night > 0.99f ? 50 : elev, -150 + phase * 140, 0);
                 _sun.color = Color.Lerp(new Color(0.55f, 0.65f, 1f), Color.Lerp(new Color(1f, 0.74f, 0.5f), new Color(1f, 0.96f, 0.88f), Mathf.Clamp01((elev - 8) / 25f)), day);
                 _sun.intensity = Mathf.Lerp(0.95f, Mathf.Lerp(1.35f, 0.5f, _gloom), day);
+                _sun.intensity += Flash * 3f;
                 _sun.shadowStrength = Mathf.Lerp(0.5f, Mathf.Lerp(0.85f, 0.3f, _gloom), day);
             }
             RenderSettings.ambientSkyColor = Color.Lerp(new Color(0.62f, 0.72f, 0.86f), new Color(0.36f, 0.44f, 0.68f), night);

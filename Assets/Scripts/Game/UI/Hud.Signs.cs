@@ -240,6 +240,7 @@ namespace ReelEmpire.Game
                 RectTransform _toast; float _toastAge;
         public void Toast(string text)
         {
+            if (text == null) return;
             if (_toast != null) Destroy(_toast.gameObject);
             var img = Ui.ArtImg("Toast", _root, "plate", Ui.Ink, 36);
             img.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -156), new Vector2(Mathf.Min(1100, 130 + text.Length * 19), 76));

@@ -19,7 +19,9 @@ namespace ReelEmpire.Game
         readonly List<Transform> _boats = new List<Transform>(), _crates = new List<Transform>(), _haulers = new List<Transform>(), _trucks = new List<Transform>();
         readonly List<Transform> _haulLoads = new List<Transform>(), _truckLoads = new List<Transform>();
         readonly List<int> _haulTo = new List<int>();
-        Transform _rawPile, _donePile, _smoke, _bonus;
+        Transform _rawPile, _donePile, _smoke, _bonus, _beam;
+        readonly List<Light> _lamps = new List<Light>();
+        Material _glow;
         int _berths = -1, _nHaul = -1, _nTruck = -1; string _harbour;
 
         public static HarbourView Create(Transform parent)
@@ -63,6 +65,72 @@ namespace ReelEmpire.Game
             _bonus = (Models.Kit("chest", _moving, Vector3.zero, 0, 2.6f) ?? Scenery.Crate(_moving)).transform; _bonus.gameObject.SetActive(false);
             Scenery.Market(_static);
             Scenery.Surroundings(_static, h.id);
+            BuildLamps();
+        }
+
+        /// <summary>Lamps along the quay and by the market, lit at dusk, and the lighthouse's turning beam.</summary>
+        void BuildLamps()
+        {
+            _lamps.Clear();
+            var at = new List<Vector3>();
+            for (float z = -40; z <= 40; z += 16) at.Add(new Vector3(8.6f, Layout.QuayY, z));
+            at.Add(Layout.MarketCentre + new Vector3(-9, 0, -8)); at.Add(Layout.MarketCentre + new Vector3(-9, 0, 9)); at.Add(Layout.TruckBay + new Vector3(8, 0, 6));
+            Models.Built("Lamp posts", _static, mb =>
+            {
+                foreach (var p in at)
+                {
+                    mb.Matte();
+                    mb.Cylinder(p, p + Vector3.up * 4.4f, 0.09f, 6, Palette.Hex(0x2B3A4A));
+                    mb.Box(p + new Vector3(0, 4.5f, 0), new Vector3(0.5f, 0.12f, 0.5f), Palette.Hex(0x2B3A4A));
+                    mb.Lit();
+                    mb.Sphere(p + new Vector3(0, 4.2f, 0), Vector3.one * 0.26f, 8, new Color(1f, 0.9f, 0.62f, 0));
+                }
+                mb.Matte();
+            });
+            // Only a few real lights reach a surface on a phone, so the light itself is painted: a warm pool on the
+            // ground under each lamp and a halo round its head, both faded in with the dusk.
+            var soft = new Texture2D(64, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < 64; y++) for (int x = 0; x < 64; x++)
+            {
+                float d = Mathf.Clamp01(1 - new Vector2(x - 31.5f, y - 31.5f).magnitude / 31.5f);
+                soft.SetPixel(x, y, new Color(1, 1, 1, d * d));
+            }
+            soft.Apply();
+            var basis = Resources.Load<Material>("Materials/Weather");
+            _glow = basis != null ? new Material(basis) : new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            _glow.SetTexture("_BaseMap", soft); _glow.mainTexture = soft;
+            _glow.SetFloat("_Surface", 1); _glow.SetInt("_SrcBlend", 5); _glow.SetInt("_DstBlend", 1); _glow.SetInt("_ZWrite", 0);
+            _glow.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); _glow.renderQueue = 3100;
+            _glow.SetColor("_BaseColor", Color.clear);
+            var pools = new GameObject("Lamp light"); pools.transform.SetParent(_static, false);
+            var mesh = new Mesh(); var vs = new List<Vector3>(); var uv = new List<Vector2>(); var tr = new List<int>();
+            foreach (var p in at)
+            {
+                const float R = 7.5f; int b = vs.Count; var c = p + Vector3.up * 0.06f;
+                vs.Add(c + new Vector3(-R, 0, -R)); vs.Add(c + new Vector3(-R, 0, R)); vs.Add(c + new Vector3(R, 0, R)); vs.Add(c + new Vector3(R, 0, -R));
+                uv.Add(new Vector2(0, 0)); uv.Add(new Vector2(0, 1)); uv.Add(new Vector2(1, 1)); uv.Add(new Vector2(1, 0));
+                tr.Add(b); tr.Add(b + 1); tr.Add(b + 2); tr.Add(b); tr.Add(b + 2); tr.Add(b + 3);
+            }
+            mesh.SetVertices(vs); mesh.SetUVs(0, uv); mesh.SetTriangles(tr, 0); mesh.RecalculateBounds();
+            pools.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var pr = pools.AddComponent<MeshRenderer>(); pr.sharedMaterial = _glow; pr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var halo = new GameObject("Lamp halos"); halo.transform.SetParent(_static, false);
+            var ps = halo.AddComponent<ParticleSystem>(); ps.Stop();
+            var hm = ps.main; hm.loop = false; hm.playOnAwake = false; hm.maxParticles = 64; hm.simulationSpace = ParticleSystemSimulationSpace.World; hm.startSpeed = 0;
+            var he = ps.emission; he.enabled = false; var hs = ps.shape; hs.enabled = false;
+            halo.GetComponent<ParticleSystemRenderer>().sharedMaterial = _glow;
+            foreach (var p in at) ps.Emit(new ParticleSystem.EmitParams { position = p + Vector3.up * 4.2f, startSize = 3.4f, startLifetime = 1e9f, startColor = Color.white, velocity = Vector3.zero }, 1);
+            ps.Pause();
+            for (int i = at.Count - 3; i < at.Count; i++)      // the market's lamps also throw real light on the stalls and trucks
+            {
+                var p = at[i];
+                var l = new GameObject("Lamp").AddComponent<Light>(); l.transform.SetParent(_static, false); l.transform.position = p + Vector3.up * 4f;
+                l.type = LightType.Point; l.color = new Color(1f, 0.82f, 0.5f); l.range = 17; l.intensity = 0; l.shadows = LightShadows.None;
+                _lamps.Add(l);
+            }
+            var beam = new GameObject("Lighthouse beam").AddComponent<Light>(); beam.transform.SetParent(_static, false); beam.transform.position = new Vector3(3, Layout.QuayY + 15.5f, 62);
+            beam.type = LightType.Spot; beam.color = new Color(1f, 0.95f, 0.75f); beam.range = 190; beam.spotAngle = 26; beam.innerSpotAngle = 12; beam.intensity = 0; beam.shadows = LightShadows.None;
+            _beam = beam.transform; _lamps.Add(beam);
         }
 
         void BuildSea()
@@ -132,6 +200,17 @@ namespace ReelEmpire.Game
             var h = H;
             if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck) Rebuild();
             float time = Time.time;
+            // Dusk: the lamps come on one after another, and the lighthouse starts to turn.
+            float night = s.Night;
+            for (int i = 0; i < _lamps.Count; i++)
+            {
+                bool isBeam = _lamps[i].type == LightType.Spot;
+                float want = Mathf.Clamp01(night * 1.6f - i * 0.05f) * (isBeam ? 260 : 26);
+                _lamps[i].intensity = Mathf.MoveTowards(_lamps[i].intensity, want, Time.deltaTime * (isBeam ? 200 : 20));
+                if (_lamps[i].enabled != want > 0 || _lamps[i].intensity > 0 != _lamps[i].enabled) _lamps[i].enabled = _lamps[i].intensity > 0.01f || want > 0;
+            }
+            if (_glow != null) _glow.SetColor("_BaseColor", new Color(1f, 0.78f, 0.42f, Mathf.Clamp01(night * 1.4f) * 0.6f));
+            if (_beam != null) _beam.rotation = Quaternion.Euler(14, time * 26, 0);
 
             for (int i = 0; i < _boats.Count; i++)
             {

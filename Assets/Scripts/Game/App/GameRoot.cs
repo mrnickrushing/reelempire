@@ -97,6 +97,7 @@ namespace ReelEmpire.Game
             yield return null; yield return null;          // the screen is up before the heavy work starts
             loading.Progress = 0.25f;
             HarbourView.Create(transform);
+            WeatherFx.Create(transform);
             loading.Progress = 0.7f;
             yield return null;
             Hud.Create();
