@@ -201,7 +201,7 @@ void ShowToday()
                 for (int i = 0; i < Sim.Voyages.Length; i++)
                 {
                     var d = Sim.Voyages[i]; int k = i;
-                    y = Entry(y, Ui.Ic("compass"), Ui.Ink, d.Name, d.Blurb + ": about +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems", Format.Time(s.VoyageSeconds(d)), Ui.Blue,
+                    y = Entry(y, Ui.Ic("compass"), Ui.Ink, d.Name, d.Blurb + ": about +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems", "SEND  " + Short(s.VoyageSeconds(d)), Ui.Blue,
                         () => { if (S.StartVoyage(k)) { Sfx.Play("dispatch", 0.7f); Toast(d.Name + ": the boat is away"); Reminders.AskOnce(); GameRoot.Instance.Save(); ShowToday(); } });
                 }
 
@@ -222,6 +222,9 @@ void ShowToday()
             }
             EndList(-y);
         }
+
+        /// <summary>A length of time in one word: 30m, 2h.</summary>
+        static string Short(double seconds) { return seconds >= 3600 ? Math.Round(seconds / 3600) + "h" : Math.Round(seconds / 60) + "m"; }
 
         static readonly string[] StageNames = { "Boats", "Porters", "Hall", "Market" };
         static readonly string[] CrewRarity = { "COMMON", "", "RARE", "EPIC", "LEGENDARY" };
