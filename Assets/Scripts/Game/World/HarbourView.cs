@@ -47,6 +47,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < h.berths.Count; i++)
             {
                 _boats.Add(Scenery.Boat(i, _moving).transform);
+                Life.Wake(_boats[i], Layout.BoatLength(i));
                 var crate = Scenery.Crate(_moving); crate.transform.position = Layout.Crate(i); _crates.Add(crate.transform);
             }
             for (int i = 0; i < h.haulers.Count; i++)
@@ -66,6 +67,10 @@ namespace ReelEmpire.Game
             Scenery.Market(_static);
             Scenery.Surroundings(_static, h.id);
             BuildLamps();
+            // Life: smoke from the smokehouse, gulls over the water, the lighthouse's beam.
+            Life.Smoke(_static, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY + 11.5f, Layout.HallCentre.z + 14));
+            if (!Theme.For(h.id).Ice) Life.Gulls(_moving, 5, h.id.GetHashCode());
+            Life.LighthouseBeam(_static, new Vector3(3, Layout.QuayY + 15.2f, 62));
         }
 
         /// <summary>Lamps along the quay and by the market, lit at dusk, and the lighthouse's turning beam.</summary>

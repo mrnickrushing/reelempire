@@ -30,7 +30,7 @@ namespace ReelEmpire.Game
         RectTransform MakeBubble()
         {
             var img = Ui.ArtImg("Tap", _signs, "bubble", Color.white, 0);
-            var rt = img.rectTransform; rt.sizeDelta = new Vector2(68, 76); img.raycastTarget = false; rt.anchorMin = rt.anchorMax = Vector2.zero; rt.pivot = new Vector2(0.5f, 0);
+            var rt = img.rectTransform; rt.sizeDelta = new Vector2(68, 76); img.raycastTarget = false; rt.SetAsFirstSibling(); rt.anchorMin = rt.anchorMax = Vector2.zero; rt.pivot = new Vector2(0.5f, 0);
             var hand = Ui.ArtImg("Hand", rt, "hand", Color.white, 0); hand.rectTransform.Fill(14); hand.rectTransform.offsetMin = new Vector2(14, 26); hand.raycastTarget = false;
             return rt;
         }
