@@ -47,7 +47,7 @@ namespace ReelEmpire.Core
             new GoalDef { Id = "river", Text = "Open Alder River", Have = s => s.State.harbours.Count, Need = 2, Gems = 50 },
         };
 
-        public GoalDef Goal { get { return State.goalIndex < Goals.Count ? Goals[State.goalIndex] : null; } }
+        public GoalDef Goal { get { return State.goalIndex < Goals.Count ? Goals[State.goalIndex] : Generated(); } }
         public double GoalHave { get { var g = Goal; return g == null ? 0 : Math.Min(g.Need, g.Have(this)); } }
         public bool GoalDone { get { var g = Goal; return g != null && g.Have(this) >= g.Need; } }
         public double GoalCash(GoalDef g) { return Math.Max(g.Floor * Def.Scale, g.CashSeconds * FullRate(H)); }
@@ -62,6 +62,8 @@ namespace ReelEmpire.Core
             if (g.CashSeconds > 0 || g.Floor > 0) Pay(H, cash);
             State.gems += g.Gems;
             State.goalIndex++;
+            AddSeasonPoints(15);
+            if (State.goalIndex >= Goals.Count) PrepareGenerated();
             Touch();
             return true;
         }

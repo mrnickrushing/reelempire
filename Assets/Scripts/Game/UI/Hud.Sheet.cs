@@ -183,7 +183,8 @@ namespace ReelEmpire.Game
                 var b = Ui.Button("Mode" + i, right, BuyNames[i], _buyMode == i ? Ui.Blue : Ui.Off, () => { _buyMode = k; RefreshSheet(); }, 26);
                 var rt = (RectTransform)b.transform; rt.anchorMin = new Vector2(i / 4f, 1); rt.anchorMax = new Vector2((i + 1) / 4f, 1); rt.pivot = new Vector2(0.5f, 1); rt.offsetMin = new Vector2(2, 0); rt.offsetMax = new Vector2(-2, 0); rt.anchoredPosition = new Vector2(0, top); rt.sizeDelta = new Vector2(rt.sizeDelta.x, 60);
             }
-            _upgrade = Ui.Button("Upgrade", right, null, Ui.Green, DoUpgrade, 44);
+            _upgrade = Ui.Button("Upgrade", right, null, Ui.Green, null, 44);
+            var hold = _upgrade.gameObject.AddComponent<HoldButton>(); hold.Fire = DoUpgrade;
             ((RectTransform)_upgrade.transform).Band(false, 0, stage == Stage.Hall ? 190 : 124);
             _upgradeLabel = Ui.Label("L", _upgrade.transform, "", 40, Color.white, TextAnchor.UpperCenter); _upgradeLabel.rectTransform.Fill(); _upgradeLabel.rectTransform.offsetMax = new Vector2(0, -14); _upgradeLabel.Stroke(2.5f);
             _upgradeCost = Ui.Label("C", _upgrade.transform, "", 36, Color.white, TextAnchor.LowerCenter); _upgradeCost.rectTransform.Fill(); _upgradeCost.rectTransform.offsetMin = new Vector2(0, 26); _upgradeCost.Stroke(2f);
@@ -206,11 +207,39 @@ namespace ReelEmpire.Game
             if (stage == Stage.Berth) h.berths[berth].level += n; else if (stage == Stage.Dock) h.dock += n; else if (stage == Stage.Hall) h.hall += n; else h.market += n;
         }
 
-        void DoUpgrade()
+        float _lastBuy; int _buyRun;
+
+        /// <summary>One purchase. Bought in quick succession (a held button), the sound climbs.</summary>
+        bool DoUpgrade()
         {
             int n = BuyCount();
-            if (n > 0 && S.Upgrade(_sheetStage, _sheetBerth < 0 ? 0 : _sheetBerth, n)) { Sfx.Play("build", 0.6f, 1 + Mathf.Min(0.4f, n * 0.02f)); }
-            else { Sfx.Play("error", 0.5f); }
+            if (n > 0 && S.Upgrade(_sheetStage, _sheetBerth < 0 ? 0 : _sheetBerth, n))
+            {
+                _buyRun = Time.unscaledTime - _lastBuy < 0.6f ? Mathf.Min(_buyRun + 1, 14) : 0; _lastBuy = Time.unscaledTime;
+                Sfx.Play("build", 0.6f, 1 + _buyRun * 0.045f); Haptics.Medium();
+                return true;
+            }
+            Sfx.Play("error", 0.5f);
+            return false;
+        }
+    }
+
+    /// <summary>A button that buys once on a tap and keeps buying, faster and faster, while it is held.</summary>
+    public sealed class HoldButton : MonoBehaviour, UnityEngine.EventSystems.IPointerDownHandler, UnityEngine.EventSystems.IPointerUpHandler, UnityEngine.EventSystems.IPointerExitHandler
+    {
+        public Func<bool> Fire;
+        bool _down; float _next, _gap;
+
+        public void OnPointerDown(UnityEngine.EventSystems.PointerEventData e) { _down = Fire != null && Fire(); _gap = 0.32f; _next = Time.unscaledTime + 0.42f; }
+        public void OnPointerUp(UnityEngine.EventSystems.PointerEventData e) { _down = false; }
+        public void OnPointerExit(UnityEngine.EventSystems.PointerEventData e) { _down = false; }
+
+        void Update()
+        {
+            if (!_down || Time.unscaledTime < _next) return;
+            if (!Fire()) { _down = false; return; }
+            _gap = Mathf.Max(0.05f, _gap * 0.82f);
+            _next = Time.unscaledTime + _gap;
         }
     }
 }

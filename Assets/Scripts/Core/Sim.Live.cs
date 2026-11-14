@@ -32,8 +32,9 @@ namespace ReelEmpire.Core
         };
 
         public bool GiftReady { get { return State.giftDay != Today; } }
-        /// <summary>Which of the seven gifts is next (a missed day starts the week again).</summary>
-        public int GiftIndex { get { return State.giftDay == Today - 1 || State.giftDay == Today ? State.giftStreak % Gifts.Length : 0; } }
+        /// <summary>Which of the seven gifts is next. It moves on with every day played and never starts again: a missed
+        /// day costs nothing.</summary>
+        public int GiftIndex { get { return State.giftStreak % Gifts.Length; } }
         public double GiftIn { get { return 86400 - ((RealNow() + UtcOffset) % 86400 + 86400) % 86400; } }
 
         public GiftDef ClaimGift()
@@ -121,6 +122,7 @@ namespace ReelEmpire.Core
         {
             new LogbookDef { Id = "watch1", Renown = 25, Name = "Night Watch", Blurb = "The harbour earns for 1 more hour while you're away" },
             new LogbookDef { Id = "tide", Renown = 60, Name = "Tide Tables", Blurb = "A Tide Boost charge lasts 90 minutes" },
+            new LogbookDef { Id = "lookout", Renown = 100, Name = "The Lookout", Blurb = "Crates drift into the harbour twice as often" },
             new LogbookDef { Id = "watch2", Renown = 150, Name = "Second Watch", Blurb = "1 more hour of away earnings" },
             new LogbookDef { Id = "charts", Renown = 300, Name = "Better Charts", Blurb = "Voyages take a fifth less time" },
             new LogbookDef { Id = "watch3", Renown = 600, Name = "Dog Watch", Blurb = "2 more hours of away earnings" },

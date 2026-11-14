@@ -41,7 +41,7 @@ namespace ReelEmpire.Game
             var h = H; _signBerths = h.berths.Count;
             for (int i = 0; i < h.berths.Count; i++) { int k = i; _berthSigns.Add(MakeSign(() => OpenSheet(Stage.Berth, k))); }
             _dockSign = MakeSign(() => OpenSheet(Stage.Dock, 0)); _hallSign = MakeSign(() => OpenSheet(Stage.Hall, 0)); _marketSign = MakeSign(() => OpenSheet(Stage.Market, 0));
-            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 230) : null;
+            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 290) : null;
             if (_nextSign != null) _nextSign.Up.gameObject.SetActive(false);
             for (int i = 0; i < h.berths.Count + 2; i++) _tapBubbles.Add(MakeBubble());
         }
@@ -80,8 +80,8 @@ namespace ReelEmpire.Game
             if (_nextSign != null)
             {
                 double cost = s.BerthUnlockCost(h); bool can = h.cash >= cost;
-                Put(_nextSign.Rt, view.BerthSign(h.berths.Count));
-                _nextSign.Label.text = "OPEN  " + Format.Money(cost);
+                Put(_nextSign.Rt, view.NextBerthSign(h.berths.Count));
+                _nextSign.Label.text = can ? "OPEN  " + Format.Money(cost) : "OPEN  " + Format.Money(cost) + "  <size=22>" + Mathf.FloorToInt((float)(h.cash / cost * 100)) + "%</size>";
                 _nextSign.Label.rectTransform.offsetMax = new Vector2(-8, 0);
                 _nextSign.Back.color = can ? Ui.Gold : Color.white;
             }
@@ -152,6 +152,7 @@ namespace ReelEmpire.Game
         void OnCaught(int berth, SpeciesDef sp, float kg, double units, bool first)
         {
             var view = HarbourView.Instance; if (view == null) return;
+            if (first && sp.Rarity >= Rarity.Rare || sp.Rarity >= Rarity.Epic) { BigCatch(sp, kg, first); return; }
             if (first)
             {
                 Toast("New species: " + sp.Name + "  +" + Content.RarityGems[(int)sp.Rarity] + " gems");
@@ -164,6 +165,7 @@ namespace ReelEmpire.Game
         {
             var view = HarbourView.Instance; if (view == null) return;
             Pop(Layout.MarketGate + Vector3.up * 3, "+" + Format.Money(cash), Ui.Gold, 44);
+            Vector2 from; if (!SheetOpen && !ScreenOpen && Project(Layout.MarketGate + Vector3.up * 2, out from) && _flyers.Count < 12) CoinBurst(3, from);
             if (Time.unscaledTime - _lastSoldSound > 0.35f) { _lastSoldSound = Time.unscaledTime; Sfx.Play("coin", 0.35f); }
         }
 
@@ -174,10 +176,68 @@ namespace ReelEmpire.Game
             bool speed = stage == Stage.Berth && Array.IndexOf(Content.SpeedMilestones, level) >= 0;
             Pop(at + Vector3.up * 2, "LEVEL " + level + "!  " + (speed ? "x2 SPEED" : "x2"), Ui.Gold, 52, 2.2f);
             Sfx.Play("star", 0.8f);
+            Haptics.Success();
             RateSoon();
         }
 
-        RectTransform _toast; float _toastAge;
+/// <summary>A rare fish comes aboard: the whole screen says so (only when nothing else is up).</summary>
+        void BigCatch(SpeciesDef sp, float kg, bool first)
+        {
+            Sfx.Play("star", 1f); Haptics.Success();
+            if (ModalOpen || ScreenOpen) { Toast((first ? "New species: " : "") + sp.Name + "  " + kg.ToString(kg < 10 ? "0.0" : "0") + " kg"); return; }
+            var card = Card(760, 640, sp.Rarity == Rarity.Legendary ? "A LEGEND!" : sp.Rarity == Rarity.Epic ? "EPIC CATCH!" : "RARE CATCH!");
+            var rays = Ui.ArtImg("Rays", card, "rays", RarityInk[(int)sp.Rarity], 0); rays.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 60), new Vector2(520, 520));
+            rays.gameObject.AddComponent<Spinner>();
+            var pic = Ui.Img("Pic", card, Color.white); pic.sprite = SpeciesPicture(sp); pic.preserveAspect = true; pic.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 70), new Vector2(300, 300));
+            var n = Ui.Label("N", card, sp.Name, 52, Ui.Ink); n.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 196), new Vector2(700, 64));
+            string extra = first ? "New in the book  ·  +" + Content.RarityGems[(int)sp.Rarity] + " gems" : "x" + Content.RarityValue[(int)sp.Rarity] + " for this trip";
+            var w = Ui.Label("W", card, kg.ToString(kg < 10 ? "0.0" : "0") + " kg  ·  " + extra, 30, Ui.Dim); w.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 152), new Vector2(700, 40));
+            var ok = Ui.Button("Ok", card, S.CanMount(sp) ? "MOUNT IT  +" + Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100)) + "%" : "WHAT A FISH!", Ui.Green, () => { if (S.Mount(sp.Id)) Toast("Mounted in the trophy hall"); CloseCard(); GameRoot.Instance.Save(); }, 40);
+            ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 34), new Vector2(460, 108));
+        }
+
+        // ---- the drifting crate ----
+
+        RectTransform _bonusBubble;
+
+        void OnBonus() { Sfx.Play("chime", 0.5f); }
+
+        void UpdateBonus()
+        {
+            var view = HarbourView.Instance; if (view == null) return;
+            bool on = S.BonusAfloat && !ScreenOpen;
+            if (on && _bonusBubble == null)
+            {
+                var img = Ui.ArtImg("Bonus", _signs, "bubble", Ui.Gold, 0);
+                _bonusBubble = img.rectTransform; _bonusBubble.sizeDelta = new Vector2(104, 118); _bonusBubble.anchorMin = _bonusBubble.anchorMax = Vector2.zero; _bonusBubble.pivot = new Vector2(0.5f, 0);
+                var star = Ui.ArtImg("S", _bonusBubble, "star", Color.white, 0); star.rectTransform.Fill(18); star.rectTransform.offsetMin = new Vector2(18, 36);
+                var btn = img.gameObject.AddComponent<Button>(); img.raycastTarget = true; btn.onClick.AddListener(TakeBonus);
+            }
+            if (_bonusBubble == null) return;
+            if (_bonusBubble.gameObject.activeSelf != on) _bonusBubble.gameObject.SetActive(on);
+            if (!on) return;
+            Vector2 p;
+            if (Project(view.BonusAt + Vector3.up * 2.2f, out p)) _bonusBubble.anchoredPosition = p + new Vector2(0, Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4)) * 12);
+            // It blinks when it is about to drift away.
+            _bonusBubble.GetComponent<Image>().color = S.BonusLeft < 8 && Mathf.Sin(Time.unscaledTime * 14) > 0 ? Color.white : Ui.Gold;
+        }
+
+        void TakeBonus()
+        {
+            var view = HarbourView.Instance; var at = view != null ? view.BonusAt : Vector3.zero;
+            var p = S.ClaimBonus(); if (p == null) return;
+            Sfx.Play("claim", 0.9f); Haptics.Medium();
+            Vector2 from; bool onScreen = Project(at + Vector3.up * 2, out from);
+            switch (p.Value.Kind)
+            {
+                case BonusKind.Cash: Pop(at + Vector3.up * 3, "+" + Format.Money(p.Value.Cash), Ui.Gold, 52, 1.8f); if (onScreen) CoinBurst(10, from); break;
+                case BonusKind.Gems: Pop(at + Vector3.up * 3, "+" + p.Value.Gems + " gems", new Color(0.8f, 0.7f, 1f), 52, 1.8f); break;
+                default: Pop(at + Vector3.up * 3, "x2 for 10 minutes!", new Color(0.5f, 0.95f, 1f), 48, 2f); break;
+            }
+            GameRoot.Instance.Save();
+        }
+
+                RectTransform _toast; float _toastAge;
         public void Toast(string text)
         {
             if (_toast != null) Destroy(_toast.gameObject);
@@ -200,6 +260,7 @@ namespace ReelEmpire.Game
             var t = Ui.Label("H", tab.transform, "GOAL", 28, Color.white); t.rectTransform.Fill(); t.rectTransform.offsetMin = new Vector2(0, 4); t.Stroke(2f);
             _guideCount = Ui.Label("C", _guide, "", 26, Ui.Dim, TextAnchor.UpperRight); _guideCount.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-22, -10), new Vector2(200, 30));
             _guideText = Ui.Label("T", _guide, "", 28, Ui.Ink, TextAnchor.UpperLeft, false); _guideText.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(22, -40), new Vector2(370, 90));
+            _guideText.resizeTextForBestFit = true; _guideText.resizeTextMinSize = 18; _guideText.resizeTextMaxSize = 28; _guideText.verticalOverflow = VerticalWrapMode.Truncate;
             var back = Ui.Img("BarBack", _guide, Ui.Faint, true); back.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(22, 22), new Vector2(366, 16));
             _guideBar = Ui.Img("Bar", back.transform, Ui.Green, true); _guideBar.rectTransform.anchorMin = Vector2.zero; _guideBar.rectTransform.anchorMax = new Vector2(0, 1); _guideBar.rectTransform.offsetMin = _guideBar.rectTransform.offsetMax = Vector2.zero;
             _guideClaim = Ui.Button("Claim", _guide, "CLAIM", Ui.Green, ClaimGoal, 34);
@@ -213,8 +274,9 @@ namespace ReelEmpire.Game
             var g = S.Goal; if (g == null) return;
             string reward = (g.CashSeconds > 0 || g.Floor > 0 ? "+" + Format.Money(S.GoalCash(g)) : "") + (g.Gems > 0 ? "  +" + g.Gems + " gems" : "");
             if (!S.ClaimGoal()) return;
-            Sfx.Play("claim", 0.8f);
+            Sfx.Play("claim", 0.8f); Haptics.Medium();
             Toast("Done!  " + reward.Trim());
+            CoinBurst(8, new Vector2(230, ((RectTransform)transform).rect.height - 260));
             GameRoot.Instance.Save();
         }
 
@@ -231,7 +293,7 @@ namespace ReelEmpire.Game
                 _guideBar.rectTransform.anchorMax = new Vector2((float)(s.GoalHave / g.Need), 1);
                 _guideBar.transform.parent.gameObject.SetActive(!done);
                 _guideClaim.gameObject.SetActive(done);
-                _guideText.rectTransform.sizeDelta = new Vector2(done ? 200 : 370, 90);
+                _guideText.rectTransform.sizeDelta = new Vector2(done ? 190 : 370, done ? 112 : 90);
                 // The hand points at what the step is about, for the first steps and while nothing else is open.
                 var view = HarbourView.Instance;
                 if (!done && view != null && s.State.goalIndex < 12 && !SheetOpen && !ModalOpen && !ScreenOpen && (g.Point != Stage.Berth || g.PointBerth >= 0))
@@ -240,7 +302,7 @@ namespace ReelEmpire.Game
                     Vector3 at = g.Point == Stage.Dock ? (h.dockSkipper || g.Id == "dock5" || g.Id == "dockskipper" ? view.DockSign : view.HaulerAt(0))
                         : g.Point == Stage.Market ? (g.Id == "marketskipper" ? view.MarketSign : view.TruckAt(0))
                         : g.Point == Stage.Hall ? view.HallSign
-                        : g.PointBerth >= h.berths.Count ? view.BerthSign(h.berths.Count) : g.Id == "cast" ? view.BoatAt(g.PointBerth) : view.BerthSign(g.PointBerth);
+                        : g.PointBerth >= h.berths.Count ? view.NextBerthSign(h.berths.Count) : g.Id == "cast" ? view.BoatAt(g.PointBerth) : view.BerthSign(g.PointBerth);
                     Vector2 p;
                     if (g.Id != "species5" && Project(at, out p)) { point = true; _pointer.anchoredPosition = p + new Vector2(0, -6 - Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4)) * 16); }
                 }

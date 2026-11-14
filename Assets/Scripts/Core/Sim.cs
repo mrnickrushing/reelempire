@@ -12,7 +12,7 @@ namespace ReelEmpire.Core
     public sealed partial class Sim
     {
         public readonly GameState State;
-        public Sim(GameState state) { State = state; state.Repair(); foreach (var h in state.harbours) FitCrew(h); }
+        public Sim(GameState state) { State = state; state.Repair(); foreach (var h in state.harbours) FitCrew(h); if (state.goalIndex >= Goals.Count && state.goalTarget <= 0) PrepareGenerated(); }
 
         /// <summary>Something the interface shows has changed (levels, unlocks, owned things).</summary>
         public event Action Changed;
@@ -46,6 +46,8 @@ namespace ReelEmpire.Core
         {
             if (dt <= 0) return;
             RollTasks();        // the day's counts start when the day does, not when the page is first opened
+            TickBonus(dt);
+            if (State.firstDay < 0) State.firstDay = Today;
             State.played += dt;
             while (dt > 0)
             {

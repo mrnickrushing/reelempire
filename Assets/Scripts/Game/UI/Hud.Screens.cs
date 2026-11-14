@@ -14,18 +14,23 @@ namespace ReelEmpire.Game
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
+        readonly Dictionary<string, RectTransform> _nav = new Dictionary<string, RectTransform>();
+        readonly Dictionary<string, float> _navPop = new Dictionary<string, float>();
+
         void BuildNav()
         {
-            NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
-            NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
-            NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
-            NavButton(new Vector2(1, 0), new Vector2(-368, 16), "CREW", Resources.Load<Sprite>("UI/Faces/crew_brannock"), Color.white, () => Open(Page.Crew), true);
+            _nav["book"] = NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
+            _nav["awards"] = NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
+            _nav["today"] = NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
+            _nav["crew"] = NavButton(new Vector2(1, 0), new Vector2(-368, 16), "CREW", Resources.Load<Sprite>("UI/Faces/crew_brannock"), Color.white, () => Open(Page.Crew), true);
             NavButton(new Vector2(1, 0), new Vector2(-226, 16), "SHOP", Ui.Art("gem"), Color.white, () => Open(Page.Shop), false);
             NavButton(new Vector2(1, 0), new Vector2(-84, 16), "MORE", Ui.Ic("gear"), Ui.Ink, () => Open(Page.Settings), false);
             _screenRoot = Ui.Rect("Screen", _root); _screenRoot.Fill();
+            // What is already open in this save is not news.
+            foreach (var f in Sim.Features) if (S.Unlocked(f) && !S.State.seenFeatures.Contains(f)) S.State.seenFeatures.Add(f);
         }
 
-        void NavButton(Vector2 anchor, Vector2 pos, string label, Sprite icon, Color tint, Action tap, bool dot)
+        RectTransform NavButton(Vector2 anchor, Vector2 pos, string label, Sprite icon, Color tint, Action tap, bool dot)
         {
             var b = Ui.Button(label, _root, null, new Color(0, 0, 0, 0), tap, 30);
             var rt = (RectTransform)b.transform; rt.Place(anchor, new Vector2(0.5f, 0), pos + new Vector2(0, 34), new Vector2(118, 126));
@@ -37,14 +42,36 @@ namespace ReelEmpire.Game
                 var d = Ui.ArtImg("Dot", rt, "badge", Ui.Coral, 0); d.rectTransform.Place(new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(-14, -16), new Vector2(40, 42));
                 _navDots.Add(d);
             }
+            return rt;
         }
 
         void UpdateNav()
         {
+            var s = S;
             // The dots are made in the order of the buttons that carry one: AWARDS, TODAY, CREW.
-            if (_navDots.Count > 0) { bool claim = S.AchievementsToClaim > 0 || S.TrophiesWaiting > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
-            if (_navDots.Count > 1) { bool today = S.TodayWaiting; if (_navDots[1].gameObject.activeSelf != today) _navDots[1].gameObject.SetActive(today); }
-            if (_navDots.Count > 2) { bool chest = S.ChestFree; if (_navDots[2].gameObject.activeSelf != chest) _navDots[2].gameObject.SetActive(chest); }
+            if (_navDots.Count > 0) { bool claim = s.AchievementsToClaim > 0 || s.TrophiesWaiting > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
+            if (_navDots.Count > 1) { bool today = s.TodayWaiting; if (_navDots[1].gameObject.activeSelf != today) _navDots[1].gameObject.SetActive(today); }
+            if (_navDots.Count > 2) { bool chest = s.ChestFree; if (_navDots[2].gameObject.activeSelf != chest) _navDots[2].gameObject.SetActive(chest); }
+            // Each part of the game appears when the harbour has grown into it, with a word about what it is.
+            foreach (var kv in _nav)
+            {
+                bool open = s.Unlocked(kv.Key);
+                if (kv.Value.gameObject.activeSelf != open) kv.Value.gameObject.SetActive(open);
+                float pop; _navPop.TryGetValue(kv.Key, out pop);
+                if (pop > 0) { pop = Mathf.Max(0, pop - Time.unscaledDeltaTime); _navPop[kv.Key] = pop; }
+                kv.Value.localScale = Vector3.one * (1 + 0.18f * Mathf.Abs(Mathf.Sin(pop * 6)) * Mathf.Clamp01(pop));
+            }
+            if (_boostRoot != null && _boostRoot.gameObject.activeSelf != s.Unlocked("boost")) _boostRoot.gameObject.SetActive(s.Unlocked("boost"));
+            if (ModalOpen || ScreenOpen || s.State.tutorialStep == 0) return;
+            foreach (var f in Sim.Features)
+            {
+                if (!s.Unlocked(f) || s.State.seenFeatures.Contains(f)) continue;
+                s.State.seenFeatures.Add(f);
+                Toast(Sim.FeatureNews(f)); Sfx.Play("star", 0.7f); Haptics.Success();
+                if (_nav.ContainsKey(f)) _navPop[f] = 4; else if (f == "voyages" || f == "derby" || f == "season") _navPop["today"] = 4;
+                break;      // one piece of news at a time
+            }
+            if (s.StarterOfferDue && !SheetOpen) OfferStarter();
         }
 
         public bool ScreenOpen { get { return _screen != Page.None; } }
@@ -131,25 +158,26 @@ void ShowToday()
             float y = 0;
             // The gift.
             int gi = s.GiftIndex; var gift = Sim.Gifts[gi];
-            y = Entry(y, Ui.Art("star"), Color.white, "Day " + (gi + 1) + " gift: " + gift.Name, s.GiftReady ? "Come back every day: day 7 is 60 gems. Miss a day and the week starts again." : "Taken. The next one is ready in " + Format.Time(s.GiftIn) + ".",
+            y = Entry(y, Ui.Art("star"), Color.white, "Day " + (gi + 1) + " gift: " + gift.Name, s.GiftReady ? "A gift for every day you play: day 7 is 60 gems. Miss a day and nothing is lost." : "Taken. The next one is ready in " + Format.Time(s.GiftIn) + ".",
                 s.GiftReady ? "TAKE IT" : null, Ui.Gold, s.GiftReady ? (Action)(() => { var g = S.ClaimGift(); if (g != null) { Sfx.Play("claim", 0.9f); Toast("Today's gift: " + g.Name); GameRoot.Instance.Save(); ShowToday(); } }) : null, s.GiftReady ? null : "TAKEN", s.GiftReady);
 
             long sHave; int sNeed; s.SeasonProgress(out sHave, out sNeed);
-            y = Entry(y, Ui.Art("star"), Color.white, Sim.SeasonNames[s.Season] + " season: tier " + s.SeasonTier + " of " + Sim.SeasonTiers,
+            if (s.Unlocked("season")) y = Entry(y, Ui.Art("star"), Color.white, Sim.SeasonNames[s.Season] + " season: tier " + s.SeasonTier + " of " + Sim.SeasonTiers,
                 (sNeed > 0 ? sHave + " / " + sNeed + " points to the next tier. " : "Every tier reached. ") + (s.SeasonWaiting > 0 ? s.SeasonWaiting + " reward" + (s.SeasonWaiting > 1 ? "s" : "") + " to take." : "Ends in " + Format.Time(s.SeasonLeft) + "."),
                 "OPEN", Ui.Blue, () => Open(Page.Season), null, s.SeasonWaiting > 0);
             bool prize = s.DerbyPrizeWaiting >= 0;
-            y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
+            if (s.Unlocked("derby")) y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
                 "OPEN", Ui.Blue, () => Open(Page.Derby), null, prize || s.DerbyOn);
 
-            y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
+            if (s.Unlocked("voyages")) y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
+            else y = Heading(y, "VOYAGES open with your fourth berth  ·  THE DERBY with your fifth  ·  THE SEASON with your sixth");
             for (int i = 0; i < s.State.voyages.Count; i++)
             {
                 var v = s.State.voyages[i]; var d = Sim.Voyages[v.kind]; int k = i; double left = s.VoyageLeft(v);
                 y = Entry(y, Resources.Load<Sprite>("UI/Species/coast_mackerel"), Color.white, d.Name, left > 0 ? "Back in " + Format.Time(left) : "Back with a full hold: +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems",
                     left > 0 ? null : "UNLOAD", Ui.Green, left > 0 ? null : (Action)(() => { double cash = S.CollectVoyage(k); if (cash > 0) { Sfx.Play("coin", 0.9f); Toast("+" + Format.Money(cash) + "  +" + d.Gems + " gems"); GameRoot.Instance.Save(); ShowToday(); } }), left > 0 ? "AT SEA" : null, left <= 0);
             }
-            if (s.State.voyages.Count < s.VoyageSlots)
+            if (s.Unlocked("voyages") && s.State.voyages.Count < s.VoyageSlots)
                 for (int i = 0; i < Sim.Voyages.Length; i++)
                 {
                     var d = Sim.Voyages[i]; int k = i;
@@ -165,9 +193,10 @@ void ShowToday()
                     done && !claimed ? (Action)(() => { if (S.ClaimTask(k)) { Sfx.Play("claim", 0.8f); GameRoot.Instance.Save(); ShowToday(); } }) : null, claimed ? "DONE" : null, done && !claimed);
             }
 
-            y = Heading(y, "SKIPPER'S LOGBOOK: opens as your renown grows (now " + s.State.renown + ")");
+            if (s.Unlocked("harbours")) y = Heading(y, "SKIPPER'S LOGBOOK: opens as your renown grows (now " + s.State.renown + ")");
             foreach (var p in Sim.LogbookPages)
             {
+                if (!s.Unlocked("harbours")) break;
                 bool has = s.Logbook(p.Id);
                 y = Entry(y, Ui.Ic(has ? "medal" : "lock"), Ui.Ink, p.Name, p.Blurb, null, Ui.Off, null, has ? "YOURS" : "AT " + p.Renown + " RENOWN", has);
             }
@@ -281,6 +310,7 @@ void ShowToday()
                     done && !claimed ? (Action)(() => { if (S.ClaimDerbyGoal(k)) { Sfx.Play("claim", 0.8f); GameRoot.Instance.Save(); ShowDerby(); } }) : null, claimed ? "DONE" : null, done && !claimed);
             }
             y = Heading(y, "THE TABLE  (1st 100 gems · top 3: 60 · top 10: 30 · top 25: 15 · everyone: 5)");
+            var fair = Ui.Label("Fair", _list, "The other skippers are part of the game, not real players. For real ones, see the Game Center leaderboard in MORE.", 22, Ui.Dim, TextAnchor.MiddleLeft, false); fair.rectTransform.Band(true, y, 36, 10); y -= 44;
             double frac = 1 - s.DerbyLeft / (3 * 86400.0);
             var table = new List<KeyValuePair<string, long>>();
             for (int i = 0; i < Sim.DerbyRivals; i++) table.Add(new KeyValuePair<string, long>(Sim.RivalNames[i], s.RivalScore(s.DerbyIndex, i, frac)));
@@ -296,6 +326,22 @@ void ShowToday()
                 y -= 60;
             }
             EndList(-y);
+        }
+
+        /// <summary>The Deckhand's Pack, shown once, to someone who has come back on another day: never at launch, never
+        /// on the first day, never twice.</summary>
+        void OfferStarter()
+        {
+            var st = S.State; var prod = Sim.Product("reelempire.starter");
+            if (st.starterOffered || S.Owns(prod.Id) || ModalOpen || !Store.Available) return;
+            st.starterOffered = true;
+            var card = Card(900, 560, "A HAND ON DECK?");
+            var star = Ui.ArtImg("Star", card, "gem", Color.white, 0); star.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(60, 30), new Vector2(170, 176));
+            var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra hauler and an extra truck in every harbour, for good.\n\nOne time only. You can always find it in the SHOP.", 32, Ui.Ink, TextAnchor.UpperLeft, false);
+            t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(270, -100), new Vector2(580, 280));
+            var buy = Ui.Button("Buy", card, Store.Price(prod), Ui.Green, () => { CloseCard(); Store.Buy(prod, (ok, msg) => { Toast(msg); if (ok) { Sfx.Play("confirm"); Haptics.Success(); } }); }, 44);
+            ((RectTransform)buy.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(215, 40), new Vector2(400, 116));
+            var no = Ui.Button("No", card, "NOT NOW", Ui.Off, CloseCard, 40); ((RectTransform)no.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-215, 40), new Vector2(400, 116));
         }
 
         void ShowHarbours()
@@ -356,7 +402,8 @@ void ShowToday()
             }
             var all = Book.In(_bookHarbour);
             int trophyPct = Mathf.RoundToInt((float)((s.TrophyMult - 1) * 100));
-            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (trophyPct > 0 ? "   +" + trophyPct + "%" : ""), 30, Ui.Ink, TextAnchor.MiddleRight); count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -78), new Vector2(260, 50));
+            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (s.PageComplete(_bookHarbour) ? "  +10% here" : "") + (trophyPct > 0 ? "   +" + trophyPct + "%" : ""), 28, Ui.Ink, TextAnchor.MiddleRight);
+            if (!s.PageComplete(_bookHarbour)) { var hint = Ui.Label("Hint", p, "Catch all " + all.Count + " here for +10% income in this harbour", 22, Ui.Dim, TextAnchor.MiddleLeft, false); hint.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(44, 8), new Vector2(900, 32)); } count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -78), new Vector2(330, 50));
             // Tiles, six across.
             const int cols = 6; const float w = 236, hgt = 250;
             for (int i = 0; i < all.Count; i++)
@@ -389,6 +436,7 @@ void ShowToday()
             var s = S;
             Frame("AWARDS");
             float y = 0;
+            y = Heading(y, "Every award you take adds +1% income for good  (now +" + s.State.achieved.Count + "%)");
             var order = new List<AchievementDef>(Sim.Achievements);
             order.Sort((a, b) => Rank(s, a).CompareTo(Rank(s, b)));
             foreach (var a in order)
@@ -447,6 +495,7 @@ void ShowToday()
             y = Entry(y, Ui.Ic("sound"), Ui.Ink, "Sound", Sfx.Muted ? "Off" : "On", Sfx.Muted ? "TURN ON" : "TURN OFF", Ui.Blue, () => { Sfx.Muted = !Sfx.Muted; again(); });
             y = Entry(y, Ui.Ic("sound"), Ui.Ink, "Music", Sfx.Music ? "On" : "Off", Sfx.Music ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Sfx.Music = !Sfx.Music; again(); });
             y = Entry(y, Ui.Ic("bolt"), Ui.Ink, "Battery saver", FrameBudget.BatterySaver ? "On: 30 frames a second, a cooler phone" : "Off: 60 frames a second", FrameBudget.BatterySaver ? "TURN OFF" : "TURN ON", Ui.Blue, () => { FrameBudget.BatterySaver = !FrameBudget.BatterySaver; again(); });
+            y = Entry(y, Ui.Ic("bolt"), Ui.Ink, "Vibration", Haptics.On ? "On: a tap you can feel on upgrades and catches" : "Off", Haptics.On ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Haptics.On = !Haptics.On; again(); });
             y = Entry(y, Ui.Ic("bell"), Ui.Ink, "Reminders", Reminders.On ? "On: a notification when the docks are full" : "Off", Reminders.On ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Reminders.On = !Reminders.On; again(); });
             y = Entry(y, Ui.Ic("chart"), Ui.Ink, "Anonymous play statistics", (Telemetry.Sharing ? "On" : "Off") + ": where players get stuck. Nothing about you, no tracking.", Telemetry.Sharing ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Telemetry.Sharing = !Telemetry.Sharing; again(); });
 
@@ -518,5 +567,11 @@ void ShowToday()
             var b = Ui.Label("B", card, CreditsText, 28, Ui.Ink, TextAnchor.UpperLeft, false); b.rectTransform.Fill(); b.rectTransform.offsetMin = new Vector2(50, 150); b.rectTransform.offsetMax = new Vector2(-50, -90);
             var ok = Ui.Button("Ok", card, "CLOSE", Ui.Blue, CloseCard, 40); ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 36), new Vector2(360, 104));
         }
+    }
+
+    /// <summary>Turns slowly (the rays behind a prize).</summary>
+    public sealed class Spinner : MonoBehaviour
+    {
+        void Update() { transform.Rotate(0, 0, 22 * Time.unscaledDeltaTime); }
     }
 }

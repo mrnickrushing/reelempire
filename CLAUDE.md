@@ -65,6 +65,13 @@ platform code, tools and conventions are the same.
   weekend derby (Friday to Sunday local time; `DerbyPoints` per fish landed while playing, five goals, a placing among
   49 rivals whose scores come from the derby's number and how far through it is: `RivalScore`). Their pages open from
   TODAY. `Hud.OfferCloud` asks before a newer iCloud save replaces this device's.
+- Retention (`docs/RETENTION.md` is the research, DESIGN.md "Keeping players" the checklist; `Core/Sim.Hooks.cs`):
+  generated guide steps after the written ones (`Generated`, `PrepareGenerated`), the drifting crate (`TickBonus`,
+  `ClaimBonus`; a chest model and a gold bubble in the harbour), `CollectAwayDoubled` (free once a day), `WelcomeHome`
+  after three days away, `Unlocked(feature)` (nav buttons and TODAY sections appear as the harbour grows; news shown
+  once, `State.seenFeatures`), `StarterOfferDue` (never on the first day), `Affords`. Feel: `CoinBurst`, `Haptics`
+  (`Plugins/iOS/ReelEmpireHaptics.mm`), `HoldButton` on UPGRADE, `BigCatch`. Reminders: two at most, none between
+  22:00 and 08:00. Don't add: ads, energy, pay-only walls, punishing streaks, offers at launch, fake players.
 - Not done yet (see DESIGN.md milestones): crew abilities, the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

@@ -76,6 +76,12 @@ namespace ReelEmpire.Core
         public double chestAt;          // real time the free crew chest is ready
         public int chestsOpened, chestsSinceEpic;
         public List<string> trophies = new List<string>();
+        public int goalKind, goalBerth; public double goalTarget; public long goalFrom;
+        public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
+        public long doubleDay = -1;
+        public bool starterOffered;
+        public long firstDay = -1;      // the day the game was first played
+        public List<string> seenFeatures = new List<string>();
         public long seasonIndex = -1, seasonPoints, seasonPremiumIndex = -1; public int seasonFree, seasonPaid;
         public long derbyIndex = -1, derbyScore, derbyLastIndex = -1, derbyLastScore, derbyPrizeFor = -1; public int derbyGoals, derbyBest;
 
@@ -117,6 +123,7 @@ namespace ReelEmpire.Core
             if (voyages == null) voyages = new List<Voyage>();
             if (crew == null) crew = new List<CrewState>();
             if (trophies == null) trophies = new List<string>();
+            if (seenFeatures == null) seenFeatures = new List<string>();
             if (duty == null) duty = new List<string>();
             while (duty.Count < 4) duty.Add("");
             if (seed == 0) seed = 2463534242;

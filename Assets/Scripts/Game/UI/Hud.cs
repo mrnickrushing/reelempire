@@ -22,7 +22,7 @@ namespace ReelEmpire.Game
         readonly Text[] _chainRate = new Text[4];
         readonly Image[] _chainBox = new Image[4];
         double _shownCash;
-        Image _boostImg; Text _boostText;
+        Image _boostImg; Text _boostText; RectTransform _boostRoot;
 
         void UseBoost()
         {
@@ -55,6 +55,7 @@ namespace ReelEmpire.Game
             money.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(64, -18), new Vector2(360, 92));
             _cash = Ui.Label("Cash", money.transform, "0", 54, Ui.Ink, TextAnchor.MiddleCenter); _cash.rectTransform.Fill(); _cash.rectTransform.offsetMin = new Vector2(62, 8); _cash.rectTransform.offsetMax = new Vector2(-18, 0);
             _cash.resizeTextForBestFit = true; _cash.resizeTextMinSize = 30; _cash.resizeTextMaxSize = 54;
+            _cashPill = money.rectTransform;
             var coin = Ui.ArtImg("Coin", _root, "coin", Color.white, 0); coin.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -8), new Vector2(112, 116));
 
             // Gems.
@@ -64,11 +65,12 @@ namespace ReelEmpire.Game
             var gem = Ui.ArtImg("Gem", _root, "gem", Color.white, 0); gem.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-190, -10), new Vector2(96, 100));
 
             // The Tide Boost: a round button under the gems with its charges or the time left.
-            var boost = Ui.Button("Boost", _root, null, new Color(0, 0, 0, 0), UseBoost, 30);
+            _boostRoot = Ui.Rect("BoostRoot", _root); _boostRoot.Fill();
+            var boost = Ui.Button("Boost", _boostRoot, null, new Color(0, 0, 0, 0), UseBoost, 30);
             var brt = (RectTransform)boost.transform; brt.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -122), new Vector2(112, 120));
             _boostImg = boost.GetComponent<Image>(); _boostImg.sprite = Ui.Art("badge"); _boostImg.type = Image.Type.Simple; _boostImg.color = Ui.Blue;
             var bx = Ui.Label("X", brt, "x2", 46, Color.white); bx.rectTransform.Fill(); bx.rectTransform.offsetMin = new Vector2(0, 12); bx.Stroke(2.5f);
-            var btag = Ui.ArtImg("Tag", _root, "tag", Color.white, 30); btag.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-150, -150), new Vector2(190, 58));
+            var btag = Ui.ArtImg("Tag", _boostRoot, "tag", Color.white, 30); btag.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-150, -150), new Vector2(190, 58));
             _boostText = Ui.Label("T", btag.transform, "", 26, Ui.Ink); _boostText.rectTransform.Fill(); _boostText.rectTransform.offsetMin = new Vector2(0, 4);
 
             // The harbour's name on a ribbon, the conditions on a tag under it.
@@ -77,7 +79,7 @@ namespace ReelEmpire.Game
             _conditions = Ui.Label("Cond", cond.transform, "", 26, Ui.Ink, TextAnchor.MiddleCenter, false); _conditions.rectTransform.Fill(); _conditions.rectTransform.offsetMin = new Vector2(0, 4);
             var ribbon = Ui.Ribbon("Ribbon", _root, Ui.Coral);
             ribbon.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -8), new Vector2(580, 104));
-            ribbon.raycastTarget = true; ribbon.gameObject.AddComponent<Button>().onClick.AddListener(() => Open(Page.Harbours));
+            ribbon.raycastTarget = true; ribbon.gameObject.AddComponent<Button>().onClick.AddListener(() => { if (S.Unlocked("harbours")) Open(Page.Harbours); else Toast("Open seven berths here and this is where you renovate and sail on"); });
             _harbourName = Ui.Label("Name", ribbon.transform, "", 44, Color.white); _harbourName.rectTransform.Fill(); _harbourName.rectTransform.offsetMin = new Vector2(40, 22); _harbourName.rectTransform.offsetMax = new Vector2(-40, 0); _harbourName.Stroke(2.5f);
 
             // The chain along the bottom: boats, dock, hall, market, joined by arrows.
@@ -105,7 +107,7 @@ namespace ReelEmpire.Game
             BuildNav();
             BuildSheet();
             _modal = Ui.Rect("Modal", _root); _modal.Fill();
-            S.Changed += OnChanged; S.Caught += OnCaught; S.Sold += OnSold; S.MilestoneReached += OnMilestone;
+            S.Changed += OnChanged; S.Caught += OnCaught; S.Sold += OnSold; S.MilestoneReached += OnMilestone; S.BonusAppeared += OnBonus;
             _shownCash = H.cash;
             OnChanged();
             if (GameRoot.Instance.AwaySeconds > 0) OfferAway();
@@ -116,7 +118,7 @@ namespace ReelEmpire.Game
         void OnDestroy()
         {
             if (S == null) return;
-            S.Changed -= OnChanged; S.Caught -= OnCaught; S.Sold -= OnSold; S.MilestoneReached -= OnMilestone;
+            S.Changed -= OnChanged; S.Caught -= OnCaught; S.Sold -= OnSold; S.MilestoneReached -= OnMilestone; S.BonusAppeared -= OnBonus;
         }
 
         bool _dirty;
@@ -159,6 +161,8 @@ namespace ReelEmpire.Game
             UpdateGuide();
             UpdateSheet();
             UpdateFx();
+            UpdateFlyers();
+            UpdateBonus();
             UpdateRate();
             UpdateNav();
             UpdateTutorial();
@@ -196,11 +200,13 @@ namespace ReelEmpire.Game
             for (int i = 0; i < h.berths.Count; i++) { int k = i; consider(view.BoatAt(i) - Vector3.up * 1.5f, () => TapBerth(k)); }
             for (int i = 0; i < h.haulers.Count; i++) consider(view.HaulerAt(i) - Vector3.up * 1.2f, TapDock);
             for (int i = 0; i < h.trucks.Count; i++) consider(view.TruckAt(i) - Vector3.up * 1.6f, TapMarket);
+            if (S.BonusAfloat) consider(view.BonusAt, TakeBonus);
             if (act != null) act(); else CloseSheet();
         }
 
         void TapBerth(int berth)
         {
+            Haptics.Light();
             if (H.berths[berth].skipper) { OpenSheet(Stage.Berth, berth); return; }
             if (S.TapBerth(berth)) Sfx.Play("dispatch", 0.5f); else OpenSheet(Stage.Berth, berth);
         }
@@ -233,20 +239,77 @@ namespace ReelEmpire.Game
             double secs = GameRoot.Instance.AwaySeconds;
             double got = S.AwayEarnings(secs);
             if (got <= 0) { S.CollectAway(secs); GameRoot.Instance.ClearAway(); return; }
-            var card = Card(820, 540, "WELCOME BACK");
-            var a = Ui.Label("A", card, "Your crews kept working for " + Format.Time(Math.Min(secs, S.AwayCap)) + (secs > S.AwayCap ? " (the docks were full after that)" : ""), 32, Ui.Dim, TextAnchor.UpperCenter, false);
-            a.rectTransform.Band(true, -90, 90, 60);
-            var rays = Ui.ArtImg("Rays", card, "rays", new Color(1f, 0.77f, 0.2f, 0.5f), 0); rays.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-200, 10), new Vector2(300, 300));
-            var coin = Ui.ArtImg("Coin", card, "coin", Color.white, 0); coin.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-200, 10), new Vector2(130, 134));
-            var n = Ui.Label("N", card, Format.Money(got), 110, Ui.Ink, TextAnchor.MiddleLeft); n.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0, 0.5f), new Vector2(-110, 10), new Vector2(500, 130));
-            var b = Ui.Button("Collect", card, "COLLECT", Ui.Green, () =>
+int missed = S.WelcomeHome(secs);
+            var card = Card(860, 600, missed > 0 ? "WE MISSED YOU!" : "WELCOME BACK");
+            var a = Ui.Label("A", card, "Your crews kept working for " + Format.Time(Math.Min(secs, S.AwayCap)) + (secs > S.AwayCap ? " (the docks were full after that)" : "") + (missed > 0 ? ".\nHere are " + missed + " gems and three fresh Tide Boosts to get going again." : ""), 30, Ui.Dim, TextAnchor.UpperCenter, false);
+            a.rectTransform.Band(true, -90, 110, 60);
+            var rays = Ui.ArtImg("Rays", card, "rays", new Color(1f, 0.77f, 0.2f, 0.5f), 0); rays.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-220, 20), new Vector2(300, 300));
+            var coin = Ui.ArtImg("Coin", card, "coin", Color.white, 0); coin.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-220, 20), new Vector2(130, 134));
+            var n = Ui.Label("N", card, Format.Money(got), 110, Ui.Ink, TextAnchor.MiddleLeft); n.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0, 0.5f), new Vector2(-130, 20), new Vector2(520, 130));
+            string buys = S.Affords(S.H.cash + got);
+            if (buys != null) { var af = Ui.Label("Af", card, buys, 30, new Color(0.12f, 0.62f, 0.29f)); af.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 178), new Vector2(780, 40)); }
+            var b = Ui.Button("Collect", card, "COLLECT", Ui.Blue, () =>
             {
-                S.CollectAway(secs); GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("coin", 0.8f); GameRoot.Instance.Save();
-            }, 52);
-            ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 44), new Vector2(420, 116));
+                S.CollectAway(secs); GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("coin", 0.8f); CoinBurst(8); GameRoot.Instance.Save();
+                Reminders.AskOnce();        // the first time the harbour has earned by itself is the moment a reminder makes sense
+            }, 44);
+            ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-205, 44), new Vector2(380, 124));
+            bool free = S.DoubleFree;
+            var d = Ui.Button("Double", card, null, Ui.Green, () =>
+            {
+                if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Not enough gems for another double today"); return; }
+                GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
+                Reminders.AskOnce();
+            }, 44);
+            ((RectTransform)d.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(205, 44), new Vector2(380, 124));
+            var dl = Ui.Label("L", d.transform, "DOUBLE IT", 42, Color.white, TextAnchor.UpperCenter); dl.rectTransform.Fill(); dl.rectTransform.offsetMax = new Vector2(0, -14); dl.Stroke(2.5f);
+            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : DoubleCost(), 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
         }
 
-RectTransform _cloud;
+        static string DoubleCost() { return Sim.DoubleGems + " GEMS"; }
+
+        // ---- coins flying to the counter ----
+
+        sealed class Flyer { public RectTransform Rt; public Vector2 From, Mid, To; public float Age, Life, Delay; }
+        readonly List<Flyer> _flyers = new List<Flyer>();
+        float _cashPunch;
+        RectTransform _cashPill;
+
+        /// <summary>Coins arc from a point on the canvas (the market, by default) to the cash counter, which jumps as they land.</summary>
+        void CoinBurst(int count, Vector2? from = null)
+        {
+            var c = (RectTransform)transform;
+            Vector2 start = from ?? new Vector2(c.rect.width * 0.5f, c.rect.height * 0.5f);
+            Vector2 to = new Vector2(80, c.rect.height - 70);
+            for (int i = 0; i < count && _flyers.Count < 40; i++)
+            {
+                var img = Ui.ArtImg("Coin", _fx, "coin", Color.white, 0);
+                var rt = img.rectTransform; rt.anchorMin = rt.anchorMax = Vector2.zero; rt.sizeDelta = new Vector2(54, 56); rt.anchoredPosition = start; rt.localScale = Vector3.zero;
+                var spread = new Vector2(UnityEngine.Random.Range(-90f, 90f), UnityEngine.Random.Range(-60f, 90f));
+                _flyers.Add(new Flyer { Rt = rt, From = start, Mid = start + spread + new Vector2(0, 120), To = to, Life = UnityEngine.Random.Range(0.55f, 0.8f), Delay = i * 0.035f });
+            }
+        }
+
+        void UpdateFlyers()
+        {
+            for (int i = _flyers.Count - 1; i >= 0; i--)
+            {
+                var f = _flyers[i];
+                if (f.Delay > 0) { f.Delay -= Time.unscaledDeltaTime; continue; }
+                f.Age += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(f.Age / f.Life), e = t * t * (3 - 2 * t);
+                f.Rt.anchoredPosition = Vector2.Lerp(Vector2.Lerp(f.From, f.Mid, e), Vector2.Lerp(f.Mid, f.To, e), e);
+                f.Rt.localScale = Vector3.one * (t < 0.15f ? t / 0.15f : Mathf.Lerp(1, 0.6f, (t - 0.15f) / 0.85f));
+                if (t >= 1) { Destroy(f.Rt.gameObject); _flyers.RemoveAt(i); _cashPunch = 1; }
+            }
+            if (_cashPill != null)
+            {
+                _cashPunch = Mathf.MoveTowards(_cashPunch, 0, Time.unscaledDeltaTime * 5);
+                _cashPill.localScale = Vector3.one * (1 + 0.07f * _cashPunch);
+            }
+        }
+
+        RectTransform _cloud;
 
         /// <summary>iCloud holds a newer save from another device: ask which one to keep (never replaced unasked).</summary>
         public void OfferCloud()

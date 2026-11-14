@@ -22,7 +22,8 @@ namespace ReelEmpire.Core
         /// <summary>Everything that multiplies a sale.</summary>
         public double IncomeMult(HarbourState h)
         {
-            double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach) * TrophyMult;
+            double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach) * TrophyMult * (1 + State.achieved.Count * AwardEach);
+            if (PageComplete(h.id)) m *= 1 + PageBonus;
             if (Owns("reelempire.ledger")) m *= 2;
             if (Boosted) m *= BoostMult;
             return m;
@@ -73,8 +74,14 @@ namespace ReelEmpire.Core
 
         // ---- away ----
 
-        public const double AwayBase = 2 * 3600;
-        public double AwayCap { get { return AwayBase + (Owns("reelempire.nightcrew") ? 4 * 3600 : 0) + LogbookAwayHours * 3600; } }
+        /// <summary>Each award claimed, and each water's finished page of the book, raise income for good.</summary>
+        public const double AwardEach = 0.01, PageBonus = 0.10;
+        public bool PageComplete(string harbour) { return CaughtIn(harbour) >= Book.In(harbour).Count; }
+
+        /// <summary>Three hours to begin with; an hour more for every ten stars, to eight: a night's sleep by the second day.</summary>
+        public const double AwayBase = 3 * 3600;
+        double AwayStars { get { return Math.Min(5, Stars / 10) * 3600; } }
+        public double AwayCap { get { return AwayBase + AwayStars + (Owns("reelempire.nightcrew") ? 4 * 3600 : 0) + LogbookAwayHours * 3600; } }
 
         /// <summary>What the harbour on screen made in <paramref name="seconds"/> away (nothing under a minute).</summary>
         public double AwayEarnings(double seconds)

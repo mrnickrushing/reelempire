@@ -112,7 +112,7 @@ namespace ReelEmpire.Game
             var b = img.gameObject.AddComponent<Button>();
             b.targetGraphic = img;
             var colors = b.colors; colors.pressedColor = new Color(0.8f, 0.8f, 0.8f); colors.fadeDuration = 0.05f; b.colors = colors;
-            if (onClick != null) b.onClick.AddListener(() => { Sfx.Play("click", 0.5f); onClick(); });
+            if (onClick != null) b.onClick.AddListener(() => { Sfx.Play("click", 0.5f); Haptics.Light(); onClick(); });
             if (label != null)
             {
                 var l = Label("Label", img.transform, label, size, Color.white);

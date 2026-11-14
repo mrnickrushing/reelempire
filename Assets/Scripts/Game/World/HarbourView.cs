@@ -19,7 +19,7 @@ namespace ReelEmpire.Game
         readonly List<Transform> _boats = new List<Transform>(), _crates = new List<Transform>(), _haulers = new List<Transform>(), _trucks = new List<Transform>();
         readonly List<Transform> _haulLoads = new List<Transform>(), _truckLoads = new List<Transform>();
         readonly List<int> _haulTo = new List<int>();
-        Transform _rawPile, _donePile, _smoke;
+        Transform _rawPile, _donePile, _smoke, _bonus;
         int _berths = -1, _nHaul = -1, _nTruck = -1; string _harbour;
 
         public static HarbourView Create(Transform parent)
@@ -60,6 +60,7 @@ namespace ReelEmpire.Game
             Scenery.Hall(_static, h);
             _rawPile = Scenery.Pile(_static, new Color(0.62f, 0.7f, 0.76f)).transform; _rawPile.position = Layout.HallDoor + new Vector3(-0.5f, 0, 5.5f);
             _donePile = Scenery.Pile(_static, new Color(0.86f, 0.62f, 0.3f)).transform; _donePile.position = Layout.TruckBay + new Vector3(-3.5f, 0, 5.5f);
+            _bonus = (Models.Kit("chest", _moving, Vector3.zero, 0, 2.6f) ?? Scenery.Crate(_moving)).transform; _bonus.gameObject.SetActive(false);
             Scenery.Market(_static);
             Scenery.Surroundings(_static, h.id);
         }
@@ -179,6 +180,16 @@ namespace ReelEmpire.Game
                 if (_truckLoads[i] != null) _truckLoads[i].gameObject.SetActive(!c.turned);
             }
 
+            // The crate drifts along the shore between the piers, a different stretch each time.
+            bool afloat = s.BonusAfloat;
+            if (_bonus.gameObject.activeSelf != afloat) _bonus.gameObject.SetActive(afloat);
+            if (afloat)
+            {
+                float z0 = -30 + s.State.bonusSeed % 60, drift = ((float)Sim.BonusStays - s.BonusLeft) * 0.35f;
+                _bonus.position = new Vector3(-20 - s.State.bonusSeed % 9, Mathf.Sin(time * 1.6f) * 0.15f - 0.25f, z0 + drift);
+                _bonus.rotation = Quaternion.Euler(Mathf.Sin(time * 1.2f) * 8, time * 14, Mathf.Sin(time * 0.9f) * 8);
+            }
+
             double cap = s.PileCap(h);
             _rawPile.localScale = Vector3.one * (h.raw <= 0 ? 0.001f : Mathf.Lerp(0.5f, 2.2f, (float)System.Math.Min(1, h.raw / cap)));
             _donePile.localScale = Vector3.one * (h.done <= 0 ? 0.001f : Mathf.Lerp(0.5f, 2.2f, (float)System.Math.Min(1, h.done / cap)));
@@ -199,9 +210,12 @@ namespace ReelEmpire.Game
 
         // ---- what the interface points at ----
 
+        public Vector3 BonusAt { get { return _bonus != null ? _bonus.position : Vector3.zero; } }
         public Vector3 BoatAt(int berth) { return berth < _boats.Count ? _boats[berth].position + Vector3.up * 2.5f : Layout.Moored(berth); }
         public Vector3 BerthSign(int berth) { return new Vector3(0.8f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 3.4f); }
-        public Vector3 DockSign { get { return new Vector3(7.5f, Layout.QuayY + 3.2f, -1.5f); } }
+        public Vector3 DockSign { get { return Layout.HallDoor + new Vector3(-1.2f, 5.2f, -0.5f); } }
+        /// <summary>Where the price of the next berth hangs: on the quay at the foot of its stub of pier.</summary>
+        public Vector3 NextBerthSign(int berth) { return new Vector3(2.4f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 1.2f); }
         public Vector3 HallSign { get { return Layout.HallCentre + new Vector3(0, Layout.HallSize.y + 2.5f, 0); } }
         public Vector3 MarketSign { get { return Layout.MarketCentre + new Vector3(-2, 9, 0); } }
         public Vector3 HaulerAt(int i) { return i < _haulers.Count ? _haulers[i].position + Vector3.up * 2.4f : Layout.HallDoor; }

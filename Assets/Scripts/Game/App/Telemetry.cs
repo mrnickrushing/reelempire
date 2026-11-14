@@ -64,7 +64,7 @@ namespace ReelEmpire.Game
         float _sendIn = 10f, _sampleIn = SampleEvery, _frameSum, _sittingStart;
         int _frames;
         Sim _sim;
-        int _goal = -1, _stars = -1, _harbours = -1;
+        int _goal = -1, _stars = -1, _harbours = -1, _renovations = -1; bool _skipper;
 
         void Awake()
         {
@@ -84,10 +84,12 @@ namespace ReelEmpire.Game
         {
             var s = GameRoot.Sim;
             if (s == null) return;
-            if (s != _sim) { _sim = s; _goal = s.State.goalIndex; _stars = s.Stars; _harbours = s.State.harbours.Count; }
+            if (s != _sim) { _sim = s; _goal = s.State.goalIndex; _stars = s.Stars; _harbours = s.State.harbours.Count; _renovations = s.State.renovations; _skipper = s.State.freeSkipperUsed; }
             if (!_started) { _started = true; Send("Session.started", ("Session.firstLaunch", _firstLaunch ? "true" : "false")); }
             if (s.State.goalIndex != _goal) { if (s.State.goalIndex > _goal) Send("Goal.reached"); _goal = s.State.goalIndex; }
             if (s.Stars != _stars) { if (s.Stars > _stars) Send("Stars.gained"); _stars = s.Stars; }
+            if (s.State.freeSkipperUsed && !_skipper) { _skipper = true; Send("Skipper.first"); }
+            if (s.State.renovations != _renovations) { _renovations = s.State.renovations; Send("Harbour.renovated"); }
             if (s.State.harbours.Count != _harbours) { _harbours = s.State.harbours.Count; Send("Harbour.opened"); }
 
             _frameSum += Time.unscaledDeltaTime; _frames++;

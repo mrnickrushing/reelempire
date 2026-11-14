@@ -129,6 +129,33 @@ and the first scripted rare fish (8-15), Fillet and product choice, berths 4-5, 
 First week: first renovation after 2-3 hours of play (day 1), first derby and the Smokehouse (day 2), Alder River and
 the Logbook (day 3), trophy hall (day 6-7), Cannery and harbours 3-4 (days 8-18).
 
+## Keeping players (from `docs/RETENTION.md`)
+
+What the research says a game of this kind needs, and where it is here:
+
+- **The whole chain on one screen, the weakest stage marked**: the harbour and the chain badges.
+- **A win every 10-20 seconds at first; the first skipper is free**: the guide's first steps, with Marta talking.
+- **Always a next goal, with a bar**: the guide never runs out (`Sim.Generated`), the next berth's sign shows how
+  far the cash has come, every level sign turns green when it can be bought.
+- **One new thing at a time**: the book, awards, TODAY, the Tide Boost, the crew, voyages, the derby, the season and
+  renovation each appear when the harbour has grown into them (`Sim.Unlocked`), with a word of news.
+- **Coming back pays, staying away costs nothing**: away earnings to a stated cap (3 hours, 8 by fifty stars, more
+  with the logbook and Night Crew), a welcome-back card that says what the money buys, a free DOUBLE every day, a
+  welcome for someone away three days or more, a gift that never resets for a missed day.
+- **Timers of every length**: a drifting crate every two to four minutes of play (`ClaimBonus`), the Tide Boost and
+  crew chest every four hours, voyages of 30 minutes to 8 hours, the day's gift and tasks, the weekend derby, the
+  four-week season.
+- **Things to finish**: the species book (a finished page is +10% in that water), trophies, awards (+1% each),
+  the crew, six waters and their renovations.
+- **Feel**: coins fly to the counter, the counter rolls and jumps, haptics, a rising sound on a held UPGRADE, a card
+  for a rare catch.
+- **Reminders**: only about things that have happened in the harbour, at most two, none at night, asked for after the
+  first away earnings are collected; never a reward for allowing them.
+
+Deliberately not done, because players resent them or Apple forbids them: forced ads, energy, walls only money
+clears, rewards that vanish unless bought, streaks that punish a missed day, offers at launch or on the first day,
+fake countdowns, invented players passed off as real (the derby says its skippers belong to the game).
+
 ## Art
 
 A look of its own, unlike Last Tide (realistic scans) and Crosswind (dark navy plates, condensed type):

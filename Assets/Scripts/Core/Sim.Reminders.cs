@@ -10,7 +10,8 @@ namespace ReelEmpire.Core
     public sealed partial class Sim
     {
         /// <summary>
-        /// What is worth a notification once the app is closed. At most four, never two within ten minutes.
+        /// What is worth a notification once the app is closed: only things that have happened in the harbour (never an
+        /// offer). At most two, none at night.
         /// </summary>
         public List<Reminder> ReminderPlan()
         {
@@ -29,10 +30,18 @@ namespace ReelEmpire.Core
                 all.Add(new Reminder { In = BoostFullIn, Title = "The tide has turned", Body = "All three Tide Boosts are ready: double income for an hour each." });
             all.Add(new Reminder { In = 24 * 3600, Title = "A new day at " + Def.Name, Body = "The market has a new favourite today, and the boats are waiting." });
 
+            // Two at most, never two within ten minutes, and none in the night: one due between 22:00 and 08:00 waits
+            // for the morning.
             var plan = new List<Reminder>();
             foreach (var r in all.OrderBy(r => r.In))
             {
-                if (plan.Count >= 4) break;
+                double local = ((RealNow() + UtcOffset + r.In) % 86400 + 86400) % 86400;
+                if (local >= 22 * 3600) r.In += 86400 - local + 8 * 3600;
+                else if (local < 8 * 3600) r.In += 8 * 3600 - local;
+            }
+            foreach (var r in all.OrderBy(r => r.In))
+            {
+                if (plan.Count >= 2) break;
                 if (plan.Count > 0 && r.In - plan[plan.Count - 1].In < 600) continue;
                 plan.Add(r);
             }

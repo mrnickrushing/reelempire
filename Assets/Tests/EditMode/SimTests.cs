@@ -194,7 +194,8 @@ namespace ReelEmpire.Tests
         {
             var s = TestGame.New();
             var plan = s.ReminderPlan();
-            Assert.That(plan.Count, Is.InRange(1, 4));
+            Assert.That(plan.Count, Is.InRange(1, 2));
+            foreach (var r in plan) { double local = (1_700_000_000 + r.In) % 86400; Assert.That(local, Is.InRange(8 * 3600 - 1, 22 * 3600), "none at night"); }
             for (int i = 1; i < plan.Count; i++) Assert.That(plan[i].In - plan[i - 1].In, Is.GreaterThanOrEqualTo(600));
         }
 
@@ -281,7 +282,7 @@ namespace ReelEmpire.Tests
     public class LiveTests
     {
         [Test]
-        public void TheGiftComesOnceADayAndAMissedDayStartsTheWeekAgain()
+        public void TheGiftComesOnceADayAndAMissedDayCostsNothing()
         {
             double t = 1_700_000_000;
             var s = TestGame.New(); s.RealNow = () => t;
@@ -294,7 +295,7 @@ namespace ReelEmpire.Tests
             t += 86400;
             Assert.That(s.ClaimGift().Gems, Is.EqualTo(15));
             t += 3 * 86400;
-            Assert.That(s.GiftIndex, Is.EqualTo(0), "a missed day");
+            Assert.That(s.GiftIndex, Is.EqualTo(3), "a missed day costs nothing: the week carries on");
         }
 
         [Test]
@@ -490,6 +491,153 @@ namespace ReelEmpire.Tests
             }
             Assert.That(s.DerbyRank(7, 1_000_000, 1), Is.EqualTo(1));
             Assert.That(s.DerbyRank(7, 0, 1), Is.EqualTo(50));
+        }
+    }
+
+    public class HookTests
+    {
+        [Test]
+        public void TheGuideNeverRunsOutOfSteps()
+        {
+            var s = TestGame.New();
+            s.H.cash = 1e30;
+            s.State.goalIndex = Sim.Goals.Count - 1;
+            for (int i = 0; i < 60; i++)
+            {
+                var g = s.Goal;
+                Assert.That(g, Is.Not.Null, "step " + i);
+                Assert.That(g.Need, Is.GreaterThan(0), g.Text);
+                // Do whatever it asks, by the short road.
+                s.HireSkipper(Stage.Berth, 0); s.HireSkipper(Stage.Dock); s.HireSkipper(Stage.Market);
+                for (int k = 0; k < 400 && !s.GoalDone; k++)
+                {
+                    if (g.Id == "g.berth") s.Upgrade(Stage.Berth, g.PointBerth, 1);
+                    else if (g.Id == "g.dock") s.Upgrade(Stage.Dock);
+                    else if (g.Id == "g.market") s.Upgrade(Stage.Market);
+                    else if (g.Id == "g.open") s.UnlockBerth();
+                    else if (g.Id == "g.species") s.State.species.Add(new SpeciesEntry { id = Book.Species[s.State.species.Count].Id, count = 1 });
+                    else if (g.Id == "g.trips") s.State.trips += 500;
+                    else { s.State.goalIndex++; break; }
+                }
+                if (s.GoalDone) Assert.That(s.ClaimGoal(), Is.True, g.Text);
+            }
+            Assert.That(s.State.goalIndex, Is.GreaterThan(Sim.Goals.Count + 40));
+        }
+
+        [Test]
+        public void ACrateDriftsInAfterAWhileAndPaysOnce()
+        {
+            var s = TestGame.New();
+            int seen = 0; s.BonusAppeared += () => seen++;
+            s.Tick(Sim.BonusFirst - 5);
+            Assert.That(s.BonusAfloat, Is.False);
+            s.Tick(10);
+            Assert.That(s.BonusAfloat, Is.True);
+            Assert.That(seen, Is.EqualTo(1));
+            double cash = s.H.cash; int gems = s.State.gems; double boost = s.BoostLeft;
+            var p = s.ClaimBonus();
+            Assert.That(p, Is.Not.Null);
+            Assert.That(s.H.cash > cash || s.State.gems > gems || s.BoostLeft > boost, Is.True);
+            Assert.That(s.ClaimBonus(), Is.Null);
+            s.Tick(Sim.BonusEveryMax + 1);
+            Assert.That(s.BonusAfloat, Is.True, "another one comes");
+            s.Tick(Sim.BonusStays + 1);
+            Assert.That(s.BonusAfloat, Is.False, "it drifts away untaken");
+        }
+
+        [Test]
+        public void TheDoubleIsFreeOnceADayThenCostsGems()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            var h = s.H; h.cash = 1e7;
+            s.HireSkipper(Stage.Berth, 0); s.HireSkipper(Stage.Dock); s.HireSkipper(Stage.Market);
+            double rate = s.IdleRate(h), before = h.cash;
+            Assert.That(s.DoubleFree, Is.True);
+            Assert.That(s.CollectAwayDoubled(3600), Is.True);
+            Assert.That(h.cash - before, Is.EqualTo(rate * 7200).Within(1e-6));
+            Assert.That(s.DoubleFree, Is.False);
+            Assert.That(s.CollectAwayDoubled(3600), Is.False, "no gems");
+            s.State.gems = 20;
+            Assert.That(s.CollectAwayDoubled(3600), Is.True);
+            Assert.That(s.State.gems, Is.EqualTo(0));
+            t += 86400;
+            Assert.That(s.DoubleFree, Is.True);
+        }
+
+        [Test]
+        public void SomeoneBackAfterDaysIsWelcomed()
+        {
+            var s = TestGame.New();
+            s.UseBoost(); s.UseBoost(); s.UseBoost();
+            Assert.That(s.WelcomeHome(86400), Is.EqualTo(0));
+            Assert.That(s.WelcomeHome(4 * 86400), Is.EqualTo(Sim.MissedGems));
+            Assert.That(s.BoostReady, Is.EqualTo(3));
+        }
+    }
+
+    public class OpeningUpTests
+    {
+        [Test]
+        public void ANewGameShowsOneThingAtATime()
+        {
+            var s = TestGame.New();
+            foreach (var f in Sim.Features) Assert.That(s.Unlocked(f), Is.False, f);
+            s.TapBerth(0); s.Tick(5);
+            Assert.That(s.Unlocked("book"), Is.True);
+            Assert.That(s.Unlocked("crew"), Is.False);
+            s.H.cash = 1e12;
+            s.UnlockBerth(); s.UnlockBerth();
+            Assert.That(s.Unlocked("crew"), Is.True);
+            Assert.That(s.Unlocked("voyages"), Is.False);
+            while (s.H.berths.Count < 8) s.UnlockBerth();
+            foreach (var f in new[] { "voyages", "derby", "season", "harbours" }) Assert.That(s.Unlocked(f), Is.True, f);
+            foreach (var f in Sim.Features) Assert.That(Sim.FeatureNews(f), Is.Not.Null, f);
+        }
+
+        [Test]
+        public void ARenovatedHarbourKeepsEverythingOpen()
+        {
+            var s = TestGame.New();
+            s.State.renovations = 1;
+            foreach (var f in Sim.Features) if (f != "book") Assert.That(s.Unlocked(f), Is.True, f);
+        }
+
+        [Test]
+        public void AwardsAndAFinishedPageRaiseIncomeAndStarsLengthenTheNight()
+        {
+            var s = TestGame.New();
+            double m = s.IncomeMult(s.H), cap = s.AwayCap;
+            s.State.achieved.Add("firstcatch"); s.State.achieved.Add("million");
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 1.02).Within(1e-9));
+            foreach (var sp in Book.In("lake")) s.State.species.Add(new SpeciesEntry { id = sp.Id, count = 1 });
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 1.02 * 1.10).Within(1e-9));
+            s.H.stars = 30;
+            Assert.That(s.AwayCap, Is.EqualTo(cap + 3 * 3600));
+            s.H.stars = 500;
+            Assert.That(s.AwayCap, Is.EqualTo(cap + 5 * 3600), "to eight hours");
+        }
+
+        [Test]
+        public void TheStarterPackIsNotOfferedOnTheFirstDay()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            s.Tick(3000);
+            Assert.That(s.StarterOfferDue, Is.False, "the first day");
+            t += 86400;
+            Assert.That(s.StarterOfferDue, Is.True);
+            s.State.starterOffered = true;
+            Assert.That(s.StarterOfferDue, Is.False);
+        }
+
+        [Test]
+        public void TheWelcomeCardSaysWhatTheMoneyBuys()
+        {
+            var s = TestGame.New();
+            Assert.That(s.Affords(0), Is.Null);
+            Assert.That(s.Affords(s.BerthUnlockCost(s.H)), Does.Contain("Reed Landing"));
+            Assert.That(s.H.cash, Is.EqualTo(Content.StartCash), "asking changes nothing");
         }
     }
 
