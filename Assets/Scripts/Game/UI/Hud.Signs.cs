@@ -41,8 +41,8 @@ namespace ReelEmpire.Game
             var h = H; _signBerths = h.berths.Count;
             for (int i = 0; i < h.berths.Count; i++) { int k = i; _berthSigns.Add(MakeSign(() => OpenSheet(Stage.Berth, k))); }
             _dockSign = MakeSign(() => OpenSheet(Stage.Dock, 0)); _hallSign = MakeSign(() => OpenSheet(Stage.Hall, 0)); _marketSign = MakeSign(() => OpenSheet(Stage.Market, 0));
-            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 300) : null;
-            if (_nextSign != null) _nextSign.Up.gameObject.SetActive(false);
+            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 278) : null;
+            if (_nextSign != null) { _nextSign.Up.gameObject.SetActive(false); _nextSign.Rt.pivot = new Vector2(1, 0); }      // it reaches out over the water from the pier's end
             for (int i = 0; i < h.berths.Count + 2; i++) _tapBubbles.Add(MakeBubble());
         }
 
@@ -240,7 +240,7 @@ namespace ReelEmpire.Game
         }
 
         RectTransform _toast; float _toastAge;
-        string _toastHeld;
+        string _toastHeld, _toastText;
 
         public void Toast(string text)
         {
@@ -251,7 +251,7 @@ namespace ReelEmpire.Game
             img.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -156), new Vector2(Mathf.Min(1100, 130 + text.Length * 19), 76));
             var l = Ui.Label("T", img.transform, text, 32, Color.white, TextAnchor.MiddleCenter, false); l.rectTransform.Fill(8); l.rectTransform.offsetMin = new Vector2(8, 12);
             img.gameObject.AddComponent<CanvasGroup>().alpha = 0;
-            _toast = img.rectTransform; _toastAge = 0;
+            _toast = img.rectTransform; _toastAge = 0; _toastText = text;
         }
 
         // ---- the guide ----

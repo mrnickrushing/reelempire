@@ -32,7 +32,7 @@ PRODUCTS = [
     ("reelempire.gems.medium", "CONSUMABLE", "4.99", "Bucket of Gems", "300 gems"),
     ("reelempire.gems.large", "CONSUMABLE", "9.99", "Crate of Gems", "700 gems"),
     ("reelempire.gems.huge", "CONSUMABLE", "19.99", "Hold Full of Gems", "1,600 gems"),
-    ("reelempire.starter", "NON_CONSUMABLE", "2.99", "Deckhand's Pack", "250 gems, an extra hauler and truck for good"),
+    ("reelempire.starter", "NON_CONSUMABLE", "2.99", "Deckhand's Pack", "250 gems, an extra porter and truck for good"),
     ("reelempire.ledger", "NON_CONSUMABLE", "7.99", "Captain's Ledger", "All income doubled for good, in every harbour"),
     ("reelempire.fleet", "NON_CONSUMABLE", "4.99", "Second Boat Out", "Send two voyages at once, for good"),
     ("reelempire.nightcrew", "NON_CONSUMABLE", "4.99", "Night Crew", "4 more hours of away earnings, for good"),

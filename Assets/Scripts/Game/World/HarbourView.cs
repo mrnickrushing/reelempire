@@ -299,7 +299,7 @@ namespace ReelEmpire.Game
         public Vector3 BerthSign(int berth) { return new Vector3(0.8f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 3.4f); }
         public Vector3 DockSign { get { return Layout.HallDoor + new Vector3(-1.2f, 5.2f, -0.5f); } }
         /// <summary>Where the price of the next berth hangs: on the quay at the foot of its stub of pier.</summary>
-        public Vector3 NextBerthSign(int berth) { return new Vector3(-12f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 2.5f); }
+        public Vector3 NextBerthSign(int berth) { return new Vector3(-4f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 2.5f); }
         public Vector3 HallSign { get { return Layout.HallCentre + new Vector3(0, Layout.HallSize.y + 2.5f, 0); } }
         public Vector3 MarketSign { get { return Layout.MarketCentre + new Vector3(-2, 9, 0); } }
         public Vector3 HaulerAt(int i) { return i < _haulers.Count ? _haulers[i].position + Vector3.up * 2.4f : Layout.HallDoor; }

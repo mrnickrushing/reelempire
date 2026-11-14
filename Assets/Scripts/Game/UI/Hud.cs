@@ -153,7 +153,8 @@ namespace ReelEmpire.Game
             var neck = s.Bottleneck(h);
             for (int i = 0; i < 4; i++)
             {
-                bool weak = (Stage)i == neck && i != 0 || i == 2 && h.goods > 0 && hall < s.Flow(h, true) * 0.98;
+                // Not until the guide has got as far as the chain: before that it would only pull the eye from the step in hand.
+                bool weak = s.State.goalIndex >= 7 && ((Stage)i == neck && i != 0 || i == 2 && h.goods > 0 && hall < s.Flow(h, true) * 0.98);
                 _chainBox[i].color = weak ? Ui.Coral : Color.white;
                 _chainRate[i].color = weak ? Color.white : Ui.Ink;
                 _chainBox[i].rectTransform.localRotation = Quaternion.Euler(0, 0, weak ? Mathf.Sin(Time.unscaledTime * 9) * 5 : 0);
@@ -226,6 +227,8 @@ namespace ReelEmpire.Game
         /// <summary>A card in the middle of the screen over a dimmed game. Returns the card to fill.</summary>
         RectTransform Card(float width, float height, string title)
         {
+            // News still on screen steps aside for the card and comes back when it has gone.
+            if (_toast != null) { if (_toastAge < 1.6f) _toastHeld = _toastText; Destroy(_toast.gameObject); _toast = null; }
             Ui.Clear(_modal);
             var dim = Ui.Img("Dim", _modal, new Color(0.05f, 0.15f, 0.25f, 0.6f)); dim.raycastTarget = true; dim.rectTransform.Fill();
             var card = Ui.ArtImg("Card", _modal, "panel", Color.white, 60);

@@ -359,7 +359,7 @@ void ShowToday()
             var star = Ui.ArtImg("Star", card, "gem", Color.white, 0); star.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(60, 30), new Vector2(170, 176));
             var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra porter and an extra truck in every harbour, for good.\n\nOne time only. You can always find it in the SHOP.", 32, Ui.Ink, TextAnchor.UpperLeft, false);
             t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(270, -100), new Vector2(580, 280));
-            var buy = Ui.Button("Buy", card, Store.Price(prod), Ui.Green, () => { CloseCard(); Store.Buy(prod, (ok, msg) => { Toast(msg); if (ok) { Sfx.Play("confirm"); Haptics.Success(); } }); }, 44);
+            var buy = Ui.Button("Buy", card, "BUY  " + Store.Price(prod), Ui.Green, () => { CloseCard(); Store.Buy(prod, (ok, msg) => { Toast(msg); if (ok) { Sfx.Play("confirm"); Haptics.Success(); } }); }, 44);
             ((RectTransform)buy.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(215, 40), new Vector2(400, 116));
             var no = Ui.Button("No", card, "NOT NOW", Ui.Off, CloseCard, 40); ((RectTransform)no.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-215, 40), new Vector2(400, 116));
         }

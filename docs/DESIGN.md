@@ -105,7 +105,7 @@ Throughput of the chain is the minimum of its stages; the HUD's chain bar shows 
 | reelempire.gems.medium | Consumable | $4.99 | 300 gems |
 | reelempire.gems.large | Consumable | $9.99 | 700 gems |
 | reelempire.gems.huge | Consumable | $19.99 | 1,600 gems |
-| reelempire.starter | Non-consumable | $2.99 | Deckhand's Pack: 250 gems, an Epic crew card, a x5 boost for 4 hours |
+| reelempire.starter | Non-consumable | $2.99 | Deckhand's Pack: 250 gems, an extra porter and an extra truck in every harbour, for good |
 | reelempire.ledger | Non-consumable | $7.99 | Captain's Ledger: all income doubled, every harbour, for good |
 | reelempire.nightcrew | Non-consumable | $4.99 | Night Crew: 4 more hours of away earnings and a free DOUBLE every time |
 | reelempire.fleet | Non-consumable | $4.99 | Second voyage slot, for good |
