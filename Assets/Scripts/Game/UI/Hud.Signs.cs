@@ -137,6 +137,7 @@ namespace ReelEmpire.Game
                 c.Rt.localScale = Vector3.one * (t < 0.12f ? Mathf.Lerp(0.5f, 1.15f, t / 0.12f) : Mathf.Lerp(1.15f, 1f, Mathf.Clamp01((t - 0.12f) / 0.15f)));
                 var col = c.Label.color; col.a = t > 0.7f ? 1 - (t - 0.7f) / 0.3f : 1; c.Label.color = col;
             }
+            if (_toastHeld != null && !ModalOpen) { var held = _toastHeld; _toastHeld = null; Toast(held); }
             if (_toast != null)
             {
                 _toastAge += Time.unscaledDeltaTime;
@@ -237,10 +238,13 @@ namespace ReelEmpire.Game
             GameRoot.Instance.Save();
         }
 
-                RectTransform _toast; float _toastAge;
+        RectTransform _toast; float _toastAge;
+        string _toastHeld;
+
         public void Toast(string text)
         {
             if (text == null) return;
+            if (ModalOpen) { _toastHeld = text; return; }      // a card is up: say it when the card has gone
             if (_toast != null) Destroy(_toast.gameObject);
             var img = Ui.ArtImg("Toast", _root, "plate", Ui.Ink, 36);
             img.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -156), new Vector2(Mathf.Min(1100, 130 + text.Length * 19), 76));
