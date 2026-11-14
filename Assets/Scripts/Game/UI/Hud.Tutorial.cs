@@ -22,7 +22,7 @@ namespace ReelEmpire.Game
             { "skipper", "Tired of tapping? In the same panel, <b>hire a skipper</b>. The first one's on me." },
             { "level10", "Keep going to <b>level 10</b>: the catch doubles. Milestones at 10, 25, 50 and 100 are worth chasing." },
             { "berth2", "Save up and tap <b>NEW DOCK</b> on the next pier. A new dock lands far more than the old one." },
-            { "dock5", "See the badges at the bottom? The <b>coral one</b> is what's holding the harbour back. Upgrade the porters." },
+            { "dock5", "The four circles at the bottom are your harbour: boats, porters, hall, market. The <b>red one is too slow</b>. Tap it and upgrade the porters." },
             { "dockskipper", "A <b>head porter</b> keeps them moving without a tap. Hire one in the porters' panel." },
             { "clean", "Cleaned fish sell for half as much again. Buy the <b>Cleaning Line</b> in the hall." },
             { "marketskipper", "One more: a <b>market manager</b> for the trucks. Then the harbour earns while you're away." },
@@ -66,7 +66,7 @@ namespace ReelEmpire.Game
         {
             if (_coach == null)
             {
-                _coach = Ui.Rect("Coach", _root); _coach.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 196), new Vector2(700, 170));
+                _coach = Ui.Rect("Coach", _root); _coach.Place(new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 196), new Vector2(700, 170));      // bottom right: clear of the boats, the quay and the goal card
                 var bubble = Ui.ArtImg("Bubble", _coach, "plate", Color.white, 36); bubble.rectTransform.Fill(); bubble.rectTransform.offsetMin = new Vector2(110, 0);
                 _coachText = Ui.Label("T", bubble.transform, "", 29, Ui.Ink, TextAnchor.MiddleLeft, false); _coachText.rectTransform.Fill(); _coachText.rectTransform.offsetMin = new Vector2(66, 16); _coachText.rectTransform.offsetMax = new Vector2(-62, -8);
                 var p = Portrait(_coach, 164); p.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0), p.rectTransform.sizeDelta);

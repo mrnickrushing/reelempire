@@ -89,6 +89,18 @@ namespace ReelEmpire.Game
 
         /// <summary>The frame every screen shares: a dimmed game, a paper panel, the title on a ribbon, a close button and a
         /// scrolling list. Returns the panel; <see cref="_list"/> is where rows go.</summary>
+        static readonly Dictionary<string, string> About = new Dictionary<string, string>
+        {
+            { "TODAY", "Free things to collect each day: a gift, three tasks, and boats you can send away for cash and gems." },
+            { "THE CREW", "Crew cards make a part of the harbour faster. Open the free chest, then put a card to work." },
+            { "WEEKEND DERBY", "Every fish landed this weekend scores points. Reach the marks for gems and beat the other skippers." },
+            { "HARBOURS", "Your waters. Open the next one, or renovate this one to earn more from the start." },
+            { "SPECIES BOOK", "Every kind of fish you've landed. A new one pays gems; a full page earns 10% more in that water." },
+            { "AWARDS", "Prizes for things you've done. Each one taken adds 1% to everything you earn." },
+            { "SHOP", "Gems speed things up. Everything here is optional: the whole game can be played free." },
+            { "SETTINGS", "Sound, reminders, your account and help." },
+        };
+
         RectTransform Frame(string title, float listTop = 70)
         {
             if (_list != null) _listY = _list.anchoredPosition.y;
@@ -101,6 +113,14 @@ namespace ReelEmpire.Game
             var t = Ui.Label("Title", ribbon.transform, title, 52, Color.white); t.rectTransform.Fill(); t.rectTransform.offsetMin = new Vector2(40, 24); t.rectTransform.offsetMax = new Vector2(-40, 0); t.Stroke(2.5f);
             var x = Ui.Button("X", p, "✕", Ui.Coral, CloseScreen, 34); ((RectTransform)x.transform).Place(new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(-26, -30), new Vector2(84, 84));
 
+            // One plain line under the title saying what the page is for.
+            string about; string key = title.StartsWith("SHOP") ? "SHOP" : title;
+            if (About.TryGetValue(key, out about))
+            {
+                var ab = Ui.Label("About", p, about, 28, Ui.Dim, TextAnchor.MiddleCenter, false);
+                ab.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -listTop + 8), new Vector2(1380, 40));
+                listTop += 44;
+            }
             var view = Ui.Rect("View", p); view.Fill(); view.offsetMin = new Vector2(34, 44); view.offsetMax = new Vector2(-34, -listTop);
             view.gameObject.AddComponent<RectMask2D>();
             var catcher = view.gameObject.AddComponent<Image>(); catcher.color = new Color(0, 0, 0, 0); catcher.raycastTarget = true;

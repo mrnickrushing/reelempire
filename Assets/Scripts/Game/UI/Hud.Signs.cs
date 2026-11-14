@@ -30,8 +30,8 @@ namespace ReelEmpire.Game
         RectTransform MakeBubble()
         {
             var img = Ui.ArtImg("Tap", _signs, "bubble", Color.white, 0);
-            var rt = img.rectTransform; rt.sizeDelta = new Vector2(96, 108); rt.anchorMin = rt.anchorMax = Vector2.zero; rt.pivot = new Vector2(0.5f, 0);
-            var hand = Ui.ArtImg("Hand", rt, "hand", Color.white, 0); hand.rectTransform.Fill(20); hand.rectTransform.offsetMin = new Vector2(20, 36);
+            var rt = img.rectTransform; rt.sizeDelta = new Vector2(68, 76); img.raycastTarget = false; rt.anchorMin = rt.anchorMax = Vector2.zero; rt.pivot = new Vector2(0.5f, 0);
+            var hand = Ui.ArtImg("Hand", rt, "hand", Color.white, 0); hand.rectTransform.Fill(14); hand.rectTransform.offsetMin = new Vector2(14, 26); hand.raycastTarget = false;
             return rt;
         }
 
@@ -41,7 +41,7 @@ namespace ReelEmpire.Game
             var h = H; _signBerths = h.berths.Count;
             for (int i = 0; i < h.berths.Count; i++) { int k = i; _berthSigns.Add(MakeSign(() => OpenSheet(Stage.Berth, k))); }
             _dockSign = MakeSign(() => OpenSheet(Stage.Dock, 0)); _hallSign = MakeSign(() => OpenSheet(Stage.Hall, 0)); _marketSign = MakeSign(() => OpenSheet(Stage.Market, 0));
-            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 290) : null;
+            _nextSign = h.berths.Count < Content.Berths.Length ? MakeSign(UnlockBerth, 400) : null;
             if (_nextSign != null) _nextSign.Up.gameObject.SetActive(false);
             for (int i = 0; i < h.berths.Count + 2; i++) _tapBubbles.Add(MakeBubble());
         }
@@ -92,17 +92,17 @@ namespace ReelEmpire.Game
             {
                 var b = h.berths[i];
                 bool idle = !b.skipper && !b.sailing && b.crate < s.DeckOf(h, i);
-                Put(_tapBubbles[n], view.BoatAt(i) + Vector3.up * 1.2f, idle);
+                Put(_tapBubbles[n], view.BoatAt(i) + Vector3.up * 4.2f, idle);
                 if (idle) _tapBubbles[n].anchoredPosition += new Vector2(0, bob);
                 n++;
             }
             bool dockIdle = !h.dockSkipper && h.haulers.Exists(c => !c.busy) && CratesWaiting(h) && s.PileRoom(h) > 0;
-            Put(_tapBubbles[n], view.HaulerAt(h.haulers.FindIndex(c => !c.busy) < 0 ? 0 : h.haulers.FindIndex(c => !c.busy)) + Vector3.up, dockIdle);
+            Put(_tapBubbles[n], view.HaulerAt(h.haulers.FindIndex(c => !c.busy) < 0 ? 0 : h.haulers.FindIndex(c => !c.busy)) + Vector3.up * 2.6f, dockIdle);
             if (dockIdle) _tapBubbles[n].anchoredPosition += new Vector2(0, bob);
             n++;
             int idleTruck = h.trucks.FindIndex(c => !c.busy);
             bool marketIdle = !h.marketSkipper && idleTruck >= 0 && (h.raw > 0 || h.done > 0);
-            Put(_tapBubbles[n], view.TruckAt(Mathf.Max(0, idleTruck)) + Vector3.up, marketIdle);
+            Put(_tapBubbles[n], view.TruckAt(Mathf.Max(0, idleTruck)) + Vector3.up * 3f, marketIdle);
             if (marketIdle) _tapBubbles[n].anchoredPosition += new Vector2(0, bob);
         }
 

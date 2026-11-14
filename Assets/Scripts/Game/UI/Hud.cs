@@ -17,7 +17,7 @@ namespace ReelEmpire.Game
         Sim S { get { return GameRoot.Sim; } }
         HarbourState H { get { return S.H; } }
 
-        RectTransform _root, _signs, _fx, _modal, _chain;
+        RectTransform _root, _signs, _fx, _modal, _chain, _slowFlag;
         Text _cash, _rate, _gems, _harbourName, _conditions;
         readonly Text[] _chainRate = new Text[4];
         readonly Image[] _chainBox = new Image[4];
@@ -103,6 +103,10 @@ namespace ReelEmpire.Game
                 var n = Ui.Label("N", _chain, names[i], 26, Color.white); n.rectTransform.Place(new Vector2(0, 0), new Vector2(0.5f, 0), new Vector2(95 + i * 190, 6), new Vector2(180, 34)); n.Stroke(2f);
             }
 
+            // Which one to fix: a flag over the slowest part.
+            var flag = Ui.ArtImg("Slow", _chain, "tag", Ui.Coral, 30); _slowFlag = flag.rectTransform; _slowFlag.Place(new Vector2(0, 0), new Vector2(0.5f, 0), new Vector2(95, 168), new Vector2(170, 44));
+            var fl = Ui.Label("T", flag.transform, "TOO SLOW", 24, Color.white); fl.rectTransform.Fill(); fl.rectTransform.offsetMin = new Vector2(0, 4); fl.Stroke(2f);
+
             BuildGuide();
             BuildNav();
             BuildSheet();
@@ -154,6 +158,10 @@ namespace ReelEmpire.Game
                 _chainRate[i].color = weak ? Color.white : Ui.Ink;
                 _chainBox[i].rectTransform.localRotation = Quaternion.Euler(0, 0, weak ? Mathf.Sin(Time.unscaledTime * 9) * 5 : 0);
             }
+            int slow = -1;
+            for (int i = 1; i < 4; i++) if (_chainBox[i].color == Ui.Coral) { slow = i; break; }
+            if (_slowFlag.gameObject.activeSelf != slow >= 0) _slowFlag.gameObject.SetActive(slow >= 0);
+            if (slow >= 0) _slowFlag.anchoredPosition = new Vector2(95 + slow * 190, 172 + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4)) * 6);
             // The sheet takes the bottom of the screen: the chain steps aside while it is up.
             _chain.anchoredPosition = new Vector2(0, Mathf.Lerp(14, -220, 1 - Mathf.Clamp01(_sheetY / SheetHide)));
 
