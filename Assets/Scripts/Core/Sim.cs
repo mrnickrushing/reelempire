@@ -177,7 +177,8 @@ namespace ReelEmpire.Core
             var bait = BaitOf(h, berth);
             var sp = PickSpecies(h, bait);
             float kg = sp.MinKg + (sp.MaxKg - sp.MinKg) * (float)Math.Pow(Roll(), 2.2);
-            double units = CatchOf(h, berth) * bait.Catch * Content.RarityValue[(int)sp.Rarity];
+            double units = CatchOf(h, berth) * bait.Catch * Content.RarityValue[(int)sp.Rarity] * WearFactor(b.wear);
+            WearTrip(h, berth);
             b.crate += units;
             State.trips++; State.fish++;
             bool first = Record(sp, kg);

@@ -26,7 +26,7 @@ namespace ReelEmpire.Core
         public double DeckOf(HarbourState h, int berth) { return CatchOf(h, berth) * Content.DeckTrips * (1 + WorkLevel(h, "netloft")); }
 
         /// <summary>Units a second a berth lands on average (rare fish included).</summary>
-        public double BerthRate(HarbourState h, int berth) { return CatchOf(h, berth) * TripMean(h, BaitOf(h, berth)) / TripOf(h, berth); }
+        public double BerthRate(HarbourState h, int berth) { return CatchOf(h, berth) * TripMean(h, BaitOf(h, berth)) / TripOf(h, berth) * WearFactor(h.berths[berth].wear); }
 
         public double BerthUnlockCost(HarbourState h) { return h.berths.Count >= Content.Berths.Length ? double.PositiveInfinity : Content.Berths[h.berths.Count].UnlockCost * DefOf(h).Scale * Fx(h, "berthcost"); }
 

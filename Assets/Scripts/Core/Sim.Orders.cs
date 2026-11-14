@@ -145,6 +145,7 @@ namespace ReelEmpire.Core
             double cash = OrderCash(o);
             Pay(h, cash); State.gems += o.gems;
             State.notes += o.kind == (int)OrderKind.Rarity && o.rarity >= (int)Rarity.Rare ? 2 : 1;      // what the chart room learns from the town
+            if (Unlocked("wear")) AddWrenches(1);       // the town pays in kind too
             State.orders.RemoveAt(index); State.ordersDone++;
             AddSeasonPoints(15);
             if (State.orders.Count == OrderSlotCount - 1) State.orderAt = RealNow() + OrderGap;

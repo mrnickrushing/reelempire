@@ -145,12 +145,13 @@ namespace ReelEmpire.Core
                 case "bait": return BestBerthLevel >= 10 && coached || veteran;
                 case "works": return berths >= 3 && coached || veteran;
                 case "angling": return berths >= 2 && coached || veteran;
+                case "wear": return berths >= 3 && coached || veteran;
                 case "research": return State.notes > 0 || State.research.Count > 0 || veteran;
                 case "orders": return berths >= 4 || State.ordersDone > 0 || State.orders.Count > 0 || veteran;
             }
             return true;
         }
-        public static readonly string[] Features = { "book", "awards", "today", "boost", "crew", "voyages", "derby", "season", "harbours", "bait", "orders", "works", "research", "angling" };
+        public static readonly string[] Features = { "book", "awards", "today", "boost", "crew", "voyages", "derby", "season", "harbours", "bait", "orders", "works", "research", "angling", "wear" };
         public static string FeatureNews(string feature)
         {
             switch (feature)
@@ -167,6 +168,7 @@ namespace ReelEmpire.Core
                 case "angling": return "NEW: Fish by hand! Tap FISH for bigger, rarer catches.";
                 case "works": return "NEW: Works. Build on the plots round the harbour.";
                 case "research": return "NEW: Research. Spend your notes at the chart room.";
+                case "wear": return "NEW: Wear. Boats wear as they sail: mend them with a wrench.";
                 case "bait": return "NEW: Bait. A level 10 dock can choose what it fishes with.";
                 case "orders": return "NEW: Orders. The town wants fish: see the board at the market.";
             }

@@ -105,6 +105,7 @@ namespace ReelEmpire.Core
         public double CollectAway(double seconds, double mult = 1)
         {
             double got = AwayEarnings(seconds) * mult;
+            MendAway(seconds);       // paid at the wear the boats came home with; the rest did them good
             Pay(H, got);
             if (seconds >= 60)
                 for (int i = 0; i < State.harbours.Count; i++)
