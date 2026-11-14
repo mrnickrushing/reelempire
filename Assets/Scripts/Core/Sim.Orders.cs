@@ -43,14 +43,14 @@ namespace ReelEmpire.Core
             if (State.ordersDone == 0 && State.orders.Count == 0 && State.orderAt <= 0)
             {
                 for (int i = 0; i < OrderSlots; i++) State.orders.Add(NewOrder(i));       // the board opens full, one of each kind
-                State.orderAt = RealNow() + OrderEvery;
+                State.orderAt = RealNow() + OrderGap;
                 Touch();
                 return;
             }
-            if (State.orders.Count >= OrderSlots) { State.orderAt = RealNow() + OrderEvery; return; }
+            if (State.orders.Count >= OrderSlotCount) { State.orderAt = RealNow() + OrderGap; return; }
             if (RealNow() < State.orderAt) return;
             State.orders.Add(NewOrder((int)(Roll() * 3)));
-            State.orderAt = RealNow() + OrderEvery;
+            State.orderAt = RealNow() + OrderGap;
             Touch();
         }
 
@@ -133,7 +133,7 @@ namespace ReelEmpire.Core
             }
         }
 
-        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * FullRate(h)); }
+        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * FullRate(h)) * (Researched("haggle") ? 1.25 : 1); }
 
         /// <summary>Hands a finished order over. Returns the cash paid (0 if it isn't finished).</summary>
         public double ClaimOrder(int index)
@@ -144,9 +144,10 @@ namespace ReelEmpire.Core
             var h = State.harbours.Find(x => x.id == o.harbour) ?? H;
             double cash = OrderCash(o);
             Pay(h, cash); State.gems += o.gems;
+            State.notes += o.kind == (int)OrderKind.Rarity && o.rarity >= (int)Rarity.Rare ? 2 : 1;      // what the chart room learns from the town
             State.orders.RemoveAt(index); State.ordersDone++;
             AddSeasonPoints(15);
-            if (State.orders.Count == OrderSlots - 1) State.orderAt = RealNow() + OrderEvery;
+            if (State.orders.Count == OrderSlotCount - 1) State.orderAt = RealNow() + OrderGap;
             Touch();
             return cash;
         }
@@ -156,7 +157,7 @@ namespace ReelEmpire.Core
         {
             if (index < 0 || index >= State.orders.Count) return false;
             State.orders.RemoveAt(index);
-            State.orderAt = RealNow() + OrderEvery;
+            State.orderAt = RealNow() + OrderGap;
             Touch();
             return true;
         }

@@ -8,7 +8,7 @@ namespace ReelEmpire.Core
     {
         SpeciesDef PickSpecies(HarbourState h, BaitDef bait)
         {
-            var odds = bait.Odds ?? Content.RarityOdds;
+            var odds = OddsFor(h, bait);
             int roll = (int)(Roll() * 1000), r = 0, acc = 0;
             for (; r < odds.Length - 1; r++) { acc += odds[r]; if (roll < acc) break; }
             if (r < (int)Rarity.Rare && SkillRunning("rare")) r = (int)Rarity.Rare;      // the Old Grounds: nothing common comes up
@@ -37,7 +37,7 @@ namespace ReelEmpire.Core
         {
             var e = Entry(sp.Id);
             bool first = e == null;
-            if (first) { e = new SpeciesEntry { id = sp.Id }; State.species.Add(e); State.gems += Content.RarityGems[(int)sp.Rarity]; }
+            if (first) { e = new SpeciesEntry { id = sp.Id }; State.species.Add(e); State.gems += Content.RarityGems[(int)sp.Rarity]; State.notes++; }
             e.count++;
             if (kg > e.best) e.best = kg;
             return first;

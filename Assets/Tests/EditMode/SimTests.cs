@@ -875,5 +875,68 @@ namespace ReelEmpire.Tests
             Fish(s, 12);
             Assert.That(common, Is.EqualTo(0));
         }
+        [Test]
+        public void WorksCostCashAndDoWhatTheySay()
+        {
+            var s = TestGame.New();
+            double rate = s.BerthRate(s.H, 0); float trip = s.TripOf(s.H, 0); double deck = s.DeckOf(s.H, 0);
+            Assert.That(s.BuildWork("netloft"), Is.False);                  // no money
+            s.H.cash = 1e12;
+            Assert.That(s.BuildWork("netloft"), Is.True);
+            Assert.That(s.BerthRate(s.H, 0), Is.EqualTo(rate * 1.15).Within(1e-9));
+            Assert.That(s.DeckOf(s.H, 0), Is.EqualTo(deck * 1.15 * 2).Within(1e-9));
+            s.BuildWork("shipyard");
+            Assert.That(s.TripOf(s.H, 0), Is.EqualTo(trip * 0.9f).Within(1e-5));
+            double m = s.IncomeMult(s.H);
+            s.BuildWork("auction");
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 1.1).Within(1e-9));
+            double second = s.WorkCost(s.H, "netloft");
+            Assert.That(second, Is.EqualTo(4e3 * 60).Within(1e-6));
+            s.BuildWork("netloft"); s.BuildWork("netloft");
+            Assert.That(s.BuildWork("netloft"), Is.False);                  // three levels and no more
+            Assert.That(s.WorkTotal(s.H), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void TheLampBringsRareFishAndTheRateKnowsIt()
+        {
+            var s = TestGame.New();
+            double rate = s.BerthRate(s.H, 0);
+            s.H.cash = 1e15; s.BuildWork("lamp");
+            var odds = s.OddsFor(s.H, Sim.Baits[0]);
+            Assert.That(odds[2], Is.EqualTo(60));                           // 40 in a thousand, half as often again
+            int sum = 0; foreach (int o in odds) sum += o;
+            Assert.That(sum, Is.EqualTo(1000));
+            Assert.That(s.BerthRate(s.H, 0), Is.GreaterThan(rate));
+            Assert.That(s.OddsFor(s.H, Sim.Baits[1])[2], Is.EqualTo(0));    // groundbait still brings nothing rare
+        }
+
+        [Test]
+        public void ResearchIsBoughtWithNotesInOrder()
+        {
+            var s = TestGame.New();
+            Assert.That(s.DoResearch("hooks"), Is.False);
+            s.State.notes = 9;
+            Assert.That(s.DoResearch("finder"), Is.False);                  // Sharper Hooks comes first
+            double rate = s.BerthRate(s.H, 0);
+            Assert.That(s.DoResearch("hooks"), Is.True);
+            Assert.That(s.BerthRate(s.H, 0), Is.EqualTo(rate * 1.1).Within(1e-9));
+            Assert.That(s.DoResearch("finder"), Is.True);
+            Assert.That(s.State.notes, Is.EqualTo(0));
+            Assert.That(s.DoResearch("hooks"), Is.False);                   // once
+            s.State.notes = 9; s.DoResearch("haggle"); s.DoResearch("regulars");
+            Assert.That(s.OrderSlotCount, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void ANewSpeciesAndAFilledOrderEachTeachTheChartRoomSomething()
+        {
+            var s = TestGame.New();
+            Fish(s, 1);
+            Assert.That(s.State.notes, Is.EqualTo(1));
+            s.State.orders.Add(new Order { kind = (int)OrderKind.Product, harbour = s.H.id, need = 1, have = 1, cashSeconds = 10 });
+            s.ClaimOrder(0);
+            Assert.That(s.State.notes, Is.EqualTo(2));
+        }
     }
 }

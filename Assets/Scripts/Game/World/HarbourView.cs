@@ -33,6 +33,10 @@ namespace ReelEmpire.Game
             return Instance;
         }
 
+        int _worksKey;
+        /// <summary>Changes when a work is built or the plots appear, so the harbour is drawn again.</summary>
+        int WorksKey(HarbourState h) { int k = S.Unlocked("works") ? 1 : 0; foreach (int l in h.works) k = k * 4 + l; return k; }
+
         void Rebuild()
         {
             for (int i = transform.childCount - 1; i >= 0; i--) Destroy(transform.GetChild(i).gameObject);
@@ -41,6 +45,7 @@ namespace ReelEmpire.Game
             _moving = new GameObject("Moving").transform; _moving.SetParent(transform, false);
             var h = H;
             _berths = h.berths.Count; _nHaul = h.haulers.Count; _nTruck = h.trucks.Count; _harbour = h.id;
+            _worksKey = WorksKey(h);
             Scenery.Paint = Theme.For(h.id).Paint;
             BuildSea();
             BuildLand();
@@ -71,7 +76,7 @@ namespace ReelEmpire.Game
             // Life: smoke from the smokehouse, gulls over the water, the lighthouse's beam.
             Life.Smoke(_static, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY + 11.5f, Layout.HallCentre.z + 14));
             if (!Theme.For(h.id).Ice) Life.Gulls(_moving, 5, h.id.GetHashCode());
-            Life.LighthouseBeam(_static, new Vector3(3, Layout.QuayY + 15.2f, 62));
+            if (S.WorkLevel(h, "lamp") > 0) Life.LighthouseBeam(_static, new Vector3(3, Layout.QuayY + 15.2f, 62));      // the lamp is one of the works
         }
 
         /// <summary>Lamps along the quay and by the market, lit at dusk, and the lighthouse's turning beam.</summary>
@@ -204,7 +209,7 @@ namespace ReelEmpire.Game
         {
             var s = S; if (s == null) return;
             var h = H;
-            if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck) Rebuild();
+            if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck || WorksKey(h) != _worksKey) Rebuild();
             float time = Time.time;
             // Dusk: the lamps come on one after another, and the lighthouse starts to turn.
             float night = s.Night;

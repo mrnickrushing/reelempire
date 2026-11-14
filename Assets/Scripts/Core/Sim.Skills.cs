@@ -82,7 +82,7 @@ namespace ReelEmpire.Core
             if (!SkillReady(stage)) return false;
             var d = OnDuty(stage); var o = Owned(d.Id); var sk = SkillOf(d);
             o.skillUntil = RealNow() + SkillSeconds(d, o.level);
-            o.skillReady = o.skillUntil + sk.Cooldown;
+            o.skillReady = o.skillUntil + sk.Cooldown * (Researched("rota") ? 0.75 : 1);
             if (sk.Special == "clear")
             {
                 // The crane swings every crate on the quay up to the hall, as far as the floor has room.

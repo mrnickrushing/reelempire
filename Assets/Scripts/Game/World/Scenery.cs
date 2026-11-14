@@ -262,6 +262,8 @@ namespace ReelEmpire.Game
                 if (x < 42 && Mathf.Abs(z) < 24) continue;                                      // the hall and its yard
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
+                if (Mathf.Abs(x - Layout.ChartRoom.x) < 5 && Mathf.Abs(z - Layout.ChartRoom.z) < 5) continue;       // the chart room
+                if (Mathf.Abs(x - 36) < 8 && Mathf.Abs(z - 17) < 8 || Mathf.Abs(x - 20) < 8 && Mathf.Abs(z + 34) < 8 || Mathf.Abs(x - 60) < 7 && Mathf.Abs(z + 48) < 7) continue;   // the boat shed and net loft plots
                 if (farm && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
                 if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp
                 int kind = rnd.Next(100);
@@ -323,9 +325,23 @@ namespace ReelEmpire.Game
             }
             Models.Kit("signpost", parent, new Vector3(9.5f, y, -11), 200, 2.4f);
             Models.Kit("log_stack", parent, new Vector3(12, y, 28), 80, 3.4f);
-            Models.Kit("open_barn", parent, new Vector3(36, y, 17), -90, 10f, Lift, Paint);
-            Models.Kit("small_barn", parent, new Vector3(20, y, -34), -90, 10f, Lift, Paint);
-            Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift, Paint);
+            // The works: each stands on its plot once it is built, a little grander at every level; before that, a
+            // staked-out site with a pallet of timber.
+            var sim = GameRoot.Sim; var hs = sim != null ? sim.H : null;
+            string[] model = { "small_barn", "open_barn", "storage_hut", "market_stand_b" }; float[] size = { 10f, 10f, 7f, 5f }; float[] yaw = { -90, -90, 90, 90 };
+            for (int i = 0; i < 4; i++)
+            {
+                string id = Sim.Works[i].Id; var at = Layout.WorkPlot(id); int lv = hs != null ? sim.WorkLevel(hs, id) : 0;
+                if (lv > 0) Models.Kit(model[i], parent, at, yaw[i], size[i] * (0.82f + 0.09f * lv), Lift, Paint);
+                else if (sim != null && sim.Unlocked("works"))
+                {
+                    Models.Kit("pallet", parent, at + new Vector3(-0.8f, 0, 0.6f), 25, 2.4f); Models.Kit("log_stack", parent, at + new Vector3(1.4f, 0, -0.8f), 70, 2.6f);
+                    Models.Kit("signpost", parent, at + new Vector3(0.2f, 0, 2.2f), 200, 2.2f); Models.Kit("crate", parent, at + new Vector3(-1.6f, 0, -1.2f), 10, 1.2f);
+                }
+            }
+            Models.Kit("shed", parent, Layout.ChartRoom, -90, 7f, Lift, Paint);
+            Models.Kit("flag", parent, Layout.ChartRoom + new Vector3(2.6f, 0, 2.2f), 0, 6f);
+            Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift, Paint);      // the old net store at the quay's end
             Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
             // Everything here stands still except what floats: draw the trees, rocks and props as a few big meshes.
             var still = new System.Collections.Generic.List<GameObject>();

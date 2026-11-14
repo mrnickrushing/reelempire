@@ -18,6 +18,22 @@ namespace ReelEmpire.Game
         public static Vector3 Moored(int berth) { return new Vector3(-PierLength * 0.55f, 0, BerthZ(berth) + 2.6f + BoatLength(berth) * 0.08f); }
         public static Vector3 Grounds(int berth) { return new Vector3(-34 - berth % 3 * 7 - berth * 1.5f, 0, BerthZ(berth) + (berth % 2 == 0 ? 3 : -2)); }
         public static float BoatLength(int berth) { return 5.6f + berth * 1.1f; }
+
+        /// <summary>Where each of the harbour's works stands (the plot is there before it is built).</summary>
+        public static Vector3 WorkPlot(string id)
+        {
+            switch (id)
+            {
+                case "netloft": return new Vector3(20, QuayY, -34);
+                case "shipyard": return new Vector3(36, QuayY, 17);
+                case "icehouse": return new Vector3(60, QuayY, -48);
+                case "auction": return MarketCentre + new Vector3(15, 0, -5);
+                case "lamp": return new Vector3(3, QuayY, 62);
+            }
+            return ChartRoom;
+        }
+        /// <summary>The chart room: a watch tower behind the hall, where research is done.</summary>
+        public static readonly Vector3 ChartRoom = new Vector3(37, QuayY, -17);
     }
 
     /// <summary>What makes each water look like itself: its ground, its sea and what grows there.</summary>

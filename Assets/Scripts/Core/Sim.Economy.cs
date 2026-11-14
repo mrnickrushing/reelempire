@@ -12,10 +12,10 @@ namespace ReelEmpire.Core
         {
             if (what == "berthcost") return Logbook("yard") ? 0.85 : 1;
             if (what == "levelcost") return Logbook("trade") ? 0.9 : 1;
-            if (what == "catch") return DutyMult(Stage.Berth);
-            if (what == "dock") return DutyMult(Stage.Dock);
-            if (what == "hall") return DutyMult(Stage.Hall);
-            if (what == "market") return DutyMult(Stage.Market);
+            if (what == "catch") return DutyMult(Stage.Berth) * (1 + 0.15 * WorkLevel(h, "netloft")) * (Researched("hooks") ? 1.1 : 1);
+            if (what == "dock") return DutyMult(Stage.Dock) * (Researched("barrows") ? 1.15 : 1);
+            if (what == "hall") return DutyMult(Stage.Hall) * (Researched("knives") ? 1.15 : 1);
+            if (what == "market") return DutyMult(Stage.Market) * (Researched("coldchain") ? 1.15 : 1);
             return 1;
         }
 
@@ -24,6 +24,7 @@ namespace ReelEmpire.Core
         {
             double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach) * TrophyMult * (1 + State.achieved.Count * AwardEach);
             if (PageComplete(h.id)) m *= 1 + PageBonus;
+            m *= 1 + 0.1 * WorkLevel(h, "auction");
             if (Owns("reelempire.ledger")) m *= 2;
             if (Boosted) m *= BoostMult;
             return m;

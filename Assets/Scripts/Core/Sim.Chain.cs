@@ -20,13 +20,13 @@ namespace ReelEmpire.Core
         {
             float t = Content.Berths[berth].Trip; int lv = h.berths[berth].level;
             foreach (var m in Content.SpeedMilestones) if (lv >= m) t *= 0.5f;
-            return t;
+            return t * (1 - 0.1f * WorkLevel(h, "shipyard"));
         }
 
-        public double DeckOf(HarbourState h, int berth) { return CatchOf(h, berth) * Content.DeckTrips; }
+        public double DeckOf(HarbourState h, int berth) { return CatchOf(h, berth) * Content.DeckTrips * (1 + WorkLevel(h, "netloft")); }
 
         /// <summary>Units a second a berth lands on average (rare fish included).</summary>
-        public double BerthRate(HarbourState h, int berth) { return CatchOf(h, berth) * BaitMean(BaitOf(h, berth)) / TripOf(h, berth); }
+        public double BerthRate(HarbourState h, int berth) { return CatchOf(h, berth) * TripMean(h, BaitOf(h, berth)) / TripOf(h, berth); }
 
         public double BerthUnlockCost(HarbourState h) { return h.berths.Count >= Content.Berths.Length ? double.PositiveInfinity : Content.Berths[h.berths.Count].UnlockCost * DefOf(h).Scale * Fx(h, "berthcost"); }
 
@@ -59,11 +59,11 @@ namespace ReelEmpire.Core
 
         public double HaulLoad(HarbourState h) { return DockRate(h) * Content.HaulRound / h.haulers.Count; }
         public double TruckLoad(HarbourState h) { return MarketRate(h) * Content.TruckRound / h.trucks.Count; }
-        public double PileCap(HarbourState h) { return DockRate(h) * Content.PileSeconds; }
+        public double PileCap(HarbourState h) { return DockRate(h) * Content.PileSeconds * (1 + WorkLevel(h, "icehouse")); }
         public double PileRoom(HarbourState h) { return Math.Max(0, PileCap(h) - h.raw - h.done); }
 
         /// <summary>What a unit sells for as this product today (before income multipliers).</summary>
-        public double GoodsValue(HarbourState h, int goods) { return Content.Goods[goods].Value * (goods == GoodsOfTheDay ? Content.FreshDay : 1) * (goods > 0 && SkillRunning("value") ? 1.5 : 1); }
+        public double GoodsValue(HarbourState h, int goods) { return Content.Goods[goods].Value * (goods == GoodsOfTheDay ? Content.FreshDay : 1) * (goods > 0 && SkillRunning("value") ? 1.5 : 1) * (goods == 0 ? 1 + 0.25 * WorkLevel(h, "icehouse") : 1); }
 
         /// <summary>The product the market pays half as much again for today.</summary>
         public int GoodsOfTheDay { get { return (int)(Today % Content.Goods.Length); } }

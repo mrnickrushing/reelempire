@@ -27,7 +27,7 @@ namespace ReelEmpire.Core
             new BaitDef { Id = "chum", Name = "Chum", Blurb = "For the giants: ten times the epics and legends.", Level = 100, Catch = 0.6, Odds = new[] { 600, 200, 100, 90, 10 } },
         };
 
-        public bool BaitUnlocked(HarbourState h, int berth, int bait) { return bait >= 0 && bait < Baits.Length && h.berths[berth].level >= Baits[bait].Level; }
+        public bool BaitUnlocked(HarbourState h, int berth, int bait) { return bait >= 0 && bait < Baits.Length && h.berths[berth].level >= BaitLevel(Baits[bait]); }
 
         /// <summary>The bait a dock is using (worms if the one chosen is no longer unlocked, as after a renovation).</summary>
         public BaitDef BaitOf(HarbourState h, int berth)
@@ -56,7 +56,7 @@ namespace ReelEmpire.Core
         /// <summary>The next bait a dock will unlock, or null when it has them all.</summary>
         public BaitDef NextBait(HarbourState h, int berth)
         {
-            foreach (var b in Baits) if (h.berths[berth].level < b.Level) return b;
+            foreach (var b in Baits) if (h.berths[berth].level < BaitLevel(b)) return b;
             return null;
         }
     }

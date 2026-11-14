@@ -33,7 +33,7 @@ namespace ReelEmpire.Game
                         () => { S.DismissOrder(k); GameRoot.Instance.Save(); if (_screen == Page.Orders) ShowOrders(); }, "KEEP IT"),
                     null, ready);
             }
-            int empty = Sim.OrderSlots - s.State.orders.Count;
+            int empty = s.OrderSlotCount - s.State.orders.Count;
             if (empty > 0) y = Heading(y, (empty == 1 ? "One more order" : "The next order") + " comes in " + Format.Time(s.OrderIn) + ".");
             y = Heading(y, "Orders never run out of time. Filling one pays on top of the ordinary sale.  (Filled so far: " + s.State.ordersDone + ")");
             EndList(-y);
@@ -54,14 +54,14 @@ namespace ReelEmpire.Game
                 var b = Sim.Baits[i]; int k = i; bool open = s.BaitUnlocked(h, berth, i), inUse = b == now;
                 var row = Ui.ArtImg("Row", card, "card", inUse ? new Color(0.72f, 0.93f, 0.76f) : open ? Ui.Card : Ui.Faint, 26);
                 row.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -128 - i * 118), new Vector2(1010, 108));
-                string worth = "a trip is worth x" + Sim.BaitMean(b).ToString("0.00").TrimEnd('0').TrimEnd('.');
+                string worth = "a trip is worth x" + s.TripMean(h, b).ToString("0.00").TrimEnd('0').TrimEnd('.');
                 var n = Ui.Label("N", row.transform, b.Name + "  <size=24><color=#5A6E82>" + worth + "</color></size>", 34, open ? Ui.Ink : Ui.Dim, TextAnchor.UpperLeft); n.rectTransform.Fill(); n.rectTransform.offsetMin = new Vector2(26, 0); n.rectTransform.offsetMax = new Vector2(-290, -10);
                 var d = Ui.Label("D", row.transform, b.Blurb, 24, Ui.Dim, TextAnchor.LowerLeft, false); d.rectTransform.Fill(); d.rectTransform.offsetMin = new Vector2(26, 12); d.rectTransform.offsetMax = new Vector2(-290, -46);
                 d.resizeTextForBestFit = true; d.resizeTextMinSize = 17; d.resizeTextMaxSize = 24;
                 if (inUse) { var on = Ui.Label("On", row.transform, "IN USE", 28, new Color(0.12f, 0.62f, 0.29f), TextAnchor.MiddleRight); on.rectTransform.Fill(); on.rectTransform.offsetMax = new Vector2(-34, 0); }
                 else
                 {
-                    var use = Ui.Button("Use", row.transform, open ? "USE" : "LEVEL " + b.Level, open ? Ui.Green : Ui.Off, open ? (Action)(() =>
+                    var use = Ui.Button("Use", row.transform, open ? "USE" : "LEVEL " + s.BaitLevel(b), open ? Ui.Green : Ui.Off, open ? (Action)(() =>
                     {
                         if (S.SetBait(berth, k)) { Sfx.Play("confirm", 0.7f); GameRoot.Instance.Save(); CloseCard(); if (SheetOpen) RefreshSheet(); }
                     }) : null, 30);

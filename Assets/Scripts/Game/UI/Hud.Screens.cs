@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders, Research }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -99,6 +99,7 @@ namespace ReelEmpire.Game
             { "AWARDS", "Prizes for things you've done in your harbours. Tap a green one to take it." },
             { "SHOP", "Gems speed things up. Everything here is optional: the whole game can be played free." },
             { "SETTINGS", "Sound, reminders, your account and help." },
+            { "RESEARCH", "The chart room turns what the harbour learns into lasting improvements. Each branch is learned in order." },
             { "ORDERS", "The town wants fish. Fill an order for a big payment and gems on top of what the fish sell for." },
         };
 
@@ -170,6 +171,7 @@ namespace ReelEmpire.Game
                 case Page.Season: ShowSeason(); break;
                 case Page.Derby: ShowDerby(); break;
                 case Page.Orders: ShowOrders(); break;
+                case Page.Research: ShowResearch(); break;
             }
         }
 
@@ -189,6 +191,8 @@ void ShowToday()
                 "OPEN", Ui.Blue, () => Open(Page.Season), null, s.SeasonWaiting > 0);
             if (s.Unlocked("orders")) y = Entry(y, Ui.Ic("box"), Ui.Ink, "Orders from the town", s.OrdersReady > 0 ? s.OrdersReady + " ready to hand over." : s.State.orders.Count + " on the board. Filling one pays well.",
                 "OPEN", Ui.Blue, () => Open(Page.Orders), null, s.OrdersReady > 0);
+            if (s.Unlocked("research")) y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Research at the chart room", s.State.notes + " notes in hand." + (s.ResearchReady ? " Something can be learned." : ""),
+                "OPEN", Ui.Blue, () => Open(Page.Research), null, s.ResearchReady);
             bool prize = s.DerbyPrizeWaiting >= 0;
             if (s.Unlocked("derby")) y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
                 "OPEN", Ui.Blue, () => Open(Page.Derby), null, prize || s.DerbyOn);

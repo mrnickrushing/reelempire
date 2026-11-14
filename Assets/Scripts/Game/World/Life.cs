@@ -50,7 +50,8 @@ namespace ReelEmpire.Game
             var main = ps.main; main.simulationSpace = ParticleSystemSimulationSpace.World; main.startSpeed = 0; main.startLifetime = 2.4f; main.maxParticles = 200;
             main.startSize = new ParticleSystem.MinMaxCurve(length * 0.4f, length * 0.55f); main.startColor = new Color(1, 1, 1, 0.75f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
-            var em = ps.emission; em.rateOverTime = 0; em.rateOverDistance = 4f;
+            var em = ps.emission; em.rateOverTime = 0; em.rateOverDistance = 4f; em.enabled = false;
+            go.AddComponent<WakeStart>();      // a boat is put in its place after it is made: no foam for that jump
             var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(length * 0.22f, 0, 0.2f);
             var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0.5f), new Keyframe(1, 1.9f)));
             var col = ps.colorOverLifetime; col.enabled = true;
@@ -110,6 +111,13 @@ namespace ReelEmpire.Game
                 g.Radius = 9 + (float)rnd.NextDouble() * 12; g.Speed = (0.35f + (float)rnd.NextDouble() * 0.25f) * (i % 2 == 0 ? 1 : -1); g.Phase = (float)rnd.NextDouble() * 10;
             }
         }
+    }
+
+    /// <summary>Lets a wake begin once its boat has been put where it belongs.</summary>
+    public sealed class WakeStart : MonoBehaviour
+    {
+        int _frames;
+        void Update() { if (++_frames < 3) return; var em = GetComponent<ParticleSystem>().emission; em.enabled = true; Destroy(this); }
     }
 
     public sealed class Beam : MonoBehaviour
