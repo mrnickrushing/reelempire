@@ -12,6 +12,10 @@ namespace ReelEmpire.Core
         {
             if (what == "berthcost") return Logbook("yard") ? 0.85 : 1;
             if (what == "levelcost") return Logbook("trade") ? 0.9 : 1;
+            if (what == "catch") return DutyMult(Stage.Berth);
+            if (what == "dock") return DutyMult(Stage.Dock);
+            if (what == "hall") return DutyMult(Stage.Hall);
+            if (what == "market") return DutyMult(Stage.Market);
             return 1;
         }
 

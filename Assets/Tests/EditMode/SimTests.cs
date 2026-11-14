@@ -347,6 +347,64 @@ namespace ReelEmpire.Tests
         }
     }
 
+    public class CrewTests
+    {
+        [Test]
+        public void TheFreeChestComesEveryFourHoursAndTheFirstHandGoesOnDuty()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            var card = s.OpenChest();
+            Assert.That(card, Is.Not.Null);
+            Assert.That(s.OnDuty(card.Stage), Is.EqualTo(card));
+            Assert.That(s.OpenChest(), Is.Null, "not twice");
+            t += Sim.ChestEvery + 1;
+            Assert.That(s.OpenChest(), Is.Not.Null);
+            Assert.That(s.OpenChest(true), Is.Null, "no gems");
+            s.State.gems = 40;
+            Assert.That(s.OpenChest(true), Is.Not.Null);
+            Assert.That(s.State.gems, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TheTenthChestWithoutAnEpicHoldsOne()
+        {
+            var s = TestGame.New(); s.State.gems = 100000;
+            int since = 0, worst = 0;
+            for (int i = 0; i < 400; i++)
+            {
+                var c = s.OpenChest(true);
+                if (c.Rarity >= Rarity.Epic) since = 0; else since++;
+                worst = Math.Max(worst, since);
+            }
+            Assert.That(worst, Is.LessThan(Sim.ChestPity));
+            Assert.That(s.State.crew.Count, Is.EqualTo(12), "400 chests find everyone");
+        }
+
+        [Test]
+        public void ACardOnDutyRaisesItsStageAndCopiesRaiseItsLevel()
+        {
+            var s = TestGame.New();
+            double dock = s.DockRate(s.H);
+            s.State.crew.Add(new CrewState { id = "greta" });
+            Assert.That(s.Assign(Stage.Berth, "greta"), Is.False, "her stage is the dock");
+            Assert.That(s.Assign(Stage.Dock, "greta"), Is.True);
+            Assert.That(s.DockRate(s.H), Is.EqualTo(dock * 1.2).Within(1e-9));
+            s.Owned("greta").level = 5;
+            Assert.That(s.DockRate(s.H), Is.EqualTo(dock * (1 + 0.2 * 2)).Within(1e-9));
+            Assert.That(s.Assign(Stage.Dock, null), Is.True);
+            Assert.That(s.DockRate(s.H), Is.EqualTo(dock).Within(1e-9));
+        }
+
+        [Test]
+        public void TheOddsAddUpAndEveryRarityHasACard()
+        {
+            int sum = 0; foreach (int o in Sim.ChestOdds) sum += o;
+            Assert.That(sum, Is.EqualTo(100));
+            foreach (var r in new[] { Rarity.Common, Rarity.Rare, Rarity.Epic, Rarity.Legendary }) Assert.That(Array.Exists(Sim.Crew, c => c.Rarity == r), r.ToString());
+        }
+    }
+
     public class FormatTests
     {
         [Test]

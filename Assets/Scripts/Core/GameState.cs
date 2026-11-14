@@ -71,6 +71,10 @@ namespace ReelEmpire.Core
         public long taskDay = -1; public int taskClaimed; public List<double> taskBase = new List<double>();
         public long levelsBought, voyagesDone;
         public List<Voyage> voyages = new List<Voyage>();
+        public List<CrewState> crew = new List<CrewState>();
+        public List<string> duty = new List<string> { "", "", "", "" };     // who stands at each stage (Stage order)
+        public double chestAt;          // real time the free crew chest is ready
+        public int chestsOpened, chestsSinceEpic;
 
         // The shop.
         public List<string> owned = new List<string>();
@@ -108,6 +112,9 @@ namespace ReelEmpire.Core
             if (boostUsedAt == null) boostUsedAt = new List<double>();
             if (taskBase == null) taskBase = new List<double>();
             if (voyages == null) voyages = new List<Voyage>();
+            if (crew == null) crew = new List<CrewState>();
+            if (duty == null) duty = new List<string>();
+            while (duty.Count < 4) duty.Add("");
             if (seed == 0) seed = 2463534242;
             at = Math.Max(0, Math.Min(at, harbours.Count - 1));
             foreach (var h in harbours)

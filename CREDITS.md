@@ -6,7 +6,7 @@ Reel Empire: Idle Tycoon is made by Rushing Technologies. It uses these free wor
 
 - **Kenney** (kenney.nl): Watercraft Kit (the boats, buoys), Car Kit (the delivery truck), Pirate Kit (barrels, crates,
   the flag, rocks), Survival Kit (boxes, fish, the signpost), Nature Kit (trees, bushes,
-  rocks, lily pads, flowers, grass, logs), Mini Characters (the dock hands). Converted by `Tools/art/models.py`.
+  rocks, lily pads, flowers, grass, logs), Mini Characters (the dock hands, Marta and the crew's portraits). Converted by `Tools/art/models.py`.
 
 - **Quaternius** (quaternius.com, via poly.pizza): the harbour's buildings and docks (Big Barn, Barn, Small Barn, Open
   Barn, Silo House, Market Stalls, Market Stand, Dock, Storage Hut, Bucket of Fish, Container Red, Pallet), fetched by

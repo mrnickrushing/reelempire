@@ -55,7 +55,11 @@ platform code, tools and conventions are the same.
   starts the week again), three daily tasks counted from the day's start (`RollTasks` in `Tick`), voyages (one boat
   away for 30 min / 2 h / 8 h, a second with `reelempire.fleet`; the first one sent asks for notifications) and the
   Skipper's Logbook: eight perks that open at renown thresholds (`Logbook(id)`; nothing is spent).
-- Not done yet (see DESIGN.md milestones): crew cards, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
+- Crew (`Core/Sim.Crew.cs`, the CREW page): twelve cards, three per stage, from the crew chest (free every 4 h or 40
+  gems; odds 70/22/7/1 printed on the page; a sure Epic by the tenth chest). One card stands duty per stage
+  (`Assign`, `State.duty`) and multiplies it through `Fx`; copies raise its level (to 10). Portraits are the Kenney
+  mini characters rendered by `art-src/free/faces/crew_jobs.json`. No active abilities yet.
+- Not done yet (see DESIGN.md milestones): crew abilities, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
   (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -19,6 +19,7 @@ namespace ReelEmpire.Game
             NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
             NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
             NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
+            NavButton(new Vector2(1, 0), new Vector2(-368, 16), "CREW", Resources.Load<Sprite>("UI/Faces/crew_brannock"), Color.white, () => Open(Page.Crew), true);
             NavButton(new Vector2(1, 0), new Vector2(-226, 16), "SHOP", Ui.Art("gem"), Color.white, () => Open(Page.Shop), false);
             NavButton(new Vector2(1, 0), new Vector2(-84, 16), "MORE", Ui.Ic("gear"), Ui.Ink, () => Open(Page.Settings), false);
             _screenRoot = Ui.Rect("Screen", _root); _screenRoot.Fill();
@@ -40,9 +41,10 @@ namespace ReelEmpire.Game
 
         void UpdateNav()
         {
-            // The dots are made in the order of the buttons that carry one: AWARDS, then TODAY.
+            // The dots are made in the order of the buttons that carry one: AWARDS, TODAY, CREW.
             if (_navDots.Count > 0) { bool claim = S.AchievementsToClaim > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
             if (_navDots.Count > 1) { bool today = S.TodayWaiting; if (_navDots[1].gameObject.activeSelf != today) _navDots[1].gameObject.SetActive(today); }
+            if (_navDots.Count > 2) { bool chest = S.ChestFree; if (_navDots[2].gameObject.activeSelf != chest) _navDots[2].gameObject.SetActive(chest); }
         }
 
         public bool ScreenOpen { get { return _screen != Page.None; } }
@@ -116,6 +118,7 @@ namespace ReelEmpire.Game
                 case Page.Settings: ShowSettings(); break;
                 case Page.Harbours: ShowHarbours(); break;
                 case Page.Today: ShowToday(); break;
+                case Page.Crew: ShowCrew(); break;
             }
         }
 
@@ -157,6 +160,48 @@ void ShowToday()
             {
                 bool has = s.Logbook(p.Id);
                 y = Entry(y, Ui.Ic(has ? "medal" : "lock"), Ui.Ink, p.Name, p.Blurb, null, Ui.Off, null, has ? "YOURS" : "AT " + p.Renown + " RENOWN", has);
+            }
+            EndList(-y);
+        }
+
+        static readonly string[] StageNames = { "Boats", "Dock", "Hall", "Market" };
+        static readonly string[] CrewRarity = { "COMMON", "", "RARE", "EPIC", "LEGENDARY" };
+
+        void ShowCrew()
+        {
+            var s = S;
+            Frame("THE CREW");
+            float y = 0;
+            // The chest: free on a timer, or for gems; the odds are printed.
+            Action<CrewDef> got = card =>
+            {
+                if (card == null) { Sfx.Play("error", 0.5f); Toast("Not enough gems"); return; }
+                var own = S.Owned(card.Id);
+                Sfx.Play("star", 0.9f);
+                Toast(card.Name + " (" + CrewRarity[(int)card.Rarity].ToLowerInvariant() + ")" + (own.level > 1 || own.copies > 0 ? ": now level " + own.level : " signs on!"));
+                GameRoot.Instance.Save(); ShowCrew();
+            };
+            y = Entry(y, Ui.Art("star"), Color.white, "Crew chest", s.ChestFree ? "One card. Your free chest is ready." : "One card. The next free chest is ready in " + Format.Time(s.ChestIn) + ".",
+                s.ChestFree ? "OPEN FREE" : Sim.ChestGems + " GEMS", s.ChestFree ? Ui.Gold : Ui.Grape, () => got(S.OpenChest(!S.ChestFree)), null, s.ChestFree);
+            var odds = Ui.Label("Odds", _list, "Odds: Common " + Sim.ChestOdds[0] + "%  ·  Rare " + Sim.ChestOdds[1] + "%  ·  Epic " + Sim.ChestOdds[2] + "%  ·  Legendary " + Sim.ChestOdds[3] + "%.  The 10th chest without an Epic or better always holds one.", 24, Ui.Dim, TextAnchor.MiddleLeft, false);
+            odds.rectTransform.Band(true, y, 44, 10); y -= 52;
+
+            for (int st = 0; st < 4; st++)
+            {
+                var stage = (Stage)st;
+                y = Heading(y, StageNames[st].ToUpperInvariant() + (s.OnDuty(stage) == null ? ": nobody on duty" : ""));
+                foreach (var d in Sim.Crew)
+                {
+                    if (d.Stage != stage) continue;
+                    var own = s.Owned(d.Id); bool duty = s.OnDuty(stage) == d; string id = d.Id;
+                    string rarity = "<color=#" + ColorUtility.ToHtmlStringRGB(RarityInk[(int)d.Rarity]) + ">" + CrewRarity[(int)d.Rarity] + "</color>";
+                    if (own == null)
+                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), new Color(0.086f, 0.196f, 0.31f, 0.3f), "???  " + rarity, d.Role + ": +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, 1) * 100) + "% " + StageNames[st].ToLowerInvariant(), null, Ui.Off, null, "IN A CHEST");
+                    else
+                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), Color.white, d.Name + "  " + rarity,
+                            d.Role + "  ·  level " + own.level + "  ·  +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, own.level) * 100) + "% " + StageNames[st].ToLowerInvariant() + (own.level < Sim.CrewMaxLevel ? "  ·  " + own.copies + "/" + Sim.CopiesFor(own.level) + " copies to level " + (own.level + 1) : "  ·  top level"),
+                            duty ? null : "PUT ON DUTY", Ui.Blue, duty ? null : (Action)(() => { if (S.Assign(stage, id)) { Sfx.Play("confirm", 0.7f); GameRoot.Instance.Save(); ShowCrew(); } }), duty ? "ON DUTY" : null, duty);
+                }
             }
             EndList(-y);
         }
