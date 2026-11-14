@@ -95,6 +95,21 @@ Shader "ReelEmpire/VertexLit"
                 return o;
             }
 
+            // Value noise for the things that give the ground life: patchy grass and the shadows of drifting clouds.
+            float _CloudShade;     // global: how dark a cloud's shadow is (0 = none)
+            float lt_hash(float2 p) { return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
+            float lt_noise(float2 p)
+            {
+                float2 i = floor(p), f = frac(p); f = f * f * (3 - 2 * f);
+                return lerp(lerp(lt_hash(i), lt_hash(i + float2(1, 0)), f.x), lerp(lt_hash(i + float2(0, 1)), lt_hash(i + float2(1, 1)), f.x), f.y);
+            }
+            float lt_cloud(float2 xz)
+            {
+                float2 q = xz * 0.011 + _Time.y * float2(0.016, 0.007);
+                float n = lt_noise(q) * 0.65 + lt_noise(q * 2.3 + 7.1) * 0.35;
+                return smoothstep(0.46, 0.62, n);
+            }
+
             half4 frag(Varyings i) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(i);
@@ -110,6 +125,14 @@ Shader "ReelEmpire/VertexLit"
                 albedo = saturate(albedo * _Tint.rgb);
                 float glow = 1 - i.color.a;
                 float3 normalWS = normalize(i.normalWS);
+                // The meadow: flat green ground goes lighter and darker in broad soft patches, with a little yellow in it.
+                float meadow = step(0.9, normalWS.y) * smoothstep(1.1, 1.35, albedo.g / max(1e-3, max(albedo.r, albedo.b))) * (1 - step(0.5, _KitSurface));
+                if (meadow > 0)
+                {
+                    float m = lt_noise(i.positionWS.xz * 0.045) * 0.6 + lt_noise(i.positionWS.xz * 0.16 + 3.7) * 0.4;
+                    m = saturate((m - 0.5) * 2.4 + 0.5);
+                    albedo = lerp(albedo, albedo * lerp(float3(0.78, 0.9, 0.8), float3(1.16, 1.1, 0.82), m), meadow);
+                }
                 float occlusion = 1;
 
                 // Surface detail: one fetch, projected along the face's dominant object-space axis
@@ -154,6 +177,7 @@ Shader "ReelEmpire/VertexLit"
                 s.emission = glow * _NightGlow * _GlowColor.rgb * (0.6 + albedo);
 
                 half4 c = UniversalFragmentPBR(inputData, s);
+                c.rgb *= 1 - _CloudShade * lt_cloud(i.positionWS.xz) * (1 - glow * _NightGlow);
                 c.rgb = MixFog(c.rgb, inputData.fogCoord);
                 return c;
             }

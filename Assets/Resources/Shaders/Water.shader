@@ -31,6 +31,7 @@ Shader "ReelEmpire/Water"
                 float _ShoreX, _ShoreFade;
             CBUFFER_END
             float _NightGlow;
+            float _CloudShade;
 
             struct Attributes { float4 positionOS : POSITION; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; float fogFactor : TEXCOORD1; };
@@ -86,8 +87,10 @@ Shader "ReelEmpire/Water"
                 // Foam: a moving line against the quay and soft caps on the bigger ripples.
                 float edge = saturate(1 - (_ShoreX - i.positionWS.x) / 2.2);
                 float lap = smoothstep(0.45, 0.9, edge + noise(p * 1.3 + float2(0, t * 0.6)) * 0.5 - 0.15) * step(i.positionWS.x, _ShoreX);
-                float caps = smoothstep(1.75, 2.1, h0) * 0.35;
+                float caps = smoothstep(1.9, 2.2, h0) * 0.22;
                 lit = lerp(lit, _Foam.rgb * lerp(0.35, 1, day), saturate(lap * 0.8 + caps));
+                float2 cq = p * 0.011 + t * float2(0.016, 0.007);
+                lit *= 1 - _CloudShade * smoothstep(0.46, 0.62, noise(cq) * 0.65 + noise(cq * 2.3 + 7.1) * 0.35);
                 lit = MixFog(lit, i.fogFactor);
                 return half4(lit, 1);
             }

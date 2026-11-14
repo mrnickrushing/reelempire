@@ -57,6 +57,8 @@ namespace ReelEmpire.Game
             // The day: the sun swings round and sinks, the sky dims, and everything that glows comes on at dusk.
             float night = sim.Night * 0.72f, phase = sim.DayPhase;      // a bright moonlit night: the harbour stays readable
             Shader.SetGlobalFloat("_NightGlow", night);
+            // Clouds drift over on a fair day and leave soft shadows; under a grey sky there is nothing to cast them.
+            Shader.SetGlobalFloat("_CloudShade", 0.3f * (1 - _gloom) * (1 - sim.Night * 0.7f));
             Shader.SetGlobalColor("_GlowColor", new Color(2.6f, 2.2f, 1.5f));
             if (_sun != null)
             {

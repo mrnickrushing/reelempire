@@ -240,6 +240,9 @@ namespace ReelEmpire.Game
             });
         }
 
+        static readonly string[] Blooms = { "flowers", "flowers_red", "flowers_purple" };
+        static readonly string[] Wild = { "flowers", "grass", "flowers_red", "flowers_purple", "grass", "stump", "mushrooms" };
+
         static void KitSurroundings(Transform parent, string harbour)
         {
             var rnd = new System.Random(harbour.GetHashCode());
@@ -254,15 +257,17 @@ namespace ReelEmpire.Game
                 if (x < 42 && Mathf.Abs(z) < 24) continue;                                      // the hall and its yard
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
+                if (!th.Ice && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
+                if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp
                 int kind = rnd.Next(100);
                 if (kind < 62) { string tr = trees[rnd.Next(trees.Length)]; Models.Kit(tr, parent, new Vector3(x, y, z), R(0, 360), tr.StartsWith("rock") || tr.StartsWith("bush") ? R(3f, 6f) : R(6.5f, 11f)); }
                 else if (kind < 80) Models.Kit(rnd.Next(2) == 0 ? "bush" : "bush_b", parent, new Vector3(x, y, z), R(0, 360), R(1.6f, 3f));
                 else if (kind < 90) Models.Kit(rnd.Next(2) == 0 ? "rock_a" : "rock_d", parent, new Vector3(x, y, z), R(0, 360), R(1.5f, 3.5f));
-                else if (!th.Ice) Models.Kit(rnd.Next(2) == 0 ? "flowers" : "grass", parent, new Vector3(x, y, z), R(0, 360), R(0.9f, 1.6f));
+                else if (!th.Ice) Models.Kit(Wild[rnd.Next(Wild.Length)], parent, new Vector3(x, y, z), R(0, 360), R(0.9f, 1.6f));
             }
             // Flowers and grass tufts near the buildings, where the eye rests.
             for (int i = 0; i < 40 && !th.Ice; i++)
-                Models.Kit(i % 3 == 0 ? "flowers" : "grass", parent, new Vector3(R(11, 60), y, R(8, 30) * (i % 2 == 0 ? 1 : -1)), R(0, 360), R(0.8f, 1.4f));
+                Models.Kit(i % 3 == 2 ? "grass" : Blooms[i % Blooms.Length], parent, new Vector3(R(11, 60), y, R(8, 30) * (i % 2 == 0 ? 1 : -1)), R(0, 360), R(0.8f, 1.4f));
             // Rocks where the quay ends, in and out of the water.
             for (int i = 0; i < 22; i++)
             {
@@ -282,12 +287,45 @@ namespace ReelEmpire.Game
                 Models.Kit("barrel", parent, new Vector3(8.2f, y, z + 1.2f), 0, 1.2f);
                 if (((int)z & 1) == 0) Models.Kit("crate", parent, new Vector3(8.1f, y, z - 0.4f), 20, 1.3f);
             }
+            if (!th.Ice && Resources.Load<Mesh>("Models/wheat") != null)
+            {
+                // A fenced field behind the market: rows of wheat with a strip of corn, and a gap in the fence for the gate.
+                const float x0 = 46, x1 = 68, z0 = -36, z1 = -20;
+                var field = new GameObject("Field").transform; field.SetParent(parent, false);
+                Models.Built("Soil", field, mb => { mb.Mat(0.02f); mb.Surf = SurfaceKind.None; mb.Box(new Vector3((x0 + x1) / 2, y + 0.03f, (z0 + z1) / 2), new Vector3(x1 - x0 - 1, 0.06f, z1 - z0 - 1), Palette.Hex(0x8A6240)); });
+                for (float fx = x0 + 1.5f; fx < x1; fx += 3) { Models.Kit("fence", field, new Vector3(fx, y, z0), 0, 3f); if (Mathf.Abs(fx - 56.5f) > 2) Models.Kit("fence", field, new Vector3(fx, y, z1), 0, 3f); }
+                for (float fz = z0 + 1.5f; fz < z1; fz += 3) { Models.Kit("fence", field, new Vector3(x0, y, fz), 90, 3f); Models.Kit("fence", field, new Vector3(x1, y, fz), 90, 3f); }
+                int row = 0;
+                for (float fz = z0 + 2.2f; fz < z1 - 1.5f; fz += 2.3f, row++)
+                    for (float fx = x0 + 2.2f; fx < x1 - 1.5f; fx += 2.1f)
+                        {
+                        bool corn = row % 3 == 2;
+                        var crop = Models.Kit(corn ? "corn" : "wheat", field, new Vector3(fx + R(-0.2f, 0.2f), y, fz + R(-0.2f, 0.2f)), R(0, 360), corn ? R(2.4f, 3f) : R(1.6f, 2f));
+                        if (!corn && crop != null) crop.GetComponent<MeshRenderer>().sharedMaterial = Materials.KitTint(new Color(1.7f, 1.35f, 0.5f));   // ripe gold
+                    }
+                StaticBatchingUtility.Combine(field.gameObject);       // a hundred stalks drawn as one
+            }
+            if (Resources.Load<Mesh>("Models/tent") != null)
+            {
+                // A camp by the trees: a tent, a ring of stones for the fire, stumps to sit on.
+                Models.Kit("tent", parent, new Vector3(42, y, -50), 150, 6f);
+                Models.Kit("campfire", parent, new Vector3(40, y, -44), 0, 2.2f);
+                Models.Kit("stump", parent, new Vector3(37.6f, y, -43), 30, 1.2f); Models.Kit("stump", parent, new Vector3(41.4f, y, -42), 200, 1.1f);
+                Models.Kit("log_stack", parent, new Vector3(46, y, -45), 20, 2.6f);
+                if (!th.Ice) for (int i = 0; i < 5; i++) Models.Kit("mushrooms", parent, new Vector3(R(32, 48), y, R(-55, -41)), R(0, 360), R(0.7f, 1.1f));
+                // Canoes pulled up on the sand past the end of the quay.
+                Models.Kit("canoe", parent, new Vector3(3.5f, y + 0.05f, -56), 70, 6f); Models.Kit("canoe", parent, new Vector3(5.5f, y + 0.05f, -60), 95, 6f);
+            }
             Models.Kit("signpost", parent, new Vector3(9.5f, y, -11), 200, 2.4f);
             Models.Kit("log_stack", parent, new Vector3(12, y, 28), 80, 3.4f);
             Models.Kit("open_barn", parent, new Vector3(36, y, 17), -90, 10f, Lift);
             Models.Kit("small_barn", parent, new Vector3(20, y, -34), -90, 10f, Lift);
             Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift);
             Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
+            // Everything here stands still except what floats: draw the trees, rocks and props as a few big meshes.
+            var still = new System.Collections.Generic.List<GameObject>();
+            foreach (Transform t in parent) if (t.GetComponent<Bobber>() == null && t.GetComponent<MeshFilter>() != null && t.name != "Floe") still.Add(t.gameObject);
+            StaticBatchingUtility.Combine(still.ToArray(), parent.gameObject);
         }
     }
 
