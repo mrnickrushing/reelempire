@@ -45,7 +45,6 @@ namespace ReelEmpire.Core
             State.gems += g.Gems;
             if (g.WarpHours > 0) Pay(H, Math.Max(IdleRate(H) / (Boosted ? BoostMult : 1), FullRate(H) * 0.25) * g.WarpHours * 3600);
             if (g.BoostHours > 0) State.boostUntil = Math.Max(State.boostUntil, RealNow()) + g.BoostHours * 3600;
-            if (Unlocked("wear")) AddWrenches(2);        // two wrenches with every day's gift
             State.giftStreak = i + 1; State.giftDay = Today;
             Touch();
             return g;

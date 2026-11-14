@@ -118,10 +118,7 @@ namespace ReelEmpire.Game
             if (view == null) return;
             if (_signBerths != h.berths.Count) RebuildSigns();
             for (int i = 0; i < h.berths.Count; i++)
-            {
                 SetSign(_berthSigns[i], view.BerthSign(i), h.berths[i].level.ToString(), s.Affordable(h, Stage.Berth, i) > 0);
-                _berthSigns[i].Back.color = s.Worn(h, i) ? new Color(1f, 0.78f, 0.72f) : Color.white;       // a worn hull shows on its sign
-            }
             SetSign(_dockSign, view.DockSign, h.dock.ToString(), s.Affordable(h, Stage.Dock) > 0);
             SetSign(_hallSign, view.HallSign, h.hall.ToString(), s.Affordable(h, Stage.Hall) > 0);
             SetSign(_marketSign, view.MarketSign, h.market.ToString(), s.Affordable(h, Stage.Market) > 0);

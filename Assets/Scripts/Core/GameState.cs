@@ -12,7 +12,6 @@ namespace ReelEmpire.Core
         public float trip;              // seconds left of it
         public double crate;            // fish waiting on the quay for the haulers (units)
         public int bait;                // index into Sim.Baits
-        public float wear;              // 0 fresh .. 1 worn out (Sim.Wear)
     }
 
     /// <summary>A hauler or a truck on its round.</summary>
@@ -84,7 +83,6 @@ namespace ReelEmpire.Core
         public int goalKind, goalBerth; public double goalTarget; public long goalFrom;
         public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
         public long doubleDay = -1;
-        public int wrenches = 3, repairs;      // Sim.Wear
         public long adDay = -1; public int adCount;      // rewarded adverts watched on a day (Sim.Ads)
         public bool starterOffered;
         public long skillsUsed, worksBuilt, handCaught;

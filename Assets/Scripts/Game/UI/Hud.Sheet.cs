@@ -91,16 +91,6 @@ namespace ReelEmpire.Game
             var t = Ui.Label("Title", left, title, 44, Ui.Ink, TextAnchor.UpperLeft); t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(138, -6), new Vector2(270, 100));
             t.resizeTextForBestFit = true; t.resizeTextMinSize = 28; t.resizeTextMaxSize = 44;
             var st = Ui.Label("Sub", left, sub, 24, Ui.Dim, TextAnchor.UpperLeft, false); st.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, -142), new Vector2(400, 60));
-            if (stage == Stage.Berth && s.Unlocked("wear"))
-            {
-                // The hull: how worn it is, and the way to the wrench.
-                t.rectTransform.sizeDelta = new Vector2(270, 78);
-                float wear = s.WearOf(h, berth); int pct = Mathf.RoundToInt((1 - wear) * 100);
-                var hull = Ui.Button("Hull", left, "HULL " + pct + "%", wear > Sim.WornAt ? Ui.Coral : wear > Sim.WornAt * 0.5f ? Ui.Gold : Ui.Green, () => ShowRepair(berth), 24);
-                var hrt = (RectTransform)hull.transform; hrt.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(138, -84), new Vector2(262, 48));
-                var hl = hull.GetComponentInChildren<Text>(); if (hl != null) hl.rectTransform.offsetMin += new Vector2(40, 0);
-                var wi = Ui.Img("W", hrt, Color.white); wi.sprite = Ui.Ic("wrench"); wi.preserveAspect = true; wi.raycastTarget = false; wi.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(16, 3), new Vector2(30, 30));
-            }
             if (stage == Stage.Berth)
             {
                 // What this dock fishes with: a button once the first bait is unlocked, a promise before that.

@@ -3,7 +3,7 @@ using System;
 namespace ReelEmpire.Core
 {
     /// <summary>What a watched advert can pay for. Always the player's choice, never shown unasked.</summary>
-    public enum AdReward { Double, Boost, Wrench }
+    public enum AdReward { Double, Boost }
 
     /// <summary>
     /// Rewarded adverts: a free way to two things gems or patience buy (a second DOUBLE of the time away in a day, a
@@ -25,7 +25,6 @@ namespace ReelEmpire.Core
             switch (reward)
             {
                 case AdReward.Double: return !DoubleFree;                       // the free one of the day comes first
-                case AdReward.Wrench: return Unlocked("wear") && State.wrenches < AdWrenchBelow;      // for someone running short, not for hoarding
                 case AdReward.Boost: return BoostReady <= 0 && BoostLeft + BoostHour <= BoostCap + 1;
             }
             return false;

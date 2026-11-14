@@ -220,12 +220,3 @@ tapping it offers an advert for another hour. Six a day (`AdsPerDay`), requests 
 starts only once Marta's tutorial is over. `Ads.RewardedUnit` and the App ID in
 `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset` are Google's public test ids until the game has its
 own in AdMob. The Night Crew purchase keeps its free doubles, so its owners never see the advert there.
-
-## Wear and wrenches
-
-`Core/Sim.Wear.cs`, `UI/Hud.Wear.cs`. A boat's hull wears as it sails (`BerthState.wear`, 0 to 1; about three hours of
-sailing from fresh to worn out, half as long again per Boat Shed level). Past half worn it lands less, down to seven
-tenths (`WearFactor`); it never stops, and nothing wears while the game is closed. A wrench (`State.wrenches`, three
-to start) makes a hull good as new: HULL button on the dock's panel, MEND / MEND ALL WORN on the card, the dock's sign
-turns red when its boat is worn. Wrenches: two with the day's gift, one with every filled order, 10 gems, or one for a
-watched advert while fewer than five are in hand. Opens with the third dock, after Marta's steps, with its own lesson.

@@ -29,7 +29,7 @@ namespace ReelEmpire.Core
         public static readonly WorkDef[] Works =
         {
             new WorkDef { Id = "netloft", Name = "Net Loft", Does = "Bigger nets and room to dry them", Cost = 4e3, Says = l => "+" + l * 15 + "% catch, crates hold " + (l + 1) + "x" },
-            new WorkDef { Id = "shipyard", Name = "Boat Shed", Does = "Boats kept trim sail faster and wear slower", Cost = 3e4, Says = l => "trips " + l * 10 + "% shorter, hulls last " + l * 50 + "% longer" },
+            new WorkDef { Id = "shipyard", Name = "Boat Shed", Does = "Boats kept trim sail faster", Cost = 3e4, Says = l => "trips " + l * 10 + "% shorter" },
             new WorkDef { Id = "icehouse", Name = "Ice House", Does = "Fresh fish keep, and sell for more", Cost = 2.5e5, Says = l => "fresh fish +" + l * 25 + "%, the hall floor holds " + (l + 1) + "x" },
             new WorkDef { Id = "auction", Name = "Auction Stand", Does = "Buyers bid against each other", Cost = 2e7, Says = l => "+" + l * 10 + "% on every sale" },
             new WorkDef { Id = "lamp", Name = "Lighthouse Lamp", Does = "Lit, it draws the big fish in", Cost = 2e8, Says = l => "rare fish " + (l == 1 ? "half as often again" : l == 2 ? "twice as often" : "three times as often") },
