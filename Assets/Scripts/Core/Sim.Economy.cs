@@ -22,7 +22,7 @@ namespace ReelEmpire.Core
         /// <summary>Everything that multiplies a sale.</summary>
         public double IncomeMult(HarbourState h)
         {
-            double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach);
+            double m = Math.Pow(2, h.renovations) * (1 + State.renown * RenownEach) * TrophyMult;
             if (Owns("reelempire.ledger")) m *= 2;
             if (Boosted) m *= BoostMult;
             return m;

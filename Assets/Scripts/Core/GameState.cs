@@ -75,6 +75,9 @@ namespace ReelEmpire.Core
         public List<string> duty = new List<string> { "", "", "", "" };     // who stands at each stage (Stage order)
         public double chestAt;          // real time the free crew chest is ready
         public int chestsOpened, chestsSinceEpic;
+        public List<string> trophies = new List<string>();
+        public long seasonIndex = -1, seasonPoints, seasonPremiumIndex = -1; public int seasonFree, seasonPaid;
+        public long derbyIndex = -1, derbyScore, derbyLastIndex = -1, derbyLastScore, derbyPrizeFor = -1; public int derbyGoals, derbyBest;
 
         // The shop.
         public List<string> owned = new List<string>();
@@ -113,6 +116,7 @@ namespace ReelEmpire.Core
             if (taskBase == null) taskBase = new List<double>();
             if (voyages == null) voyages = new List<Voyage>();
             if (crew == null) crew = new List<CrewState>();
+            if (trophies == null) trophies = new List<string>();
             if (duty == null) duty = new List<string>();
             while (duty.Count < 4) duty.Add("");
             if (seed == 0) seed = 2463534242;

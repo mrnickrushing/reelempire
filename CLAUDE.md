@@ -59,8 +59,13 @@ platform code, tools and conventions are the same.
   gems; odds 70/22/7/1 printed on the page; a sure Epic by the tenth chest). One card stands duty per stage
   (`Assign`, `State.duty`) and multiplies it through `Fx`; copies raise its level (to 10). Portraits are the Kenney
   mini characters rendered by `art-src/free/faces/crew_jobs.json`. No active abilities yet.
-- Not done yet (see DESIGN.md milestones): crew abilities, derbies, the season pass, the trophy hall, the iCloud "newer save" offer
-  (`Hud.OfferCloud` is empty), the privacy and support pages, App Store Connect setup.
+- Longer rhythms (`Core/Sim.Season.cs`): the trophy hall (`Mount` a caught Rare / Epic / Legendary from its BOOK tile:
+  +1% / 3% / 8% income everywhere, `TrophyMult`), the season pass (four weeks, 30 tiers, `AddSeasonPoints` from levels,
+  species, tasks, voyages and derby goals; `reelempire.season` buys the premium track of the season running), and the
+  weekend derby (Friday to Sunday local time; `DerbyPoints` per fish landed while playing, five goals, a placing among
+  49 rivals whose scores come from the derby's number and how far through it is: `RivalScore`). Their pages open from
+  TODAY. `Hud.OfferCloud` asks before a newer iCloud save replaces this device's.
+- Not done yet (see DESIGN.md milestones): crew abilities, the privacy and support pages, App Store Connect setup.
 
 ## Verify every change
 

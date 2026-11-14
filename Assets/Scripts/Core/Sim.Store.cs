@@ -9,6 +9,7 @@ namespace ReelEmpire.Core
         public string Id, Name, Blurb, FallbackPrice;
         public int Gems;
         public bool Once;               // non-consumable: bought once, restored on a new phone
+        public bool Season;             // the premium track of the season running when it is bought
     }
 
     /// <summary>A purchase this device started and hasn't been paid out for yet.</summary>
@@ -43,6 +44,7 @@ namespace ReelEmpire.Core
             new ProductDef { Id = "reelempire.starter", Name = "Deckhand's Pack", Blurb = "250 gems, plus an extra hauler and an extra truck in every harbour, for good.", Gems = 250, Once = true, FallbackPrice = "$2.99" },
             new ProductDef { Id = "reelempire.ledger", Name = "Captain's Ledger", Blurb = "All income doubled, for good, in every harbour.", Once = true, FallbackPrice = "$7.99" },
             new ProductDef { Id = "reelempire.fleet", Name = "Second Boat Out", Blurb = "Send two voyages at once, for good.", Once = true, FallbackPrice = "$4.99" },
+            new ProductDef { Id = "reelempire.season", Name = "Season Pass", Blurb = "The premium reward on every tier of this season.", Season = true, FallbackPrice = "$7.99" },
             new ProductDef { Id = "reelempire.nightcrew", Name = "Night Crew", Blurb = "The harbour earns for 4 more hours while you're away, for good.", Once = true, FallbackPrice = "$4.99" },
         };
 
@@ -58,6 +60,7 @@ namespace ReelEmpire.Core
             if (!string.IsNullOrEmpty(transaction)) { if (State.transactions.Contains(transaction)) return false; State.transactions.Add(transaction); }
             if (p.Once) { if (State.owned.Contains(product)) return false; State.owned.Add(product); }
             if (!restored) State.gems += p.Gems;
+            if (p.Season && !restored) { RollSeason(); State.seasonPremiumIndex = SeasonIndex; }
             foreach (var h in State.harbours) FitCrew(h);
             EndPurchase(product);
             Changed?.Invoke();

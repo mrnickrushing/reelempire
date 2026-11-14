@@ -110,6 +110,7 @@ namespace ReelEmpire.Game
             OnChanged();
             if (GameRoot.Instance.AwaySeconds > 0) OfferAway();
             BuildTutorial();
+            OfferCloud();
         }
 
         void OnDestroy()
@@ -245,6 +246,26 @@ namespace ReelEmpire.Game
             ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 44), new Vector2(420, 116));
         }
 
-        public void OfferCloud() { }
+RectTransform _cloud;
+
+        /// <summary>iCloud holds a newer save from another device: ask which one to keep (never replaced unasked).</summary>
+        public void OfferCloud()
+        {
+            var cloud = GameRoot.Instance.PendingCloud; var meta = GameRoot.Instance.PendingMeta;
+            if (cloud == null || _cloud != null) return;
+            _cloud = Ui.Img("Cloud", _root, new Color(0.05f, 0.15f, 0.25f, 0.7f)).rectTransform;
+            _cloud.Fill(); _cloud.GetComponent<Image>().raycastTarget = true;
+            var box = Ui.ArtImg("Box", _cloud, "panel", Color.white, 60).rectTransform;
+            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(940, 640));
+            Ui.Label("T", box, "CONTINUE FROM YOUR OTHER DEVICE?", 48, Ui.Ink).rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -44), new Vector2(860, 80));
+            int theirs = meta != null ? meta.Stars : new Sim(cloud).Stars;
+            Ui.Label("B", box, "iCloud has a newer save from another device: <b>" + theirs + (theirs == 1 ? " star" : " stars") + "</b>, saved " + Format.Time(Math.Max(0, SaveSystem.Now - cloud.savedAt)) + " ago.\n\n"
+                + "This device has <b>" + S.Stars + (S.Stars == 1 ? " star" : " stars") + "</b>.\n\nThe one you don't pick is replaced.", 34, Ui.Ink, TextAnchor.UpperCenter, false)
+                .rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -140), new Vector2(820, 330));
+            var yes = Ui.Button("Yes", box, "USE ICLOUD", Ui.Blue, () => { Destroy(_cloud.gameObject); _cloud = null; GameRoot.Instance.ResolveCloud(true); }, 42);
+            ((RectTransform)yes.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(215, 46), new Vector2(400, 116));
+            var no = Ui.Button("No", box, "KEEP THIS ONE", Ui.Off, () => { Destroy(_cloud.gameObject); _cloud = null; GameRoot.Instance.ResolveCloud(false); }, 42);
+            ((RectTransform)no.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-215, 46), new Vector2(400, 116));
+        }
     }
 }

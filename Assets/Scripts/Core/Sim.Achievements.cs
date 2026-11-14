@@ -32,6 +32,8 @@ namespace ReelEmpire.Core
             new AchievementDef { Id = "legend", Name = "The One They Talk About", Blurb = "Catch a legendary fish", Gems = 25, Have = s => s.LegendsCaught, Need = 1 },
             new AchievementDef { Id = "million", Name = "First Million", Blurb = "Earn 1M in all", Gems = 10, Have = s => s.State.lifetime, Need = 1e6 },
             new AchievementDef { Id = "trillion", Name = "Fish Baron", Blurb = "Earn 1T in all", Gems = 25, Have = s => s.State.lifetime, Need = 1e12 },
+            new AchievementDef { Id = "trophy5", Name = "Wall of Fame", Blurb = "Mount 5 trophies", Gems = 20, Have = s => s.State.trophies.Count, Need = 5 },
+            new AchievementDef { Id = "derbytop3", Name = "On the Podium", Blurb = "Finish a derby in the top three", Gems = 40, Have = s => s.State.derbyBest > 0 && s.State.derbyBest <= 3 ? 1 : 0, Need = 1 },
             new AchievementDef { Id = "crew6", Name = "All Hands", Blurb = "Sign on six of the crew", Gems = 20, Have = s => s.State.crew.Count, Need = 6 },
             new AchievementDef { Id = "crew12", Name = "Full Complement", Blurb = "Sign on all twelve of the crew", Gems = 50, Have = s => s.State.crew.Count, Need = 12 },
             new AchievementDef { Id = "voyages10", Name = "Sea Legs", Blurb = "Bring 10 voyages home", Gems = 15, Have = s => s.State.voyagesDone, Need = 10 },

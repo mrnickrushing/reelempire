@@ -176,6 +176,8 @@ namespace ReelEmpire.Core
             b.crate += units;
             State.trips++; State.fish++;
             bool first = Record(sp, kg);
+            DerbyCatch(sp.Rarity);
+            if (first) AddSeasonPoints(20);
             Caught?.Invoke(berth, sp, kg, units, first);
         }
 

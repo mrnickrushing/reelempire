@@ -73,7 +73,7 @@ namespace ReelEmpire.Core
         public bool ClaimTask(int i)
         {
             if (i < 0 || i >= Tasks.Length || !TaskDone(i) || TaskClaimed(i)) return false;
-            State.taskClaimed |= 1 << i; State.gems += Tasks[i].Gems;
+            State.taskClaimed |= 1 << i; State.gems += Tasks[i].Gems; AddSeasonPoints(30);
             Touch();
             return true;
         }
@@ -108,7 +108,7 @@ namespace ReelEmpire.Core
             var def = Voyages[State.voyages[index].kind];
             double cash = VoyageCash(def);
             State.voyages.RemoveAt(index);
-            Pay(H, cash); State.gems += def.Gems; State.voyagesDone++;
+            Pay(H, cash); State.gems += def.Gems; State.voyagesDone++; AddSeasonPoints(25);
             Touch();
             return cash;
         }
@@ -137,7 +137,8 @@ namespace ReelEmpire.Core
         {
             get
             {
-                if (GiftReady || VoyageBack) return true;
+                if (GiftReady || VoyageBack || SeasonWaiting > 0 || DerbyPrizeWaiting >= 0) return true;
+                for (int i = 0; i < DerbyGoals.Length; i++) if (DerbyGoalDone(i) && !DerbyGoalClaimed(i)) return true;
                 for (int i = 0; i < Tasks.Length; i++) if (TaskDone(i) && !TaskClaimed(i)) return true;
                 return false;
             }

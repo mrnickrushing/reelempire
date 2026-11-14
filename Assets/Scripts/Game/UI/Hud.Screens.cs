@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -42,7 +42,7 @@ namespace ReelEmpire.Game
         void UpdateNav()
         {
             // The dots are made in the order of the buttons that carry one: AWARDS, TODAY, CREW.
-            if (_navDots.Count > 0) { bool claim = S.AchievementsToClaim > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
+            if (_navDots.Count > 0) { bool claim = S.AchievementsToClaim > 0 || S.TrophiesWaiting > 0; if (_navDots[0].gameObject.activeSelf != claim) _navDots[0].gameObject.SetActive(claim); }
             if (_navDots.Count > 1) { bool today = S.TodayWaiting; if (_navDots[1].gameObject.activeSelf != today) _navDots[1].gameObject.SetActive(today); }
             if (_navDots.Count > 2) { bool chest = S.ChestFree; if (_navDots[2].gameObject.activeSelf != chest) _navDots[2].gameObject.SetActive(chest); }
         }
@@ -119,6 +119,8 @@ namespace ReelEmpire.Game
                 case Page.Harbours: ShowHarbours(); break;
                 case Page.Today: ShowToday(); break;
                 case Page.Crew: ShowCrew(); break;
+                case Page.Season: ShowSeason(); break;
+                case Page.Derby: ShowDerby(); break;
             }
         }
 
@@ -131,6 +133,14 @@ void ShowToday()
             int gi = s.GiftIndex; var gift = Sim.Gifts[gi];
             y = Entry(y, Ui.Art("star"), Color.white, "Day " + (gi + 1) + " gift: " + gift.Name, s.GiftReady ? "Come back every day: day 7 is 60 gems. Miss a day and the week starts again." : "Taken. The next one is ready in " + Format.Time(s.GiftIn) + ".",
                 s.GiftReady ? "TAKE IT" : null, Ui.Gold, s.GiftReady ? (Action)(() => { var g = S.ClaimGift(); if (g != null) { Sfx.Play("claim", 0.9f); Toast("Today's gift: " + g.Name); GameRoot.Instance.Save(); ShowToday(); } }) : null, s.GiftReady ? null : "TAKEN", s.GiftReady);
+
+            long sHave; int sNeed; s.SeasonProgress(out sHave, out sNeed);
+            y = Entry(y, Ui.Art("star"), Color.white, Sim.SeasonNames[s.Season] + " season: tier " + s.SeasonTier + " of " + Sim.SeasonTiers,
+                (sNeed > 0 ? sHave + " / " + sNeed + " points to the next tier. " : "Every tier reached. ") + (s.SeasonWaiting > 0 ? s.SeasonWaiting + " reward" + (s.SeasonWaiting > 1 ? "s" : "") + " to take." : "Ends in " + Format.Time(s.SeasonLeft) + "."),
+                "OPEN", Ui.Blue, () => Open(Page.Season), null, s.SeasonWaiting > 0);
+            bool prize = s.DerbyPrizeWaiting >= 0;
+            y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
+                "OPEN", Ui.Blue, () => Open(Page.Derby), null, prize || s.DerbyOn);
 
             y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
             for (int i = 0; i < s.State.voyages.Count; i++)
@@ -206,6 +216,88 @@ void ShowToday()
             EndList(-y);
         }
 
+        void ShowSeason()
+        {
+            var s = S;
+            Frame(Sim.SeasonNames[s.Season].ToUpperInvariant() + " SEASON");
+            float y = 0;
+            long have; int need; s.SeasonProgress(out have, out need);
+            var prem = Sim.Product("reelempire.season");
+            y = Entry(y, Ui.Art("star"), Color.white, "Tier " + s.SeasonTier + " of " + Sim.SeasonTiers + (need > 0 ? "  ·  " + have + " / " + need + " points" : ""),
+                "Points come from playing: every level bought, new species, daily tasks, voyages and derby goals. Ends in " + Format.Time(s.SeasonLeft) + ".",
+                s.SeasonPremium ? null : Store.Price(prem), Ui.Green, s.SeasonPremium ? null : (Action)(() => Store.Buy(prem, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Season) ShowSeason(); })), s.SeasonPremium ? "PREMIUM" : null, s.SeasonPremium);
+            if (!s.SeasonPremium) { var note = Ui.Label("N", _list, "The Season Pass adds the premium reward on every tier of this season, including the tiers you've already reached.", 24, Ui.Dim, TextAnchor.MiddleLeft, false); note.rectTransform.Band(true, y, 40, 10); y -= 48; }
+            int tier = s.SeasonTier;
+            for (int t = 0; t < Sim.SeasonTiers; t++)
+            {
+                int k = t; bool reached = t < tier;
+                var free = Sim.SeasonRewardFor(t, false); var paid = Sim.SeasonRewardFor(t, true);
+                bool cf = s.SeasonCanClaim(t, false), cp = s.SeasonCanClaim(t, true);
+                const float H = 96;
+                var row = Ui.ArtImg("Tier", _list, "card", cf || cp ? new Color(0.72f, 0.93f, 0.76f) : reached ? Ui.Card : new Color(0.93f, 0.9f, 0.84f), 26); row.rectTransform.Band(true, y, H - 8);
+                var num = Ui.ArtImg("N", row.transform, "badge", reached ? Ui.Gold : Ui.Off, 0); num.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(14, 2), new Vector2(66, 70));
+                var nl = Ui.Label("L", num.transform, (t + 1).ToString(), 30, Color.white); nl.rectTransform.Fill(); nl.rectTransform.offsetMin = new Vector2(0, 8); nl.Stroke(2f);
+                // The free reward on the left half, the premium on the right.
+                for (int side = 0; side < 2; side++)
+                {
+                    bool premium = side == 1; var r = premium ? paid : free; bool can = premium ? cp : cf; bool taken = s.SeasonClaimed(t, premium);
+                    float x0 = premium ? 760 : 100;
+                    var lab = Ui.Label("R", row.transform, (premium ? "<color=#7B61FF>PREMIUM</color>  " : "<color=#5A6E82>FREE</color>  ") + r.Text, 26, Ui.Ink, TextAnchor.MiddleLeft); lab.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x0, 0), new Vector2(430, 60));
+                    lab.resizeTextForBestFit = true; lab.resizeTextMinSize = 18; lab.resizeTextMaxSize = 26;
+                    if (taken) { var d = Ui.Label("D", row.transform, "TAKEN", 22, new Color(0.12f, 0.62f, 0.29f), TextAnchor.MiddleRight); d.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(x0 + 640, 0), new Vector2(190, 50)); }
+                    else if (can)
+                    {
+                        var b = Ui.Button("B", row.transform, "TAKE", Ui.Green, () => { var got = S.ClaimSeason(k, premium); if (got != null) { Sfx.Play("claim", 0.8f); Toast(got.Text); GameRoot.Instance.Save(); ShowSeason(); } }, 26);
+                        ((RectTransform)b.transform).Place(new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(x0 + 640, 2), new Vector2(150, 62));
+                    }
+                    else if (premium && reached && !s.SeasonPremium) { var d = Ui.Label("D", row.transform, "WITH THE PASS", 20, Ui.Dim, TextAnchor.MiddleRight); d.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(x0 + 640, 0), new Vector2(200, 50)); }
+                }
+                y -= H;
+            }
+            EndList(-y);
+        }
+
+        void ShowDerby()
+        {
+            var s = S;
+            Frame("WEEKEND DERBY");
+            float y = 0;
+            long waiting = s.DerbyPrizeWaiting;
+            if (waiting >= 0)
+                y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "The last derby is over", "Take your prize for where you finished among the fifty skippers.", "TAKE PRIZE", Ui.Gold,
+                    () => { int rank = S.ClaimDerbyPrize(); if (rank > 0) { Sfx.Play("star", 0.9f); Toast("You finished " + rank + (rank == 1 ? "st" : rank == 2 ? "nd" : rank == 3 ? "rd" : "th") + ": +" + Sim.DerbyPrize(rank) + " gems"); GameRoot.Instance.Save(); ShowDerby(); } }, null, true);
+            if (!s.DerbyOn)
+            {
+                y = Entry(y, Ui.Ic("calendar"), Ui.Ink, "The next derby starts in " + Format.Time(s.DerbyIn), "From Friday to Sunday night every fish you land scores: 1 for a common one, up to 200 for a legend. Five goals pay gems, and your place among fifty skippers pays a prize.", null, Ui.Off, null, "FRIDAY");
+                y = Heading(y, "PRIZES: 1st 100 gems  ·  top 3: 60  ·  top 10: 30  ·  top 25: 15  ·  everyone: 5");
+                EndList(-y); return;
+            }
+            y = Entry(y, Ui.Ic("trophy"), Ui.Ink, s.DerbyScore.ToString("N0") + " points  ·  place " + s.DerbyRankNow + " of 50", "Ends in " + Format.Time(s.DerbyLeft) + ". Every fish landed while you play scores; rare fish score far more.", null, Ui.Off, null, "ON NOW", true);
+            y = Heading(y, "GOALS");
+            for (int i = 0; i < Sim.DerbyGoals.Length; i++)
+            {
+                int k = i; bool done = s.DerbyGoalDone(i), claimed = s.DerbyGoalClaimed(i);
+                y = Entry(y, Ui.Ic("target"), Ui.Ink, Sim.DerbyGoals[i].ToString("N0") + " points", Math.Min(s.DerbyScore, Sim.DerbyGoals[i]).ToString("N0") + " / " + Sim.DerbyGoals[i].ToString("N0"), claimed ? null : "+" + Sim.DerbyGoalGems[i] + " GEMS", Ui.Green,
+                    done && !claimed ? (Action)(() => { if (S.ClaimDerbyGoal(k)) { Sfx.Play("claim", 0.8f); GameRoot.Instance.Save(); ShowDerby(); } }) : null, claimed ? "DONE" : null, done && !claimed);
+            }
+            y = Heading(y, "THE TABLE  (1st 100 gems · top 3: 60 · top 10: 30 · top 25: 15 · everyone: 5)");
+            double frac = 1 - s.DerbyLeft / (3 * 86400.0);
+            var table = new List<KeyValuePair<string, long>>();
+            for (int i = 0; i < Sim.DerbyRivals; i++) table.Add(new KeyValuePair<string, long>(Sim.RivalNames[i], s.RivalScore(s.DerbyIndex, i, frac)));
+            string me = string.IsNullOrEmpty(s.State.playerName) ? "You" : s.State.playerName + " (you)";
+            table.Add(new KeyValuePair<string, long>(me, s.DerbyScore));
+            table.Sort((a, b) => b.Value != a.Value ? b.Value.CompareTo(a.Value) : (a.Key == me ? 1 : -1));
+            for (int i = 0; i < table.Count; i++)
+            {
+                bool mine = table[i].Key == me;
+                var row = Ui.ArtImg("Row", _list, "card", mine ? new Color(0.72f, 0.93f, 0.76f) : Ui.Card, 26); row.rectTransform.Band(true, y, 54);
+                var a = Ui.Label("A", row.transform, (i + 1) + ".   " + table[i].Key, 28, Ui.Ink, TextAnchor.MiddleLeft); a.rectTransform.Fill(); a.rectTransform.offsetMin = new Vector2(24, 0);
+                var b = Ui.Label("B", row.transform, table[i].Value.ToString("N0"), 28, Ui.Ink, TextAnchor.MiddleRight); b.rectTransform.Fill(); b.rectTransform.offsetMax = new Vector2(-24, 0);
+                y -= 60;
+            }
+            EndList(-y);
+        }
+
         void ShowHarbours()
         {
             var s = S; var h = H;
@@ -263,7 +355,8 @@ void ShowToday()
                 ((RectTransform)tab.transform).Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(40 + i * 204, -72), new Vector2(196, 66));
             }
             var all = Book.In(_bookHarbour);
-            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count, 34, Ui.Ink, TextAnchor.MiddleRight); count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -78), new Vector2(200, 50));
+            int trophyPct = Mathf.RoundToInt((float)((s.TrophyMult - 1) * 100));
+            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (trophyPct > 0 ? "   +" + trophyPct + "%" : ""), 30, Ui.Ink, TextAnchor.MiddleRight); count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -78), new Vector2(260, 50));
             // Tiles, six across.
             const int cols = 6; const float w = 236, hgt = 250;
             for (int i = 0; i < all.Count; i++)
@@ -278,6 +371,14 @@ void ShowToday()
                 var n = Ui.Label("N", tile.transform, got ? sp.Name : "???", 26, Ui.Ink); n.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 46), new Vector2(w - 16, 34));
                 n.resizeTextForBestFit = true; n.resizeTextMinSize = 16; n.resizeTextMaxSize = 26;
                 string line = got ? "Best " + e.best.ToString(e.best < 10 ? "0.0" : "0") + " kg  ·  x" + e.count : Sim.BiteText(sp.When);
+                if (got && s.CanMount(sp))
+                {
+                    string sid = sp.Id; int pct = Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100));
+                    var mb = Ui.Button("Mount", tile.transform, "MOUNT  +" + pct + "%", Ui.Gold, () => { if (S.Mount(sid)) { Sfx.Play("star", 0.8f); Toast("Mounted in the trophy hall: +" + pct + "% income everywhere"); GameRoot.Instance.Save(); ShowBook(); } }, 22);
+                    ((RectTransform)mb.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(w - 20, 50));
+                    line = "";
+                }
+                else if (got && s.Mounted(sp.Id)) line = "Trophy  ·  " + line;
                 var b = Ui.Label("B", tile.transform, line, 20, got ? Ui.Dim : (s.Biting(sp) ? new Color(0.12f, 0.62f, 0.29f) : Ui.Dim), TextAnchor.MiddleCenter, false); b.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 16), new Vector2(w - 12, 28));
             }
             EndList(((all.Count + cols - 1) / cols) * (hgt + 6));
@@ -324,7 +425,7 @@ void ShowToday()
             y = Heading(y, "GEMS");
             foreach (var prod in Sim.Products)
             {
-                if (prod.Once) continue;
+                if (prod.Once || prod.Season) continue;
                 var pr = prod;
                 y = Entry(y, Ui.Art("gem"), Color.white, prod.Name, prod.Blurb, Store.Price(prod), Ui.Green,
                     () => Store.Buy(pr, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Shop) ShowShop(); }));

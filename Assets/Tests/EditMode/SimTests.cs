@@ -405,6 +405,94 @@ namespace ReelEmpire.Tests
         }
     }
 
+    public class SeasonTests
+    {
+        [Test]
+        public void ARareCatchCanBeMountedOnceForMoreIncome()
+        {
+            var s = TestGame.New();
+            double m = s.IncomeMult(s.H);
+            Assert.That(s.Mount("lake.northern_pike"), Is.False, "not caught yet");
+            s.State.species.Add(new SpeciesEntry { id = "lake.northern_pike", count = 1, best = 9 });
+            s.State.species.Add(new SpeciesEntry { id = "lake.bluegill", count = 1, best = 0.3f });
+            Assert.That(s.TrophiesWaiting, Is.EqualTo(1));
+            Assert.That(s.Mount("lake.bluegill"), Is.False, "too common for the wall");
+            Assert.That(s.Mount("lake.northern_pike"), Is.True);
+            Assert.That(s.Mount("lake.northern_pike"), Is.False);
+            Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 1.01).Within(1e-9));
+        }
+
+        [Test]
+        public void SeasonPointsRaiseTheTierAndRewardsAreClaimedOnce()
+        {
+            var s = TestGame.New();
+            Assert.That(s.SeasonTier, Is.EqualTo(0));
+            s.AddSeasonPoints(Sim.TierNeed(0) + Sim.TierNeed(1) + 5);
+            Assert.That(s.SeasonTier, Is.EqualTo(2));
+            int gems = s.State.gems;
+            Assert.That(s.ClaimSeason(0, false).Gems, Is.EqualTo(5));
+            Assert.That(s.ClaimSeason(0, false), Is.Null);
+            Assert.That(s.ClaimSeason(2, false), Is.Null, "not reached");
+            Assert.That(s.ClaimSeason(0, true), Is.Null, "premium not bought");
+            s.Grant("reelempire.season", "tx");
+            Assert.That(s.SeasonPremium, Is.True);
+            Assert.That(s.ClaimSeason(0, true), Is.Not.Null);
+            Assert.That(s.State.gems, Is.EqualTo(gems + 5 + 20));
+        }
+
+        [Test]
+        public void ANewSeasonStartsFromNothingAndPremiumDoesNotCarryOver()
+        {
+            double t = 1_700_000_000;
+            var s = TestGame.New(); s.RealNow = () => t;
+            s.Grant("reelempire.season", "tx"); s.AddSeasonPoints(5000);
+            Assert.That(s.SeasonTier, Is.GreaterThan(5));
+            t += Sim.SeasonLength;
+            Assert.That(s.SeasonTier, Is.EqualTo(0));
+            Assert.That(s.SeasonPremium, Is.False);
+        }
+
+        [Test]
+        public void TheDerbyRunsFridayToSundayAndCountsFishLanded()
+        {
+            // 1970-01-02 was a Friday: a derby opens at 86400 and every 7 days after.
+            double t = 86400 + 7 * 86400 * 2900 + 3600;       // an hour into a derby
+            var s = TestGame.New(); s.RealNow = () => t;
+            Assert.That(s.DerbyOn, Is.True);
+            s.HireSkipper(Stage.Berth, 0); s.Tick(60);
+            Assert.That(s.DerbyScore, Is.GreaterThan(0));
+            long score = s.DerbyScore;
+            t += 3 * 86400;                                   // Monday
+            Assert.That(s.DerbyOn, Is.False);
+            s.Tick(60);
+            Assert.That(s.DerbyScore, Is.EqualTo(score), "nothing counts after Sunday");
+            Assert.That(s.DerbyPrizeWaiting, Is.GreaterThanOrEqualTo(0));
+            int gems = s.State.gems;
+            int rank = s.ClaimDerbyPrize();
+            Assert.That(rank, Is.InRange(1, 50));
+            Assert.That(s.State.gems, Is.EqualTo(gems + Sim.DerbyPrize(rank)));
+            Assert.That(s.ClaimDerbyPrize(), Is.EqualTo(0));
+            t += 4 * 86400 + 60;                              // the next Friday
+            Assert.That(s.DerbyOn, Is.True);
+            Assert.That(s.DerbyScore, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RivalsClimbThroughTheWeekendAndThereAreFortyNineNames()
+        {
+            var s = TestGame.New();
+            Assert.That(Sim.RivalNames.Length, Is.EqualTo(Sim.DerbyRivals));
+            for (int i = 0; i < Sim.DerbyRivals; i++)
+            {
+                Assert.That(s.RivalScore(7, i, 0), Is.EqualTo(0));
+                Assert.That(s.RivalScore(7, i, 1), Is.GreaterThanOrEqualTo(s.RivalScore(7, i, 0.5)));
+                Assert.That(s.RivalScore(7, i, 1), Is.InRange(299, 54001));
+            }
+            Assert.That(s.DerbyRank(7, 1_000_000, 1), Is.EqualTo(1));
+            Assert.That(s.DerbyRank(7, 0, 1), Is.EqualTo(50));
+        }
+    }
+
     public class FormatTests
     {
         [Test]
