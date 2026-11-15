@@ -15,6 +15,7 @@ namespace ReelEmpire.Game
         public void OpenHall(string highlight = null, Action back = null)
         {
             if (_tryBar != null) EndTry(false);
+            if (AnglingOpen) CloseAngling();
             if (ScreenOpen) CloseScreen();
             CloseCard(); CloseSheet();
             _hallBack = back;

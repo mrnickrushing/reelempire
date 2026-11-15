@@ -214,6 +214,7 @@ namespace ReelEmpire.Game
         public void TapWorld(Vector2 screen)
         {
             if (TrophyHall.Open) { TapHall(screen); return; }
+            if (AnglingOpen) return;
             var view = HarbourView.Instance; if (view == null) return;
             var cam = CameraRig.Instance.Cam; var h = H;
             float best = 95f * Screen.height / 940f; best *= best;

@@ -119,6 +119,13 @@ platform code, tools and conventions are the same.
   gold with NEW; `Sim.HallStar` stands in the glass case (tap a board to change it); WALLS cycles `Sim.HallWalls`.
   `CameraRig.LimX/LimZ/LimD` are swapped for the room and restored on BACK. Species pictures are square with empty
   space above and below the fish, so they are sized by width (`TrophyHall.Fit`).
+- Fishing by hand happens in the world (`World/AnglerView.cs`, rules and HUD in `UI/Hud.Angling.cs` + `Core/Sim.Angling.cs`):
+  FISH takes the camera to the south end of the quay (its limits locked there, restored on ✕), the rest of the HUD
+  steps aside (`TryClear`) and the whole screen is the one button (`PressArea` on a full-screen image under the cards).
+  The angler holds a `LineRenderer` rod that bows with the line's pull; the line sags when slack and runs straight
+  and red near breaking; the cast strip (pale/green/gold, `Near`..`Far` metres out) and its mark lie on the water;
+  dark species outlines swim under it (the big ones out in the gold), one darts to the float on a bite and becomes
+  the hooked fish; a landed fish is swung up and held over the angler with a rarity glow. A record still opens its card.
 - Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

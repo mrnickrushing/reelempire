@@ -63,7 +63,7 @@ namespace ReelEmpire.Game
             {
                 if (_tryHidden.Count > 0) return;
                 var hide = new System.Collections.Generic.List<Transform> { _signs };
-                foreach (Transform c in _root) if (c != _tryBar && c != _hallBar && c != _modal && c != _screenRoot) hide.Add(c);
+                foreach (Transform c in _root) if (c != _tryBar && c != _hallBar && c != _angRoot && c != _modal && c != _screenRoot) hide.Add(c);
                 foreach (var t in hide)
                 {
                     var g = t.GetComponent<CanvasGroup>(); if (g == null) g = t.gameObject.AddComponent<CanvasGroup>();
