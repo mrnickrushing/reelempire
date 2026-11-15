@@ -157,7 +157,7 @@ VLOC = []
 
 @section("version en-US (description, keywords, promo text, URLs)")
 def _():
-    attrs = {"description": "\n".join(L["description"]), "keywords": L["keywords"], "promotionalText": L["promotionalText"],
+    attrs = {"description": L["description"] if isinstance(L["description"], str) else "\n".join(L["description"]), "keywords": L["keywords"], "promotionalText": L["promotionalText"],
              "supportUrl": L["supportUrl"], "marketingUrl": L["marketingUrl"]}
     assert len(attrs["description"]) <= 4000 and len(attrs["keywords"]) <= 100 and len(attrs["promotionalText"]) <= 170
     locs = pages("/v1/appStoreVersions/%s/appStoreVersionLocalizations" % VERSION["id"])
