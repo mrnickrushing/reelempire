@@ -13,14 +13,16 @@ Reel Empire: Idle Tycoon is made by Rushing Technologies. It uses these free wor
   `Tools/art/props.py`.
 - **MaverickFX** (via poly.pizza): Light House.
 - **Quaternius** (quaternius.com, via poly.pizza): the fish and sea creatures of the species book (Cute Fish pack:
-  Tuna, Koi, Goldfish, Red Snapper, Clownfish, Armored Catfish, Cowfish, Moorish Idol, Sunfish, Swordfish, Lionfish,
-  Puffer, Anglerfish, Butterfly Fish, Shark, Goblin Shark, Piranha, Tang, Blue Tang, Turbot, Flatfish, Coral Grouper,
-  Flower Horn, Royal Gramma, Mandarin Fish, Tetra, Cardinal Fish, Blobfish; Crab Enemy, Squid). Pictures rendered and
+  Tuna, Koi, Goldfish, Red Snapper, Clownfish, Armored Catfish, Cowfish, Moorish Idol, Swordfish, Lionfish,
+  Puffer, Anglerfish, Butterfly Fish, Shark, Tang, Blue Tang, Turbot, Flatfish, Coral Grouper, Flower Horn,
+  Royal Gramma, Tetra, Cardinal Fish, Blobfish; Crab Enemy, Squid; Fish, Parrot Fish, Manta Ray). Pictures rendered and
   recoloured per species by `Tools/art/fish.py`.
+- **Kenney** (kenney.nl, via poly.pizza): Fish (the redfish).
+- The white sturgeon, giant trevally, toothfish and oarfish pictures are the studio's own, made with Higgsfield.
 
 ## Models (CC BY 3.0, via poly.pizza)
 
-- **Poly by Google**: Octopus, Lobster, Eel.
+- **Poly by Google**: Octopus, Lobster, Eel (three), Trout (two), Halibut, Kingfish, Seahorse, Shark, Fish.
 - **jeremy**: Shrimp.
 
 ## Fonts (SIL Open Font License 1.1)
