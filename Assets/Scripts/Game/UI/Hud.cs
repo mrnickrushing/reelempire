@@ -288,7 +288,7 @@ namespace ReelEmpire.Game
                 Reminders.AskOnce();        // the first time the harbour has earned by itself is the moment a reminder makes sense
             }, 44);
             bool free = S.DoubleFree;
-            bool byAd = !free && S.AdOffered(AdReward.Double) && Ads.Ready;       // after the free one of the day, only for an advert
+            bool byAd = !free && S.AdOffered(AdReward.Double) && Ads.Ready;       // only for an ad (or the Night Crew, paid for)
             ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(free || byAd ? -205 : 0, 44), new Vector2(380, 124));
             if (!free && !byAd) return;
             var d = Ui.Button("Double", card, null, Ui.Green, () =>
@@ -304,13 +304,13 @@ namespace ReelEmpire.Game
                     });
                     return;
                 }
-                if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Today's free double has been used"); return; }
+                if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Watch an ad to double"); return; }
                 GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
                 Reminders.AskOnce();
             }, 44);
             ((RectTransform)d.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(205, 44), new Vector2(380, 124));
             var dl = Ui.Label("L", d.transform, "DOUBLE IT", 42, Color.white, TextAnchor.UpperCenter); dl.rectTransform.Fill(); dl.rectTransform.offsetMax = new Vector2(0, -14); dl.Stroke(2.5f);
-            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : "WATCH AN AD", 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
+            var dc = Ui.Label("C", d.transform, free ? "NIGHT CREW" : "WATCH AN AD", 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
         }
 
         // ---- coins flying to the counter ----
