@@ -92,7 +92,7 @@ namespace ReelEmpire.Core
         public double VoyageSeconds(VoyageDef v) { return v.Seconds * (Logbook("charts") ? 0.8 : 1) * (Focused(H, "voyage") ? 0.75 : 1); }
         public double VoyageLeft(Voyage v) { return Math.Max(0, v.doneAt - RealNow()); }
         /// <summary>What a voyage of this kind brings home, at the harbour's present pace.</summary>
-        public double VoyageCash(VoyageDef v) { return Math.Max(RewardRate(H) / (Boosted ? BoostMult : 1) * 0.5, 2 * Def.Scale) * v.CashHours * 3600 * (Focused(H, "voyage") ? 1.25 : 1); }
+        public double VoyageCash(VoyageDef v) { return Math.Max(RewardRate(H) / (Boosted ? BoostMult : 1) * 0.5, 2 * Def.Scale) * v.CashHours * 3600 * (Focused(H, "voyage") ? 1.25 : 1) * (RouteCharted(Array.IndexOf(Voyages, v)) ? 1.25 : 1); }
 
         public bool StartVoyage(int kind)
         {
@@ -106,8 +106,9 @@ namespace ReelEmpire.Core
         public double CollectVoyage(int index)
         {
             if (index < 0 || index >= State.voyages.Count || VoyageLeft(State.voyages[index]) > 0) return 0;
-            var def = Voyages[State.voyages[index].kind];
+            int kind = State.voyages[index].kind; var def = Voyages[kind];
             double cash = VoyageCash(def);
+            Discover(kind);
             State.voyages.RemoveAt(index);
             Pay(H, cash); State.gems += def.Gems; State.voyagesDone++; AddSeasonPoints(25);
             Touch();

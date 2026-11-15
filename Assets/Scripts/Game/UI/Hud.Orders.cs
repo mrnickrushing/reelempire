@@ -17,7 +17,7 @@ namespace ReelEmpire.Game
             {
                 var o = s.State.orders[i]; int k = i; bool ready = o.have >= o.need;
                 var hd = Content.Harbour(o.harbour);
-                var sp = o.kind == (int)OrderKind.Species ? Book.Get(o.species) : null;
+                var sp = o.kind == (int)OrderKind.Species || o.kind == (int)OrderKind.Hand ? Book.Get(o.species) : null;
                 Sprite icon = sp != null ? SpeciesPicture(sp) : o.kind == (int)OrderKind.Product ? Ui.Ic("box") : Ui.Art("star");
                 string where = o.harbour != s.H.id && hd != null ? "  (at " + hd.Name + ")" : "";
                 string pay = "+" + Format.Money(s.OrderCash(o)) + (o.gems > 0 ? " and " + o.gems + (o.gems == 1 ? " gem" : " gems") : "");
@@ -34,6 +34,9 @@ namespace ReelEmpire.Game
                     : () => Confirm("TURN IT DOWN?", o.who + " will ask someone else. A new order takes its place in about ten minutes.", "TURN DOWN", Ui.Coral,
                         () => { S.DismissOrder(k); GameRoot.Instance.Save(); if (_screen == Page.Orders) ShowOrders(); }, "KEEP IT"),
                     null, ready);
+                // A fish wanted by name can be pinned as the target: the card under the goal says how to catch it.
+                if (!ready && sp != null && s.State.pinned != sp.Id)
+                    SecondButton("PIN", Ui.Coral, () => { S.Pin(sp.Id); Telemetry.Log("Target.pinned", ("Target.species", sp.Id), ("Target.from", "order")); Sfx.Play("confirm", 0.6f); Toast("Pinned: " + sp.Name); GameRoot.Instance.Save(); ShowOrders(); });
             }
             int empty = s.OrderSlotCount - s.State.orders.Count;
             if (empty > 0) y = Heading(y, (empty == 1 ? "One more order" : "The next order") + " comes in " + Format.Time(s.OrderIn) + ".");
@@ -45,7 +48,9 @@ namespace ReelEmpire.Game
         /// <summary>A customer who came to know the harbour better says so.</summary>
         void TieNewsCard()
         {
-            var s = S; string news = s.TieNews; if (string.IsNullOrEmpty(news)) return;
+            var s = S;
+            if (!string.IsNullOrEmpty(s.RecipeLearned)) { Telemetry.Log("Recipe.learned", ("Recipe.text", s.RecipeLearned.Length > 40 ? s.RecipeLearned.Substring(0, 40) : s.RecipeLearned)); Toast(s.RecipeLearned); s.RecipeLearned = null; }
+            string news = s.TieNews; if (string.IsNullOrEmpty(news)) return;
             s.TieNews = null;
             Telemetry.Log("Customer.closer", ("Customer.line", news.Length > 40 ? news.Substring(0, 40) : news));
             Toast(news);

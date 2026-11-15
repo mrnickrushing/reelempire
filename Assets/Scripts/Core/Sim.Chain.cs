@@ -63,7 +63,7 @@ namespace ReelEmpire.Core
         public double PileRoom(HarbourState h) { return Math.Max(0, PileCap(h) - h.raw - h.done); }
 
         /// <summary>What a unit sells for as this product today (before income multipliers).</summary>
-        public double GoodsValue(HarbourState h, int goods) { return Content.Goods[goods].Value * (goods == GoodsOfTheDay ? Content.FreshDay : 1) * (goods > 0 && SkillRunning("value") ? 1.5 : 1) * (goods == 0 ? 1 + 0.25 * WorkLevel(h, "icehouse") : 1); }
+        public double GoodsValue(HarbourState h, int goods) { return Content.Goods[goods].Value * (goods == GoodsOfTheDay ? Content.FreshDay : 1) * (goods > 0 && SkillRunning("value") ? 1.5 : 1) * (goods == 0 ? 1 + 0.25 * WorkLevel(h, "icehouse") : 1) * (1 + RecipeValue * Recipes(h, goods)); }
 
         /// <summary>The product the market pays half as much again for today.</summary>
         public int GoodsOfTheDay { get { return (int)(Today % Content.Goods.Length); } }

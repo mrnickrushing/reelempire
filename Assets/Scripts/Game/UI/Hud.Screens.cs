@@ -10,7 +10,7 @@ namespace ReelEmpire.Game
     /// shop and the settings (sound, reminders, the account, Game Center, starting over).</summary>
     public sealed partial class Hud
     {
-        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders, Research, Guide }
+        enum Page { None, Book, Awards, Shop, Settings, Harbours, Today, Crew, Season, Derby, Orders, Research, Guide, Collections }
         Page _screen; string _bookHarbour; RectTransform _screenRoot, _list; float _listY;
         readonly List<Image> _navDots = new List<Image>();
 
@@ -106,6 +106,7 @@ namespace ReelEmpire.Game
             { "SETTINGS", "Sound, reminders, your account and help." },
             { "RESEARCH", "The chart room turns what the harbour learns into lasting improvements. Each branch is learned in order." },
             { "HOW IT WORKS", "Marta's notes on every part of the game. Tap READ to hear one again." },
+            { "COLLECTIONS", "Small sets of fish to land. Each one done puts something in your harbour for good." },
             { "ORDERS", "The town wants fish. Fill an order for a big payment and gems on top of what the fish sell for." },
         };
 
@@ -187,6 +188,7 @@ namespace ReelEmpire.Game
                 case Page.Season: ShowSeason(); break;
                 case Page.Derby: ShowDerby(); break;
                 case Page.Orders: ShowOrders(); break;
+                case Page.Collections: ShowCollections(); break;
                 case Page.Research: ShowResearch(); break;
                 case Page.Guide: ShowGuide(); break;
             }
@@ -210,17 +212,20 @@ namespace ReelEmpire.Game
                 "OPEN", Ui.Blue, () => Open(Page.Orders), null, s.OrdersReady > 0);
             if (s.Unlocked("research")) y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Research at the chart room", s.State.notes + (s.State.notes == 1 ? " note" : " notes") + " in hand." + (s.ResearchReady ? " Something can be learned." : ""),
                 "OPEN", Ui.Blue, () => Open(Page.Research), null, s.ResearchReady);
+            if (s.Unlocked("book")) { var town = s.NextTown; int cw = s.CollectionsWaiting;
+                y = Entry(y, Ui.Ic("target"), Ui.Ink, "Collections and the town", (cw > 0 ? cw + " collection" + (cw > 1 ? "s" : "") + " done: claim " + (cw > 1 ? "them" : "it") + " for your harbour. " : s.State.collections.Count + " of " + Sim.Collections.Length + " collections done. ") + (town != null ? "Next in town: " + town.Name.ToLowerInvariant() + " after " + town.Orders + " orders (" + s.State.ordersDone + ")." : "The town is all built."),
+                    "OPEN", Ui.Blue, () => Open(Page.Collections), null, cw > 0); }
             bool prize = s.DerbyPrizeWaiting >= 0;
             if (s.Unlocked("derby")) y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
                 "OPEN", Ui.Blue, () => Open(Page.Derby), null, prize || s.DerbyOn);
 
-            if (s.Unlocked("voyages")) y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)");
+            if (s.Unlocked("voyages")) y = Heading(y, "VOYAGES: send a spare boat out (" + s.State.voyages.Count + " of " + s.VoyageSlots + " away)  ·  " + s.State.grounds.Count + " of " + Sim.Grounds.Length + " grounds charted");
             else y = Heading(y, "VOYAGES open with your fourth dock  ·  THE DERBY with your fifth  ·  THE SEASON with your sixth");
             for (int i = 0; i < s.State.voyages.Count; i++)
             {
                 var v = s.State.voyages[i]; var d = Sim.Voyages[v.kind]; int k = i; double left = s.VoyageLeft(v);
                 y = Entry(y, Resources.Load<Sprite>("UI/Species/coast_mackerel"), Color.white, d.Name, left > 0 ? "Back in " + Format.Time(left) : "Back with a full hold: +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems",
-                    left > 0 ? null : "UNLOAD", Ui.Green, left > 0 ? null : (Action)(() => { double cash = S.CollectVoyage(k); if (cash > 0) { Sfx.Play("coin", 0.9f); Toast("+" + Format.Money(cash) + "  +" + d.Gems + " gems"); GameRoot.Instance.Save(); ShowToday(); } }), left > 0 ? "AT SEA" : null, left <= 0);
+                    left > 0 ? null : "UNLOAD", Ui.Green, left > 0 ? null : (Action)(() => { double cash = S.CollectVoyage(k); if (cash > 0) { Sfx.Play("coin", 0.9f); Toast("+" + Format.Money(cash) + "  +" + d.Gems + " gems"); GameRoot.Instance.Save(); ShowToday(); if (S.NewGround != null) ShowGround(S.NewGround); } }), left > 0 ? "AT SEA" : null, left <= 0);
             }
             // The second slot, shown where it would be, for someone who hasn't got it.
             if (s.Unlocked("voyages") && !s.Owns("reelempire.fleet") && Store.Available)
@@ -232,7 +237,7 @@ namespace ReelEmpire.Game
                 for (int i = 0; i < Sim.Voyages.Length; i++)
                 {
                     var d = Sim.Voyages[i]; int k = i;
-                    y = Entry(y, Ui.Ic("compass"), Ui.Ink, d.Name, d.Blurb + ": about +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems", "SEND  " + Short(s.VoyageSeconds(d)), Ui.Blue,
+                    y = Entry(y, Ui.Ic("compass"), Ui.Ink, d.Name + "  <size=24><color=#5A6E82>" + s.FoundOn(i) + "/3 grounds" + (s.RouteCharted(i) ? ", charted +25%" : "") + "</color></size>", d.Blurb + ": about +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems", "SEND  " + Short(s.VoyageSeconds(d)), Ui.Blue,
                         () => { if (S.StartVoyage(k)) { Sfx.Play("dispatch", 0.7f); Toast(d.Name + ": the boat is away"); Reminders.AskOnce(); GameRoot.Instance.Save(); ShowToday(); } });
                 }
 
@@ -338,11 +343,11 @@ namespace ReelEmpire.Game
         void ShowSeason()
         {
             var s = S;
-            Frame(Sim.SeasonNames[s.Season].ToUpperInvariant() + " SEASON");
+            Frame(Sim.SeasonThemes[s.SeasonTheme].ToUpperInvariant());
             float y = 0;
             long have; int need; s.SeasonProgress(out have, out need);
             var prem = Sim.Product("reelempire.season");
-            y = Entry(y, Ui.Art("star"), Color.white, "Tier " + s.SeasonTier + " of " + Sim.SeasonTiers + (need > 0 ? "  ·  " + have + " / " + need + " points" : ""),
+            y = Entry(y, Ui.Art("star"), Color.white, Sim.SeasonNames[s.Season] + " season  ·  tier " + s.SeasonTier + " of " + Sim.SeasonTiers + (need > 0 ? "  ·  " + have + " / " + need + " points" : ""),
                 "Points come from playing: every level bought, new species, daily tasks, voyages and derby goals. Ends in " + Format.Time(s.SeasonLeft) + ".",
                 s.SeasonPremium ? null : "PASS  " + Store.Price(prem), Ui.Green, s.SeasonPremium ? null : (Action)(() => Store.Buy(prem, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Season) ShowSeason(); })), s.SeasonPremium ? "PREMIUM" : null, s.SeasonPremium);
             if (!s.SeasonPremium) { var note = Ui.Label("N", _list, "The Season Pass adds the premium reward on every tier of this season, including the tiers you've already reached.", 24, Ui.Dim, TextAnchor.MiddleLeft, false); note.rectTransform.Band(true, y, 40, 10); y -= 48; }
@@ -350,7 +355,7 @@ namespace ReelEmpire.Game
             for (int t = 0; t < Sim.SeasonTiers; t++)
             {
                 int k = t; bool reached = t < tier;
-                var free = Sim.SeasonRewardFor(t, false); var paid = Sim.SeasonRewardFor(t, true);
+                var free = Sim.SeasonRewardFor(t, false); var paid = Sim.SeasonRewardFor(t, true, s.SeasonTheme);
                 bool cf = s.SeasonCanClaim(t, false), cp = s.SeasonCanClaim(t, true);
                 const float H = 96;
                 var row = Ui.ArtImg("Tier", _list, "card", cf || cp ? new Color(0.72f, 0.93f, 0.76f) : reached ? Ui.Card : new Color(0.93f, 0.9f, 0.84f), 26); row.rectTransform.Band(true, y, H - 8);
@@ -585,6 +590,7 @@ namespace ReelEmpire.Game
                 y = Entry(y, Ui.Art(prod.Id.EndsWith("ledger") ? "coin" : "star"), Color.white, prod.Name, prod.Blurb + (benefit != null && !owned ? "\n<color=#1E7A3E>" + benefit + "</color>" : ""), owned ? null : Store.Price(prod), Ui.Green,
                     owned ? null : (Action)(() => Store.Buy(pr, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Shop) ShowShop(); })), owned ? "OWNED" : null, owned);
             }
+            y = PaintRows(y);
             y = Heading(y, "GEMS");
             foreach (var prod in Sim.Products)
             {

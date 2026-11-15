@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ReelEmpire.Core
 {
-    public enum OrderKind { Product, Rarity, Species }
+    public enum OrderKind { Product, Rarity, Species, Hand }
 
     /// <summary>Someone in town wants something from the harbour: so much of a product, or so many of a kind of fish.</summary>
     [Serializable]
@@ -61,6 +61,8 @@ namespace ReelEmpire.Core
             var o = new Order { harbour = h.id, who = Customers[(int)(Roll() * Customers.Length)] };
             // No two orders on the board from the same customer.
             for (int tries = 0; tries < 8 && State.orders.Exists(x => x.who == o.who); tries++) o.who = Customers[(int)(Roll() * Customers.Length)];
+            // Once the player fishes by hand, a chef sometimes asks for one fish landed that way.
+            if (State.handCaught > 0 && !State.orders.Exists(x => x.kind == (int)OrderKind.Hand) && Roll() < 0.25 && ChefOrder(h, o) != null) return o;
             if (kind == (int)OrderKind.Species)
             {
                 var pool = Book.In(h.id).FindAll(s => s.Rarity <= Rarity.Uncommon && s.When == Bite.Any && !State.orders.Exists(x => x.species == s.Id));
@@ -99,11 +101,12 @@ namespace ReelEmpire.Core
             return o;
         }
 
-        void OrderCatch(HarbourState h, SpeciesDef sp)
+        void OrderCatch(HarbourState h, SpeciesDef sp, bool byHand = false)
         {
             foreach (var o in State.orders)
             {
                 if (o.harbour != h.id || o.have >= o.need) continue;
+                if (o.kind == (int)OrderKind.Hand) { if (byHand && o.species == sp.Id) o.have = o.need; continue; }
                 if (o.kind == (int)OrderKind.Species && o.species == sp.Id || o.kind == (int)OrderKind.Rarity && (int)sp.Rarity >= o.rarity) o.have = Math.Min(o.need, o.have + 1);
             }
         }
@@ -121,6 +124,7 @@ namespace ReelEmpire.Core
             switch ((OrderKind)o.kind)
             {
                 case OrderKind.Species: { var sp = Book.Get(o.species); return Format.Money(o.need) + " " + (sp != null ? sp.Name : "fish"); }
+                case OrderKind.Hand: { var sp = Book.Get(o.species); string n = sp != null ? sp.Name : "fish"; return ("AEIOU".IndexOf(char.ToUpperInvariant(n[0])) >= 0 ? "an " : "a ") + n + ", by hand"; }
                 case OrderKind.Rarity: return Format.Money(o.need) + " " + ((Rarity)o.rarity == Rarity.Rare ? "rare fish or better" : "uncommon fish or better");
                 default: return Format.Money(o.need) + " of " + Content.Goods[o.goods].Name.ToLowerInvariant() + " fish";
             }
@@ -131,6 +135,7 @@ namespace ReelEmpire.Core
         {
             switch ((OrderKind)o.kind)
             {
+                case OrderKind.Hand: { var sp = Book.Get(o.species); return "Teaches a " + Content.Goods[o.goods].Name.ToLowerInvariant() + " recipe (+10% here). Tap FISH" + (sp != null ? ", bites " + BiteText(sp.When).ToLowerInvariant() : "") + "."; }
                 case OrderKind.Species: return "Land them at any dock here. Worms or Groundbait bring the most.";
                 case OrderKind.Rarity: return (Rarity)o.rarity == Rarity.Rare ? "Spinners and Chum bring rare fish far more often." : "Spinners help; Groundbait brings plenty of these too.";
                 default: return o.goods == 0 ? "Sold fresh: whatever the hall doesn't work counts." : "Run the " + Content.Goods[o.goods].Line + " in the hall while it fills.";
@@ -149,6 +154,7 @@ namespace ReelEmpire.Core
             double cash = OrderCash(o);
             Pay(h, cash); State.gems += o.gems + (TieLevel(o.who) >= 3 ? 1 : 0);
             TieNews = Deliver(o.who) ?? TieNews;
+            if (o.kind == (int)OrderKind.Hand) { State.recipes.Add(h.id + ":" + o.goods); RecipeLearned = Content.Goods[o.goods].Name + " recipe from " + o.who + ": that line is worth 10% more here."; }
             State.notes += o.kind == (int)OrderKind.Rarity && o.rarity >= (int)Rarity.Rare ? 2 : 1;      // what the chart room learns from the town
             if (Unlocked("wear")) AddWrenches(1);       // the town pays in kind too
             State.orders.RemoveAt(index); State.ordersDone++;
@@ -157,6 +163,9 @@ namespace ReelEmpire.Core
             Touch();
             return cash;
         }
+
+        /// <summary>The recipe the last chef's request taught (the HUD shows it once), or null.</summary>
+        public string RecipeLearned;
 
         /// <summary>Turns an order down. Its place fills again in the usual time: there is nothing to gain by rerolling.</summary>
         public bool DismissOrder(int index)

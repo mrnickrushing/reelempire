@@ -33,7 +33,30 @@ namespace ReelEmpire.Game
             return Instance;
         }
 
-        int _worksKey;
+        int _worksKey; string _lookKey;
+
+        /// <summary>A paint being tried on (SEE IT in the shop), shown in place of what its part wears. Null: none.</summary>
+        public static string PreviewId { get { return _preview; } set { _preview = value; _lookNow = true; } }
+        static string _preview; static bool _lookNow; float _lookIn;
+
+        /// <summary>What a part of the harbour looks like now: the paint being tried, else the one worn.</summary>
+        CosmeticDef Look(string part)
+        {
+            var p = Sim.CosmeticById(PreviewId);
+            if (p != null && p.Part == part) return p;
+            return S.Wearing(part);
+        }
+
+        /// <summary>Changes when paint or decorations change, so the harbour is drawn again.</summary>
+        string LookKey()
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var part in Sim.Parts) { var l = Look(part); sb.Append(l != null ? l.Id : "-").Append('|'); }
+            foreach (var d in S.Decor) sb.Append(d).Append(',');
+            return sb.ToString();
+        }
+
+        static Color Tint(CosmeticDef d) { return new Color(d.R, d.G, d.B); }
         /// <summary>Changes when a work is built or the plots appear, so the harbour is drawn again.</summary>
         int WorksKey(HarbourState h) { int k = S.Unlocked("works") ? 1 : 0; foreach (int l in h.works) k = k * 4 + l; return k; }
 
@@ -45,14 +68,18 @@ namespace ReelEmpire.Game
             _moving = new GameObject("Moving").transform; _moving.SetParent(transform, false);
             var h = H;
             _berths = h.berths.Count; _nHaul = h.haulers.Count; _nTruck = h.trucks.Count; _harbour = h.id;
-            _worksKey = WorksKey(h);
+            _worksKey = WorksKey(h); _lookKey = LookKey();
             Scenery.Paint = Theme.For(h.id).Paint;
+            var market = Look("market"); Scenery.MarketLook = market != null ? (Color?)Tint(market) : null; Scenery.MarketHue = market != null ? market.Hue : 0;
+            var tower = Look("lighthouse"); Scenery.LighthouseLook = tower != null ? (Color?)Tint(tower) : null; Scenery.LighthouseHue = tower != null ? tower.Hue : 0;
             BuildSea();
             BuildLand();
             for (int i = 0; i < Content.Berths.Length; i++) BuildPier(i, i < h.berths.Count);
             for (int i = 0; i < h.berths.Count; i++)
             {
                 _boats.Add(Scenery.Boat(i, _moving).transform);
+                var paint = Look("boats");
+                if (paint != null) foreach (var r in _boats[i].GetComponentsInChildren<MeshRenderer>()) if (r.sharedMaterial == Materials.Kit) r.sharedMaterial = Materials.KitTint(Tint(paint), paint.Hue);
                 Life.Wake(_boats[i], Layout.BoatLength(i));
                 var crate = Scenery.Crate(_moving); crate.transform.position = Layout.Crate(i); _crates.Add(crate.transform);
             }
@@ -73,6 +100,8 @@ namespace ReelEmpire.Game
             Scenery.Market(_static);
             Scenery.Surroundings(_static, h.id);
             BuildLamps();
+            var bunting = Look("bunting"); if (bunting != null) Decor.Bunting(_static, Tint(bunting));
+            Decor.Build(_static, S.Decor, h.berths.Count);
             // Life: smoke from the smokehouse, gulls over the water, the lighthouse's beam.
             Life.Smoke(_static, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY + 11.5f, Layout.HallCentre.z + 14));
             if (!Theme.For(h.id).Ice) Life.Gulls(_moving, 5, h.id.GetHashCode());
@@ -187,7 +216,7 @@ namespace ReelEmpire.Game
                 // Kit dock pieces end to end (one for a berth not opened yet); each is one unit long, 0.43 wide, 0.38 tall.
                 const float tile = 5f;
                 int n = open ? 3 : 1;
-                for (int i = 0; i < n; i++) Models.Kit("dock", _static, new Vector3(-tile * (i + 0.5f) + 0.3f, Layout.QuayY - tile * 0.38f + 0.06f, z), 90, tile, new Color(1.5f, 1.4f, 1.25f));
+                for (int i = 0; i < n; i++) Models.Kit("dock", _static, new Vector3(-tile * (i + 0.5f) + 0.3f, Layout.QuayY - tile * 0.38f + 0.06f, z), 90, tile, Look("docks") != null ? Tint(Look("docks")) : new Color(1.5f, 1.4f, 1.25f));
                 return;
             }
             Models.Built("Pier " + berth, _static, mb =>
@@ -210,6 +239,7 @@ namespace ReelEmpire.Game
             var s = S; if (s == null) return;
             var h = H;
             if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck || WorksKey(h) != _worksKey) Rebuild();
+            else if ((_lookIn -= Time.unscaledDeltaTime) <= 0 || _lookNow) { _lookIn = 0.5f; _lookNow = false; if (LookKey() != _lookKey) Rebuild(); }
             float time = Time.time;
             // Dusk: the lamps come on one after another, and the lighthouse starts to turn.
             float night = s.Night;

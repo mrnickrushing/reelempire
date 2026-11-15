@@ -89,7 +89,7 @@ namespace ReelEmpire.Core
     }
 
     /// <summary>What a hand-caught fish came to.</summary>
-    public struct HandCatch { public SpeciesDef Species; public float Kg; public bool First, Record; public double Cash; public int Gems; }
+    public struct HandCatch { public SpeciesDef Species; public float Kg, Before; public bool First, Record; public double Cash; public int Gems; }
 
     /// <summary>
     /// Fishing by hand off the quay: cast, strike, play the fish. It never runs out (there is no energy here). A good
@@ -127,13 +127,13 @@ namespace ReelEmpire.Core
             float kg = sp.MinKg + (sp.MaxKg - sp.MinKg) * (float)Math.Pow(Roll(), 1.1);       // heavier than the boats bring
             float before = e != null ? e.best : 0; int gems = State.gems;
             bool first = Record(sp, kg);
-            DerbyCatch(sp, true); OrderCatch(h, sp);
+            DerbyCatch(sp, true); OrderCatch(h, sp, true);
             if (first) AddSeasonPoints(20);
             double cash = Math.Max(4 * DefOf(h).Scale, 8 * RewardRate(h)) * Content.RarityValue[(int)sp.Rarity];
             Pay(h, cash);
             State.handCaught++; State.fish++;
             Touch();
-            return new HandCatch { Species = sp, Kg = kg, First = first, Record = !first && kg > before, Cash = cash, Gems = State.gems - gems };
+            return new HandCatch { Species = sp, Kg = kg, Before = before, First = first, Record = !first && kg > before, Cash = cash, Gems = State.gems - gems };
         }
     }
 }

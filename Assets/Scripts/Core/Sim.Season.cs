@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ReelEmpire.Core
 {
-    public sealed class SeasonReward { public int Gems; public double WarpHours, BoostHours; public bool Chest; public string Text; }
+    public sealed class SeasonReward { public int Gems; public double WarpHours, BoostHours; public bool Chest; public string Text, Cosmetic; }
 
     /// <summary>
     /// The longer rhythms, all on the device's clock with no server: the trophy hall (rare fish mounted for a lasting
@@ -68,9 +68,12 @@ namespace ReelEmpire.Core
 
         public bool SeasonPremium { get { RollSeason(); return State.seasonPremiumIndex == SeasonIndex; } }
 
-        public static SeasonReward SeasonRewardFor(int tier, bool premium)
+        public static SeasonReward SeasonRewardFor(int tier, bool premium, int theme = -1)
         {
             int n = tier + 1;
+            // The season's paint set on the premium track: tiers 10 and 20, and a gilded piece at 30.
+            var look = premium && theme >= 0 ? SeasonCosmetic(theme, tier) : null;
+            if (look != null) return new SeasonReward { Gems = 50, Cosmetic = look.Id, Text = look.Name + " and 50 gems" };
             if (!premium)
             {
                 if (n % 5 == 0) return new SeasonReward { Gems = 20, Text = "20 gems" };
@@ -90,7 +93,7 @@ namespace ReelEmpire.Core
         public SeasonReward ClaimSeason(int tier, bool premium)
         {
             if (tier < 0 || tier >= SeasonTiers || !SeasonCanClaim(tier, premium)) return null;
-            var r = SeasonRewardFor(tier, premium);
+            var r = SeasonRewardFor(tier, premium, SeasonTheme);
             if (premium) State.seasonPaid |= 1 << tier; else State.seasonFree |= 1 << tier;
             Give(r);
             Touch();
@@ -103,6 +106,7 @@ namespace ReelEmpire.Core
             if (r.WarpHours > 0) Pay(H, Math.Max(IdleRate(H) / (Boosted ? BoostMult : 1), FullRate(H) * 0.25) * r.WarpHours * 3600);
             if (r.BoostHours > 0) State.boostUntil = Math.Max(State.boostUntil, RealNow()) + r.BoostHours * 3600;
             if (r.Chest) { State.gems += ChestGems; OpenChest(true); }
+            if (!string.IsNullOrEmpty(r.Cosmetic) && !State.cosmetics.Contains(r.Cosmetic)) { State.cosmetics.Add(r.Cosmetic); UseCosmetic(r.Cosmetic); }
         }
 
         public int SeasonWaiting { get { int n = 0; for (int t = 0; t < SeasonTier; t++) { if (SeasonCanClaim(t, false)) n++; if (SeasonCanClaim(t, true)) n++; } return n; } }

@@ -126,6 +126,8 @@ namespace ReelEmpire.Game
         static readonly Color Lift = new Color(1.55f, 1.5f, 1.45f);
         /// <summary>The colour this harbour's barns are painted, as a turn of the kit's red (set before the harbour is built).</summary>
         public static float Paint;
+        /// <summary>Paint on the market and the lighthouse (null: their own colours).</summary>
+        public static Color? MarketLook, LighthouseLook; public static float MarketHue, LighthouseHue;
 
         public static void Hall(Transform parent, HarbourState h)
         {
@@ -166,12 +168,13 @@ namespace ReelEmpire.Game
         public static void Market(Transform parent)
         {
             // The market: a barn for the fishmonger, stalls and stands along the road in front of it.
+            Color lift = MarketLook ?? Lift; float hue = MarketLook != null ? MarketHue : Paint;
             var market = Models.Kit("barn", parent, new Vector3(Layout.MarketCentre.x + 5, Layout.QuayY, Layout.MarketCentre.z + 3), MarketYaw, 14f, Lift, Paint);
             if (market != null)
             {
-                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, Lift, Paint);
-                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, Lift, Paint);
-                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, Lift, Paint);
+                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, lift, hue);
+                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, lift, hue);
+                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, lift, hue);
                 Models.Kit("bucket_fish", parent, new Vector3(Layout.MarketCentre.x - 9.5f, Layout.QuayY, Layout.MarketCentre.z + 1), 30, 1.6f);
                 Models.Kit("flag", parent, new Vector3(Layout.MarketCentre.x - 10, Layout.QuayY, Layout.MarketCentre.z + 16), 0, 8f);
                 return;
@@ -342,7 +345,8 @@ namespace ReelEmpire.Game
             Models.Kit("shed", parent, Layout.ChartRoom, -90, 7f, Lift, Paint);
             Models.Kit("flag", parent, Layout.ChartRoom + new Vector3(2.6f, 0, 2.2f), 0, 6f);
             Models.Kit("storage_hut", parent, new Vector3(4.5f, y, -48), 90, 7f, Lift, Paint);      // the old net store at the quay's end
-            Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
+            if (LighthouseLook != null) Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f, LighthouseLook.Value, LighthouseHue);
+            else Models.Kit("lighthouse", parent, new Vector3(3, y, 62), 0, 17f);
             // Everything here stands still except what floats: draw the trees, rocks and props as a few big meshes.
             var still = new System.Collections.Generic.List<GameObject>();
             foreach (Transform t in parent) if (t.GetComponent<Bobber>() == null && t.GetComponent<MeshFilter>() != null && t.name != "Floe") still.Add(t.gameObject);
