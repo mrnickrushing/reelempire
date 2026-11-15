@@ -28,7 +28,8 @@ shops, cute villages, aquariums):
    guide points at it. A bottleneck is always solved by an upgrade the player can afford soon, never by a purchase.
 2. **Something good every 30 seconds early, every session later.** First upgrade inside 10 seconds, first milestone
    inside 2 minutes, first skipper (free) inside 4.
-3. **Generous free play.** Free Tide Boosts, free chests on a timer, a free daily double on the welcome-back card.
+3. **Generous free play.** Free chests on a timer, a free daily double on the welcome-back card. Beyond that, doubling
+   is never free: a watched advert or a purchase.
    Crew cards come mostly from play; odds are printed; a pity counter guarantees the good ones.
 4. **Fair purchases.** One-time permanent upgrades, a season pass, gems. No weekly subscription, no crew that only
    money buys, no pop-up offers at launch.
@@ -81,7 +82,7 @@ Throughput of the chain is the minimum of its stages; the HUD's chain bar shows 
 6. **Trophy hall.** Record fish are mounted; each mounted trophy gives a small permanent bonus.
 7. **Conditions.** Real day and night, weather rolled every 3 hours from the date (the same for everyone, no server),
    four-week seasons. Each adds bite chances or a small bonus.
-8. **Tide Boost.** Free: x2 income for an hour, three charges, one back every 4 hours, stacking to 8 hours. Rare x5 /
+8. **Tide Boost.** x2 income for an hour for a watched advert (or from the paid season track), stacking to 8 hours. Rare x5 /
    x10 boosts from chests and events multiply with it.
 9. **Voyages.** Send a spare boat for 30 minutes, 2 hours or 8 hours: cash, gems, cards, boosts. Starting the first
    one is when the game asks to send notifications.
@@ -135,7 +136,7 @@ voyage, an extra DOUBLE. Not in 1.0: a subscription, a piggy bank, event passes.
 
 ## Reminders (local notifications, at most four planned, never two within ten minutes)
 
-Docks full (away cap reached); voyage back; free chest ready; Tide Boost fully recharged; derby ends in 3 hours;
+Docks full (away cap reached); voyage back; free chest ready; derby ends in 3 hours;
 tomorrow's gift.
 
 ## Pacing targets
@@ -215,8 +216,8 @@ tags so a phone is not covered in labels. The camera frames the same width of ha
 
 Rewarded only, never shown unasked (`Core/Sim.Ads.cs`, `Game/Platform/Ads.cs`, Google AdMob through
 `com.google.ads.mobile`, a Swift package in the Xcode project). Two places: after the free DOUBLE of the day is used,
-the welcome-back card's DOUBLE IT button offers an advert instead of gems; and with the Tide Boost's charges spent,
-tapping it offers an advert for another hour. Six a day (`AdsPerDay`), requests non-personalised (`npa`), the SDK
+the welcome-back card's DOUBLE IT button needs an advert (no advert ready: no button); and the Tide Boost is an hour of
+double income for an advert. Nothing doubles for free beyond the one daily DOUBLE (2026-11-15, the user's rule). Six a day (`AdsPerDay`), requests non-personalised (`npa`), the SDK
 starts only once Marta's tutorial is over. The App ID is in
 `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset`; debug and TestFlight builds use Google's public test
 unit (`Telemetry.TestBuild`), App Store builds the game's own (`Ads.LiveUnit`). The Night Crew purchase keeps its free doubles, so its owners never see the advert there.

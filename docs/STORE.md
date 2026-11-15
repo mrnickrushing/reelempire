@@ -16,7 +16,7 @@ Products are `Sim.Products` (`Assets/Scripts/Core/Sim.Store.cs`); `Tools/appstor
 | reelempire.starter | Non-consumable | $2.99 | Deckhand's Pack: 250 gems (with the purchase only) and an extra porter and truck in every harbour |
 | reelempire.ledger | Non-consumable | $7.99 | Captain's Ledger: all income doubled |
 | reelempire.fleet | Non-consumable | $4.99 | Second Boat Out: a second voyage slot |
-| reelempire.nightcrew | Non-consumable | $4.99 | Night Crew: 4 more hours of away earnings |
+| reelempire.nightcrew | Non-consumable | $4.99 | Night Crew: 4 more hours of away earnings and a free DOUBLE every time |
 | reelempire.season | Non-renewing subscription | $7.99 | The premium track of the season running when it is bought |
 
 Purchases go through `Assets/Scripts/Game/App/Store.cs`: RevenueCat on device (compiled when the package defines

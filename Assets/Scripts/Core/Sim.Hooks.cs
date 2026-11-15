@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace ReelEmpire.Core
 {
-    public enum BonusKind { Cash, Gems, Boost }
-    public struct BonusPrize { public BonusKind Kind; public double Cash; public int Gems; public double BoostSeconds; }
+    public enum BonusKind { Cash, Gems }
+    public struct BonusPrize { public BonusKind Kind; public double Cash; public int Gems; }
 
     /// <summary>
     /// What keeps a sitting going and brings the next one: a guide that never runs out of steps, a crate drifting in
@@ -74,47 +74,47 @@ namespace ReelEmpire.Core
         /// <summary>Seconds of play until the next crate (half as long with the Lookout's page of the logbook).</summary>
         double NextBonusIn() { return (BonusEveryMin + Roll() * (BonusEveryMax - BonusEveryMin)) * (Logbook("lookout") ? 0.5 : 1); }
 
-        /// <summary>Takes the crate: mostly a few minutes of the harbour's earnings, sometimes gems or a short boost.</summary>
+        /// <summary>Takes the crate: mostly a few minutes of the harbour's earnings, sometimes gems.</summary>
         public BonusPrize? ClaimBonus()
         {
             if (!BonusAfloat) return null;
             State.bonusLeft = 0; State.bonusIn = NextBonusIn(); State.bonusTaken++;
             double r = Roll();
             var p = new BonusPrize();
-            if (r < 0.70)
+            if (r < 0.75)
             {
                 p.Kind = BonusKind.Cash;
                 p.Cash = Math.Max(RewardRate(H) / (Boosted ? BoostMult : 1) * (180 + Roll() * 300), 20 * Def.Scale);
                 Pay(H, p.Cash);
             }
-            else if (r < 0.90) { p.Kind = BonusKind.Gems; p.Gems = 2 + (int)(Roll() * 4); State.gems += p.Gems; }
-            else { p.Kind = BonusKind.Boost; p.BoostSeconds = 600; State.boostUntil = Math.Max(State.boostUntil, RealNow()) + 600; }
+            else { p.Kind = BonusKind.Gems; p.Gems = 2 + (int)(Roll() * 4); State.gems += p.Gems; }
             Touch();
             return p;
         }
 
         // ---- the welcome back ----
 
-        public const int DoubleGems = 20, MissedGems = 30;
+        public const int MissedGems = 30;
         public const double MissedAfter = 3 * 86400;
 
-        /// <summary>The free DOUBLE of the day is still there (always, with the Night Crew).</summary>
+        /// <summary>The free DOUBLE of the day is still there (always, with the Night Crew, which is paid for). After it, a
+        /// double is only ever for a watched advert (CollectAwayByAd).</summary>
         public bool DoubleFree { get { return Owns("reelempire.nightcrew") || State.doubleDay != Today; } }
 
-        /// <summary>Collects the time away twice over: free once a day, else for gems. False if it can't be paid for.</summary>
+        /// <summary>Collects the time away twice over with the free double of the day. False if it has been used.</summary>
         public bool CollectAwayDoubled(double seconds)
         {
-            if (!DoubleFree) { if (State.gems < DoubleGems) return false; State.gems -= DoubleGems; }
-            else State.doubleDay = Today;
+            if (!DoubleFree) return false;
+            State.doubleDay = Today;
             CollectAway(seconds, 2);
             return true;
         }
 
-        /// <summary>Someone back after three days or more gets a welcome: gems and every Tide Boost charge.</summary>
+        /// <summary>Someone back after three days or more gets a welcome: gems.</summary>
         public int WelcomeHome(double seconds)
         {
             if (seconds < MissedAfter) return 0;
-            State.gems += MissedGems; State.boostUsedAt.Clear();
+            State.gems += MissedGems;
             Touch();
             return MissedGems;
         }
@@ -159,7 +159,7 @@ namespace ReelEmpire.Core
                 case "book": return "NEW: the Species Book. Every fish you land goes in.";
                 case "awards": return "NEW: Awards. Each one pays gems and +1% income for good.";
                 case "today": return "NEW: Today. A gift every day, and three tasks.";
-                case "boost": return "NEW: the Tide Boost. Double income for an hour, free.";
+                case "boost": return "NEW: the Tide Boost. Double income for an hour, for a short advert.";
                 case "crew": return "NEW: the Crew. Open your free chest, then use their skills!";
                 case "voyages": return "NEW: Voyages. Send a spare boat out from TODAY.";
                 case "derby": return "NEW: the Weekend Derby. See TODAY.";

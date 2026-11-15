@@ -6,8 +6,8 @@ namespace ReelEmpire.Core
     public enum AdReward { Double, Boost, Wrench }
 
     /// <summary>
-    /// Rewarded adverts: a free way to two things gems or patience buy (a second DOUBLE of the time away in a day, a
-    /// Tide Boost when the charges are spent), a few times a day. The rules are here; showing the advert is
+    /// Rewarded adverts: the only way to double without paying (a second DOUBLE of the time away in a day, after the
+    /// free one; a Tide Boost), a few times a day. The rules are here; showing the advert is
     /// <c>Game/Platform/Ads</c>.
     /// </summary>
     public sealed partial class Sim
@@ -26,7 +26,7 @@ namespace ReelEmpire.Core
             {
                 case AdReward.Double: return !DoubleFree;                       // the free one of the day comes first
                 case AdReward.Wrench: return Unlocked("wear") && State.wrenches < AdWrenchBelow;      // for someone running short, not for hoarding
-                case AdReward.Boost: return BoostReady <= 0 && BoostLeft + BoostHour <= BoostCap + 1;
+                case AdReward.Boost: return BoostLeft + BoostHour <= BoostCap + 1;
             }
             return false;
         }
@@ -47,7 +47,7 @@ namespace ReelEmpire.Core
             return true;
         }
 
-        /// <summary>A Tide Boost for a watched advert, without spending a charge. False if it wasn't on offer.</summary>
+        /// <summary>A Tide Boost for a watched advert. False if it wasn't on offer.</summary>
         public bool BoostByAd()
         {
             if (!AdOffered(AdReward.Boost)) return false;

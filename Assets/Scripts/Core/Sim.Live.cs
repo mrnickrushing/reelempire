@@ -7,7 +7,7 @@ namespace ReelEmpire.Core
     public sealed class Voyage { public int kind; public double doneAt; }
 
     public sealed class VoyageDef { public string Name, Blurb; public double Seconds, CashHours; public int Gems; }
-    public sealed class GiftDef { public string Name; public int Gems; public double WarpHours, BoostHours; }
+    public sealed class GiftDef { public string Name; public int Gems; public double WarpHours; }
     public sealed class TaskDef { public string Id, Text; public double Need; public int Gems; public Func<GameState, double> Count; }
     public sealed class LogbookDef { public string Id, Name, Blurb; public int Renown; }
 
@@ -25,7 +25,7 @@ namespace ReelEmpire.Core
             new GiftDef { Name = "10 gems", Gems = 10 },
             new GiftDef { Name = "Half an hour's earnings", WarpHours = 0.5 },
             new GiftDef { Name = "15 gems", Gems = 15 },
-            new GiftDef { Name = "An hour of Tide Boost", BoostHours = 1 },
+            new GiftDef { Name = "An hour's earnings", WarpHours = 1 },
             new GiftDef { Name = "25 gems", Gems = 25 },
             new GiftDef { Name = "Two hours' earnings", WarpHours = 2 },
             new GiftDef { Name = "60 gems", Gems = 60 },
@@ -44,7 +44,6 @@ namespace ReelEmpire.Core
             var g = Gifts[i];
             State.gems += g.Gems;
             if (g.WarpHours > 0) Pay(H, Math.Max(IdleRate(H) / (Boosted ? BoostMult : 1), FullRate(H) * 0.25) * g.WarpHours * 3600);
-            if (g.BoostHours > 0) State.boostUntil = Math.Max(State.boostUntil, RealNow()) + g.BoostHours * 3600;
             if (Unlocked("wear")) AddWrenches(2);        // two wrenches with every day's gift
             State.giftStreak = i + 1; State.giftDay = Today;
             Touch();
@@ -122,7 +121,7 @@ namespace ReelEmpire.Core
         public static readonly LogbookDef[] LogbookPages =
         {
             new LogbookDef { Id = "watch1", Renown = 25, Name = "Night Watch", Blurb = "The harbour earns for 1 more hour while you're away" },
-            new LogbookDef { Id = "tide", Renown = 60, Name = "Tide Tables", Blurb = "A Tide Boost charge lasts 90 minutes" },
+            new LogbookDef { Id = "tide", Renown = 60, Name = "Tide Tables", Blurb = "A Tide Boost lasts 90 minutes" },
             new LogbookDef { Id = "lookout", Renown = 100, Name = "The Lookout", Blurb = "Crates drift into the harbour twice as often" },
             new LogbookDef { Id = "watch2", Renown = 150, Name = "Second Watch", Blurb = "1 more hour of away earnings" },
             new LogbookDef { Id = "charts", Renown = 300, Name = "Better Charts", Blurb = "Voyages take a fifth less time" },

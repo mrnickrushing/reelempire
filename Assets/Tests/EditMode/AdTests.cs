@@ -19,24 +19,41 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
-        public void ABoostByAdvertOnlyWhenTheChargesAreSpent()
+        public void TheBoostIsOnlyEverForAnAdvert()
         {
             var s = TestGame.New();
-            Assert.IsFalse(s.AdOffered(AdReward.Boost));
-            Assert.IsFalse(s.BoostByAd());
-            while (s.UseBoost()) { }
-            Assert.AreEqual(0, s.BoostReady);
-            double before = s.BoostLeft;
+            Assert.IsFalse(s.Boosted);
+            Assert.IsTrue(s.AdOffered(AdReward.Boost));
             Assert.IsTrue(s.BoostByAd());
-            Assert.Greater(s.BoostLeft, before + 60);
-            Assert.AreEqual(0, s.BoostReady, "no charge is spent or given back");
+            Assert.AreEqual(Sim.BoostLasts, s.BoostLeft, 1);
+            Assert.AreEqual(Sim.AdsPerDay - 1, s.AdsLeft);
+        }
+
+        [Test]
+        public void AfterTheFreeDoubleOfTheDayADoubleNeedsAnAdvertNotGems()
+        {
+            var s = TestGame.New();
+            Assert.IsTrue(s.CollectAwayDoubled(600));
+            s.State.gems = 1000;
+            Assert.IsFalse(s.CollectAwayDoubled(600), "gems never buy a double");
+            Assert.AreEqual(1000, s.State.gems);
+            Assert.IsTrue(s.CollectAwayByAd(600));
+        }
+
+        [Test]
+        public void NothingFreeHandsOutABoost()
+        {
+            var s = TestGame.New();
+            foreach (var g in Sim.Gifts) Assert.IsFalse(g.Name.Contains("Boost"), g.Name);
+            for (int t = 0; t < Sim.SeasonTiers; t++) Assert.AreEqual(0, Sim.SeasonRewardFor(t, false).BoostHours, "free season track");
+            for (int i = 0; i < 200; i++) { s.State.bonusLeft = 10; s.ClaimBonus(); }
+            Assert.IsFalse(s.Boosted, "the drifting crates");
         }
 
         [Test]
         public void TheBoostNeverRunsPastItsCap()
         {
             var s = TestGame.New();
-            while (s.UseBoost()) { }
             for (int i = 0; i < 20; i++) s.BoostByAd();
             Assert.LessOrEqual(s.BoostLeft, Sim.BoostCap + 1);
         }

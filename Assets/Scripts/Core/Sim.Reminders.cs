@@ -26,8 +26,6 @@ namespace ReelEmpire.Core
                 all.Add(new Reminder { In = DerbyLeft - 3 * 3600, Title = "The derby ends in 3 hours", Body = "There's still time to climb the table." });
             if (ChestIn > 600)
                 all.Add(new Reminder { In = ChestIn, Title = "A crew chest is waiting", Body = "Your free chest is ready. Who's signing on?" });
-            if (BoostFullIn > 600)
-                all.Add(new Reminder { In = BoostFullIn, Title = "The tide has turned", Body = "All three Tide Boosts are ready: double income for an hour each." });
             all.Add(new Reminder { In = 24 * 3600, Title = "A new day at " + Def.Name, Body = "The market has a new favourite today, and the boats are waiting." });
 
             // Two at most, never two within ten minutes, and none in the night: one due between 22:00 and 08:00 waits
