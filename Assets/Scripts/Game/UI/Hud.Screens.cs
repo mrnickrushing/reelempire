@@ -157,6 +157,16 @@ namespace ReelEmpire.Game
             return y - H;
         }
 
+        /// <summary>A second, smaller button on the row just added (left of its main one).</summary>
+        void SecondButton(string text, Color colour, Action tap)
+        {
+            var row = _list.GetChild(_list.childCount - 1);
+            var b = row.Find("B"); if (b != null && b.GetComponent<Text>() != null) ((RectTransform)b).offsetMax = new Vector2(-520, -50);
+            var n = row.Find("N"); if (n != null) ((RectTransform)n).offsetMax = new Vector2(-520, -12);
+            var btn = Ui.Button("B2", row, text, colour, tap, 30);
+            ((RectTransform)btn.transform).Place(new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-330, 2), new Vector2(180, 88));
+        }
+
         float Heading(float y, string text)
         {
             var l = Ui.Label("H", _list, text, 30, Ui.Dim, TextAnchor.LowerLeft); l.rectTransform.Band(true, y, 50, 8);
@@ -268,6 +278,26 @@ namespace ReelEmpire.Game
                 s.ChestFree ? "OPEN FREE" : Sim.ChestGems + " GEMS", s.ChestFree ? Ui.Gold : Ui.Grape, () => got(S.OpenChest(!S.ChestFree)), null, s.ChestFree);
             var odds = Ui.Label("Odds", _list, "Odds: Common " + Sim.ChestOdds[0] + "%  ·  Rare " + Sim.ChestOdds[1] + "%  ·  Epic " + Sim.ChestOdds[2] + "%  ·  Legendary " + Sim.ChestOdds[3] + "%.  The 10th chest without an Epic or better always holds one.", 24, Ui.Dim, TextAnchor.MiddleLeft, false);
             odds.rectTransform.Band(true, y, 44, 10); y -= 52;
+            y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Recruit tokens: " + s.State.tokens,
+                "Every chest brings one; a derby placing brings 1 to 5. Spend them on the card you want: Common " + Sim.RecruitCost(Sim.Crew[0]) + ", Rare 15, Epic 40, Legendary 100.", null, Ui.Off, null, null);
+
+            // Fleet presets: the baits and crew for a purpose, put back in one tap.
+            y = Heading(y, "FLEET PRESETS: baits at every dock and the crew on duty");
+            for (int i = 0; i < Sim.PresetNames.Length; i++)
+            {
+                int k = i; bool saved = s.PresetSaved(i);
+                y = Entry(y, Ui.Ic("compass"), Ui.Ink, Sim.PresetNames[i], s.PresetText(i), "USE", Ui.Green, saved ? (Action)(() =>
+                {
+                    int n = S.UsePreset(k);
+                    Telemetry.Log("Preset.used", ("Preset.name", Sim.PresetNames[k]), ("Preset.changes", n.ToString()));
+                    Sfx.Play("confirm", 0.7f); Toast(Sim.PresetNames[k] + (n > 0 ? ": " + n + (n == 1 ? " change" : " changes") : ": already set")); GameRoot.Instance.Save(); ShowCrew();
+                }) : null);
+                SecondButton("SAVE", Ui.Blue, () =>
+                {
+                    S.SavePreset(k); Telemetry.Log("Preset.saved", ("Preset.name", Sim.PresetNames[k]));
+                    Sfx.Play("build", 0.6f); Toast(Sim.PresetNames[k] + " saved"); GameRoot.Instance.Save(); ShowCrew();
+                });
+            }
 
             for (int st = 0; st < 4; st++)
             {
@@ -278,8 +308,24 @@ namespace ReelEmpire.Game
                     if (d.Stage != stage) continue;
                     var own = s.Owned(d.Id); bool duty = s.OnDuty(stage) == d; string id = d.Id;
                     string rarity = "<color=#" + ColorUtility.ToHtmlStringRGB(RarityInk[(int)d.Rarity]) + ">" + CrewRarity[(int)d.Rarity] + "</color>";
+                    int cost = Sim.RecruitCost(d);
+                    Action recruit = s.State.tokens >= cost ? (Action)(() =>
+                    {
+                        if (!S.Recruit(id)) return;
+                        Telemetry.Log("Crew.recruited", ("Crew.id", id), ("Crew.cost", cost.ToString()));
+                        var o = S.Owned(id); Sfx.Play("star", 0.9f);
+                        Toast(d.Name + (o.level > 1 || o.copies > 0 ? ": a copy, " + o.copies + "/" + Sim.CopiesFor(o.level) + " to the next level" : " signs on!"));
+                        GameRoot.Instance.Save(); ShowCrew();
+                    }) : null;
                     if (own == null)
-                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), new Color(0.086f, 0.196f, 0.31f, 0.3f), "???  " + rarity, d.Role + ": +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, 1) * 100) + "% " + StageNames[st].ToLowerInvariant() + "  ·  Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb, null, Ui.Off, null, "IN A CHEST");
+                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), new Color(0.086f, 0.196f, 0.31f, 0.3f), "???  " + rarity, d.Role + ": +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, 1) * 100) + "% " + StageNames[st].ToLowerInvariant() + "  ·  Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb, "RECRUIT  " + cost, Ui.Grape, recruit);
+                    else if (duty && own.level < Sim.CrewMaxLevel)
+                    {
+                        y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), Color.white, d.Name + "  " + rarity + "  <color=#1E9E4A>ON DUTY</color>",
+                            "Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb + " for " + Format.Time(Sim.SkillSeconds(d, own.level)) + ".\n" + d.Role + "  ·  level " + own.level + "  ·  +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, own.level) * 100) + "% " + StageNames[st].ToLowerInvariant() + "  ·  " + own.copies + "/" + Sim.CopiesFor(own.level) + " copies to level " + (own.level + 1),
+                            "A COPY  " + cost, Ui.Grape, recruit, null, true);
+                        continue;
+                    }
                     else
                         y = Entry(y, Resources.Load<Sprite>("UI/Faces/crew_" + d.Id), Color.white, d.Name + "  " + rarity,
                             "Skill: " + Sim.SkillOf(d).Name + ", " + Sim.SkillOf(d).Blurb + " for " + Format.Time(Sim.SkillSeconds(d, own.level)) + ".\n" + d.Role + "  ·  level " + own.level + "  ·  +" + Mathf.RoundToInt((float)Sim.CrewBonus(d, own.level) * 100) + "% " + StageNames[st].ToLowerInvariant() + (own.level < Sim.CrewMaxLevel ? "  ·  " + own.copies + "/" + Sim.CopiesFor(own.level) + " copies to level " + (own.level + 1) : "  ·  top level"),
@@ -338,22 +384,25 @@ namespace ReelEmpire.Game
             long waiting = s.DerbyPrizeWaiting;
             if (waiting >= 0)
                 y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "The last derby is over", "Take your prize for where you finished among the fifty skippers.", "TAKE PRIZE", Ui.Gold,
-                    () => { int rank = S.ClaimDerbyPrize(); if (rank > 0) { Sfx.Play("star", 0.9f); Toast("You finished " + rank + (rank == 1 ? "st" : rank == 2 ? "nd" : rank == 3 ? "rd" : "th") + ": +" + Sim.DerbyPrize(rank) + " gems"); GameRoot.Instance.Save(); ShowDerby(); } }, null, true);
+                    () => { int rank = S.ClaimDerbyPrize(); if (rank > 0) { Sfx.Play("star", 0.9f); Toast("You finished " + rank + (rank == 1 ? "st" : rank == 2 ? "nd" : rank == 3 ? "rd" : "th") + ": +" + Sim.DerbyPrize(rank) + " gems, +" + Sim.DerbyTokens(rank) + (Sim.DerbyTokens(rank) == 1 ? " recruit token" : " recruit tokens")); GameRoot.Instance.Save(); ShowDerby(); } }, null, true);
             if (!s.DerbyOn)
             {
-                y = Entry(y, Ui.Ic("calendar"), Ui.Ink, "The next derby starts in " + Format.Time(s.DerbyIn), "From Friday to Sunday night every fish you land scores: 1 for a common one, up to 200 for a legend. Five goals pay gems, and your place among fifty skippers pays a prize.", null, Ui.Off, null, "FRIDAY");
-                y = Heading(y, "PRIZES: 1st 100 gems  ·  top 3: 60  ·  top 10: 30  ·  top 25: 15  ·  everyone: 5");
+                var next = Sim.FormatOf(s.DerbyIndex + 1);
+                y = Entry(y, Ui.Ic("calendar"), Ui.Ink, "Next: the " + Sim.FormatNames[(int)next] + ", in " + Format.Time(s.DerbyIn), "Friday to Sunday night. " + Sim.FormatRules[(int)next] + " Five goals pay gems, and your place among fifty skippers pays a prize.", null, Ui.Off, null, "FRIDAY");
+                y = Heading(y, "PRIZES: 1st 100 gems  ·  top 3: 60  ·  top 10: 30  ·  top 25: 15  ·  everyone: 5, and recruit tokens");
                 EndList(-y); return;
             }
-            y = Entry(y, Ui.Ic("trophy"), Ui.Ink, s.DerbyScore.ToString("N0") + " points  ·  place " + s.DerbyRankNow + " of 50", "Ends in " + Format.Time(s.DerbyLeft) + ". Every fish landed while you play scores; rare fish score far more.", null, Ui.Off, null, "ON NOW", true);
+            y = Entry(y, Ui.Ic("trophy"), Ui.Ink, s.DerbyScore.ToString("N0") + " points  ·  place " + s.DerbyRankNow + " of 50", "Ends in " + Format.Time(s.DerbyLeft) + ".", null, Ui.Off, null, "ON NOW", true);
+            y = Heading(y, Sim.FormatNames[(int)s.DerbyFormatNow].ToUpperInvariant() + ": " + Sim.FormatRules[(int)s.DerbyFormatNow]);
             y = Heading(y, "GOALS");
             for (int i = 0; i < Sim.DerbyGoals.Length; i++)
             {
                 int k = i; bool done = s.DerbyGoalDone(i), claimed = s.DerbyGoalClaimed(i);
-                y = Entry(y, Ui.Ic("target"), Ui.Ink, Sim.DerbyGoals[i].ToString("N0") + " points", Math.Min(s.DerbyScore, Sim.DerbyGoals[i]).ToString("N0") + " / " + Sim.DerbyGoals[i].ToString("N0"), claimed ? null : "+" + Sim.DerbyGoalGems[i] + " GEMS", Ui.Green,
+                long goal = s.DerbyGoal(i);
+                y = Entry(y, Ui.Ic("target"), Ui.Ink, goal.ToString("N0") + " points", Math.Min(s.DerbyScore, goal).ToString("N0") + " / " + goal.ToString("N0"), claimed ? null : "+" + Sim.DerbyGoalGems[i] + " GEMS", Ui.Green,
                     done && !claimed ? (Action)(() => { if (S.ClaimDerbyGoal(k)) { Sfx.Play("claim", 0.8f); GameRoot.Instance.Save(); ShowDerby(); } }) : null, claimed ? "DONE" : null, done && !claimed);
             }
-            y = Heading(y, "THE TABLE  (1st 100 gems · top 3: 60 · top 10: 30 · top 25: 15 · everyone: 5)");
+            y = Heading(y, "THE TABLE  (1st 100 gems + 5 tokens · top 3: 60 + 5 · top 10: 30 + 3 · top 25: 15 + 1 · everyone: 5 + 1)");
             var fair = Ui.Label("Fair", _list, "The other skippers are part of the game, not real players. For real ones, see the Game Center leaderboard in MORE.", 22, Ui.Dim, TextAnchor.MiddleLeft, false); fair.rectTransform.Band(true, y, 36, 10); y -= 44;
             double frac = 1 - s.DerbyLeft / (3 * 86400.0);
             var table = new List<KeyValuePair<string, long>>();
@@ -402,10 +451,28 @@ namespace ReelEmpire.Game
             {
                 int gain = s.RenownWaiting;
                 y = Entry(y, Ui.Art("star"), Color.white, "Renovate " + s.Def.Name + "  (x" + Format.Money(Math.Pow(2, h.renovations)) + " ▸ x" + Format.Money(Math.Pow(2, h.renovations + 1)) + ")",
-                    "Start again from the Old Jetty, earning double here for good" + (gain > 0 ? ", and +" + gain + " renown." : ".") + (blocked != null ? "  " + blocked + "." : ""),
+                    "Start again from the Old Jetty, earning double here for good" + (gain > 0 ? ", and +" + gain + " renown" : "") + (h.renovations == 0 ? ", then pick what it specialises in." : ".") + (blocked != null ? "  " + blocked + "." : ""),
                     Format.Money(s.RenovationCost(h)), Ui.Gold, blocked == null ? (Action)AskRenovate : null);
             }
             else y = Entry(y, Ui.Art("star"), Color.white, s.Def.Name + " is fully renovated", "x32 income here, for good.", null, Ui.Off, null, "DONE", true);
+            // A renovated harbour specialises: picked freely the first time, changed once a day after that.
+            if (h.renovations > 0)
+            {
+                string focus = s.FocusOf(h); double wait = string.IsNullOrEmpty(focus) ? 0 : s.FocusChangeIn(h);
+                y = Heading(y, "WHAT " + s.Def.Name.ToUpperInvariant() + " SPECIALISES IN" + (string.IsNullOrEmpty(focus) ? ": pick one" : wait > 0 ? "  (can change in " + Format.Time(wait) + ")" : "  (you can change it now)"));
+                for (int i = 0; i < Sim.Focuses.Length; i++)
+                {
+                    string f = Sim.Focuses[i]; bool on = focus == f; int k = i;
+                    y = Entry(y, Ui.Ic(i == 0 ? "target" : i == 1 ? "box" : i == 2 ? "compass" : "chart"), Ui.Ink, Sim.FocusNames[i], Sim.FocusBlurbs[i],
+                        on ? null : string.IsNullOrEmpty(focus) ? "CHOOSE" : "CHANGE", Ui.Blue,
+                        on || wait > 0 ? null : (Action)(() =>
+                        {
+                            if (!S.SetFocus(f)) return;
+                            Telemetry.Log("Focus.chosen", ("Focus.kind", f), ("Focus.renovations", H.renovations.ToString()));
+                            Sfx.Play("confirm", 0.8f); Toast(S.Def.Name + " now specialises in " + Sim.FocusNames[k].ToLowerInvariant()); GameRoot.Instance.Save(); ShowHarbours();
+                        }), on ? "CHOSEN" : null, on);
+                }
+            }
             y = Heading(y, "YOUR WATERS");
             for (int i = 0; i < s.State.harbours.Count; i++)
             {
@@ -428,10 +495,10 @@ namespace ReelEmpire.Game
         {
             var s = S; var h = H; int gain = s.RenownWaiting;
             Confirm("RENOVATE?", s.Def.Name + " starts again from one jetty and a rowboat: its levels, docks, lines and cash go.\n\nFrom then on it earns x" + Format.Money(Math.Pow(2, h.renovations + 1)) + " for good" + (gain > 0 ? ", and you gain " + gain + " renown (+" + gain * 2 + "% income everywhere)" : "") + ". Gems, the book and your other harbours are kept.",
-                "RENOVATE", Ui.Gold, () => { if (S.Renovate()) { CloseScreen(); Sfx.Play("star"); Toast("Renovated! Everything here now earns double."); GameRoot.Instance.Save(); } });
+                "RENOVATE", Ui.Gold, () => { if (S.Renovate()) { Sfx.Play("star"); GameRoot.Instance.Save(); if (string.IsNullOrEmpty(S.FocusOf(H))) { Toast("Renovated! Now pick what " + S.Def.Name + " specialises in."); ShowHarbours(); } else { CloseScreen(); Toast("Renovated! Everything here now earns double."); } } });
         }
 
-                public static Sprite SpeciesPicture(SpeciesDef sp) { return Resources.Load<Sprite>("UI/Species/" + sp.Id.Replace('.', '_')); }
+        public static Sprite SpeciesPicture(SpeciesDef sp) { return Resources.Load<Sprite>("UI/Species/" + sp.Id.Replace('.', '_')); }
         static readonly string[] RarityNames = { "COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY" };
         static readonly Color[] RarityInk = { new Color(0.42f, 0.5f, 0.58f), new Color(0.18f, 0.65f, 0.32f), new Color(0.1f, 0.55f, 0.85f), new Color(0.55f, 0.36f, 0.95f), new Color(0.95f, 0.6f, 0.05f) };
 

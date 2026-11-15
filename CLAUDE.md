@@ -82,6 +82,16 @@ platform code, tools and conventions are the same.
   offered once a line has run and an order is filled). Settings' "Labels over the harbour" FEWER shows only the slowest
   part, the open sheet and the best upgrade for its price (PlayerPrefs `re_compact_signs`). Telemetry: Target.pinned/
   applied/landed, Skill.used, Starter.offered, Labels.changed.
+- Depth (`Core/Sim.Depth.cs`): each species fights in its own way (`StyleOf`: Steady, Runner, Darter, Stayer;
+  legends are Stayers; `Fight.Warning` telegraphs a run, the HUD shivers the float and creaks). Customers come to know
+  the harbour (`State.ties`, `TieLevel`: regular 2 / friend 5 / partner 10 orders, +10/20/35%, a line when they become
+  friends) and each has a favourite line (`FavouriteOf`, `Order.favourite`, +25%). Fleet presets (`SavePreset`,
+  `UsePreset`: baits and crew on duty, on the CREW page). From Boat Shed level 2 its crew mends the worst worn boat every
+  20 minutes of play (`TickMend`, `Mended`). Recruit tokens (`State.tokens`: one a chest, 1-5 a derby placing, two for
+  a copy past the top level; `Recruit` a chosen card for 6/15/40/100). Derby formats turn weekly (`FormatOf`:
+  Classic, Variety, Hand-Line, Big Ones; rivals and goals scale by `ScaleOf`; the "other skippers are part of the game"
+  line stays). A renovated harbour specialises (`SetFocus`: collecting, processing, voyages, transport; a change
+  waits a day; `FocusFx`). Telemetry: Preset.saved/used, Crew.recruited, Focus.chosen, Customer.closer.
 - Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

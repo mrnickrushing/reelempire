@@ -87,17 +87,8 @@ namespace ReelEmpire.Core
             if (r >= 2) State.chestsSinceEpic = 0;
             var pool = Array.FindAll(Crew, c => c.Rarity == ChestRarities[r]);
             var card = pool[(int)(Roll() * pool.Length)];
-            var own = Owned(card.Id);
-            if (own == null)
-            {
-                State.crew.Add(new CrewState { id = card.Id });
-                if (OnDuty(card.Stage) == null) State.duty[(int)card.Stage] = card.Id;       // a first hand goes straight to work
-            }
-            else
-            {
-                own.copies++;
-                while (own.level < CrewMaxLevel && own.copies >= CopiesFor(own.level)) { own.copies -= CopiesFor(own.level); own.level++; }
-            }
+            GiveCard(card);
+            State.tokens++;     // every chest also brings a recruit token
             Touch();
             return card;
         }

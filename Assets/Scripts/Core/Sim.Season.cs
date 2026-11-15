@@ -129,10 +129,9 @@ namespace ReelEmpire.Core
             if (State.derbyIndex == DerbyIndex) return;
             // Keep the last one's result until its prize is taken.
             if (State.derbyScore > 0 && State.derbyPrizeFor < State.derbyIndex) { State.derbyLastIndex = State.derbyIndex; State.derbyLastScore = State.derbyScore; }
-            State.derbyIndex = DerbyIndex; State.derbyScore = 0; State.derbyGoals = 0;
+            State.derbyIndex = DerbyIndex; State.derbyScore = 0; State.derbyGoals = 0; State.derbyKinds.Clear();
         }
 
-        void DerbyCatch(Rarity r) { if (!DerbyOn) return; RollDerby(); State.derbyScore += DerbyPoints[(int)r]; }
         public long DerbyScore { get { RollDerby(); return State.derbyScore; } }
 
         /// <summary>A rival's score: where they will finish (between a few hundred and tens of thousands, fixed by
@@ -140,7 +139,7 @@ namespace ReelEmpire.Core
         public long RivalScore(long derby, int rival, double fraction)
         {
             uint h = Hash(derby * 131 + rival * 7919 + 17);
-            double final = 300 * Math.Pow(180, (h % 10000) / 10000.0);
+            double final = 300 * Math.Pow(180, (h % 10000) / 10000.0) * ScaleOf(derby);
             double pace = 0.7 + (h >> 16) % 100 / 100.0 * 0.8;
             return (long)(final * Math.Pow(Math.Max(0, Math.Min(1, fraction)), pace));
         }
@@ -163,7 +162,7 @@ namespace ReelEmpire.Core
         }
         public int DerbyRankNow { get { return DerbyRank(DerbyIndex, DerbyScore, 1 - DerbyLeft / DerbyLength); } }
 
-        public bool DerbyGoalDone(int i) { return DerbyScore >= DerbyGoals[i]; }
+        public bool DerbyGoalDone(int i) { return DerbyScore >= DerbyGoal(i); }
         public bool DerbyGoalClaimed(int i) { RollDerby(); return (State.derbyGoals & (1 << i)) != 0; }
         public bool ClaimDerbyGoal(int i)
         {
@@ -172,6 +171,9 @@ namespace ReelEmpire.Core
             Touch();
             return true;
         }
+
+        /// <summary>Recruit tokens that come with a derby placing.</summary>
+        public static int DerbyTokens(int rank) { return rank <= 3 ? 5 : rank <= 10 ? 3 : 1; }
 
         public static int DerbyPrize(int rank) { return rank <= 1 ? 100 : rank <= 3 ? 60 : rank <= 10 ? 30 : rank <= 25 ? 15 : 5; }
 
@@ -193,7 +195,7 @@ namespace ReelEmpire.Core
             long d = DerbyPrizeWaiting; if (d < 0) return 0;
             long score = d == State.derbyIndex ? State.derbyScore : State.derbyLastScore;
             int rank = DerbyRank(d, score, 1);
-            State.gems += DerbyPrize(rank); State.derbyPrizeFor = d; State.derbyLastScore = 0;
+            State.gems += DerbyPrize(rank); State.tokens += DerbyTokens(rank); State.derbyPrizeFor = d; State.derbyLastScore = 0;
             if (rank < State.derbyBest || State.derbyBest == 0) State.derbyBest = rank;
             Touch();
             return rank;

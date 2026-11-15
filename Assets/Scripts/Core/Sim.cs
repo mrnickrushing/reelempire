@@ -48,6 +48,7 @@ namespace ReelEmpire.Core
             RollTasks();        // the day's counts start when the day does, not when the page is first opened
             TickOrders();
             TickBonus(dt);
+            TickMend(H, dt);
             if (State.firstDay < 0) State.firstDay = Today;
             State.played += dt;
             while (dt > 0)
@@ -182,7 +183,7 @@ namespace ReelEmpire.Core
             b.crate += units;
             State.trips++; State.fish++;
             bool first = Record(sp, kg);
-            DerbyCatch(sp.Rarity);
+            DerbyCatch(sp, false);
             OrderCatch(h, sp);
             if (first) AddSeasonPoints(20);
             Caught?.Invoke(berth, sp, kg, units, first);

@@ -475,16 +475,16 @@ namespace ReelEmpire.Tests
         [Test]
         public void RivalsClimbThroughTheWeekendAndThereAreFortyNineNames()
         {
-            var s = TestGame.New();
+            var s = TestGame.New();      // derby 8 is a Classic one (the format turns every week)
             Assert.That(Sim.RivalNames.Length, Is.EqualTo(Sim.DerbyRivals));
             for (int i = 0; i < Sim.DerbyRivals; i++)
             {
-                Assert.That(s.RivalScore(7, i, 0), Is.EqualTo(0));
-                Assert.That(s.RivalScore(7, i, 1), Is.GreaterThanOrEqualTo(s.RivalScore(7, i, 0.5)));
-                Assert.That(s.RivalScore(7, i, 1), Is.InRange(299, 54001));
+                Assert.That(s.RivalScore(8, i, 0), Is.EqualTo(0));
+                Assert.That(s.RivalScore(8, i, 1), Is.GreaterThanOrEqualTo(s.RivalScore(8, i, 0.5)));
+                Assert.That(s.RivalScore(8, i, 1), Is.InRange(299, 54001));
             }
-            Assert.That(s.DerbyRank(7, 1_000_000, 1), Is.EqualTo(1));
-            Assert.That(s.DerbyRank(7, 0, 1), Is.EqualTo(50));
+            Assert.That(s.DerbyRank(8, 1_000_000, 1), Is.EqualTo(1));
+            Assert.That(s.DerbyRank(8, 0, 1), Is.EqualTo(50));
         }
     }
 
@@ -931,9 +931,9 @@ namespace ReelEmpire.Tests
             s.ClaimOrder(0);
             Assert.That(s.State.notes, Is.EqualTo(2));
         }
-        static FightState Play(Rarity r, uint seed, System.Func<Fight, bool> hold)
+        static FightState Play(Rarity r, uint seed, System.Func<Fight, bool> hold, FightStyle style = FightStyle.Runner)
         {
-            var f = new Fight(r, seed);
+            var f = new Fight(r, seed, style);
             for (int i = 0; i < 60 * 90 && f.State == FightState.Fighting; i++) f.Step(1f / 60, hold(f));
             return f.State;
         }
@@ -942,16 +942,20 @@ namespace ReelEmpire.Tests
         public void AFishIsLandedByKeepingTheLineInTheBand()
         {
             // Someone who reels below the middle of the band and eases off above it lands fish of every size.
-            foreach (Rarity r in System.Enum.GetValues(typeof(Rarity)))
-                for (uint seed = 1; seed <= 20; seed++)
-                    Assert.That(Play(r, seed, f => f.Tension < (f.Running ? 0.5f : 0.62f)), Is.EqualTo(FightState.Landed), r + " " + seed);
+            foreach (FightStyle st in System.Enum.GetValues(typeof(FightStyle)))
+                foreach (Rarity r in System.Enum.GetValues(typeof(Rarity)))
+                    for (uint seed = 1; seed <= 20; seed++)
+                        Assert.That(Play(r, seed, f => f.Tension < (f.Running || f.Warning ? 0.5f : 0.62f), st), Is.EqualTo(FightState.Landed), st + " " + r + " " + seed);
         }
 
         [Test]
         public void HoldingAllTheTimeSnapsTheLineAndNeverHoldingLosesTheFish()
         {
-            Assert.That(Play(Rarity.Rare, 7, f => true), Is.EqualTo(FightState.Snapped));
-            Assert.That(Play(Rarity.Rare, 7, f => false), Is.EqualTo(FightState.Escaped));
+            foreach (FightStyle st in System.Enum.GetValues(typeof(FightStyle)))
+            {
+                Assert.That(Play(Rarity.Rare, 7, f => true, st), Is.EqualTo(FightState.Snapped), st.ToString());
+                Assert.That(Play(Rarity.Rare, 7, f => false, st), Is.EqualTo(FightState.Escaped), st.ToString());
+            }
         }
 
         [Test]
