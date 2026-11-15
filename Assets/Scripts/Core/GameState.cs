@@ -87,6 +87,9 @@ namespace ReelEmpire.Core
         public int wrenches = 3, repairs;      // Sim.Wear
         public long adDay = -1; public int adCount;      // rewarded adverts watched on a day (Sim.Ads)
         public bool starterOffered;
+        public int cohort = -1;         // 0..99, fixed per save: which way a test of the shop's timing goes
+        public string pinned = "";      // the species the player is hunting (Sim.Plan)
+        public int pinnedCount;         // how many of it were in the book when it was pinned
         public long skillsUsed, worksBuilt, handCaught;
         public int notes; public List<string> research = new List<string>();
         public List<Order> orders = new List<Order>(); public double orderAt; public long ordersDone;
@@ -137,6 +140,8 @@ namespace ReelEmpire.Core
             if (duty == null) duty = new List<string>();
             while (duty.Count < 4) duty.Add("");
             if (seed == 0) seed = 2463534242;
+            if (cohort < 0 || cohort > 99) cohort = (int)((uint)Guid.NewGuid().GetHashCode() % 100);
+            if (pinned == null) pinned = "";
             at = Math.Max(0, Math.Min(at, harbours.Count - 1));
             foreach (var h in harbours)
             {

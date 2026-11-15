@@ -122,6 +122,7 @@ namespace ReelEmpire.Game
 
             BuildSkills();
             BuildGuide();
+            BuildTarget();
             BuildNav();
             BuildSheet();
             _modal = Ui.Rect("Modal", _root); _modal.Fill();
@@ -184,6 +185,7 @@ namespace ReelEmpire.Game
             UpdateSkills();
             UpdateAngling();
             UpdateGuide();
+            UpdateTarget();
             UpdateSheet();
             UpdateFx();
             UpdateFlyers();

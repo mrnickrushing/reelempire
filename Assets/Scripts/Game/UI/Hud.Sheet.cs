@@ -137,20 +137,22 @@ namespace ReelEmpire.Game
             }
             else if (stage == Stage.Dock)
             {
+                st.text = s.LimitNote(stage); st.fontSize = 21; st.resizeTextForBestFit = true; st.resizeTextMinSize = 15; st.resizeTextMaxSize = 21; st.verticalOverflow = VerticalWrapMode.Truncate; st.rectTransform.sizeDelta = new Vector2(400, 64); st.verticalOverflow = VerticalWrapMode.Truncate; st.rectTransform.sizeDelta = new Vector2(400, 64);
                 Row(mid, y, "Carries", Format.Money(s.DockRate(h)) + "/s", after(() => Format.Money(s.DockRate(h)) + "/s")); y -= 76;
                 Row(mid, y, "Porters", h.haulers.Count.ToString(), after(() => Content.CrewAt(h.dock).ToString())); y -= 76;
                 Row(mid, y, "The boats land", Format.Money(s.FleetRate(h, true)) + "/s", null);
             }
             else if (stage == Stage.Market)
             {
+                st.text = s.LimitNote(stage); st.fontSize = 21; st.resizeTextForBestFit = true; st.resizeTextMinSize = 15; st.resizeTextMaxSize = 21; st.verticalOverflow = VerticalWrapMode.Truncate; st.rectTransform.sizeDelta = new Vector2(400, 64); st.verticalOverflow = VerticalWrapMode.Truncate; st.rectTransform.sizeDelta = new Vector2(400, 64);
                 Row(mid, y, "Sells", Format.Money(s.MarketRate(h)) + "/s", after(() => Format.Money(s.MarketRate(h)) + "/s")); y -= 76;
                 Row(mid, y, "Trucks", h.trucks.Count.ToString(), after(() => Content.CrewAt(h.market).ToString())); y -= 76;
                 Row(mid, y, "Today's favourite", Content.Goods[s.GoodsOfTheDay].Name + " +50%", null);
             }
             else
             {
-                st.text = "Handles " + Format.Money(s.HallRate(h)) + "/s" + (n > 0 ? "  ▸  " + after(() => Format.Money(s.HallRate(h)) + "/s") : "") + "\nof the " + Format.Money(Math.Min(s.FleetRate(h, true), s.DockRate(h))) + "/s coming in";
-                int shown = 0;
+                st.text = s.LimitNote(stage); st.fontSize = 21; st.resizeTextForBestFit = true; st.resizeTextMinSize = 15; st.resizeTextMaxSize = 21; st.verticalOverflow = VerticalWrapMode.Truncate; st.rectTransform.sizeDelta = new Vector2(400, 64);
+                int shown = 0, best = s.BestGoods;
                 for (int g = 0; g < Content.Goods.Length; g++)
                 {
                     int k = g; var def = Content.Goods[g];
@@ -158,7 +160,9 @@ namespace ReelEmpire.Game
                     if (!owned && !canBuy) continue;
                     if (++shown > 5) break;
                     var row = Ui.ArtImg("Line", mid, "card", running ? new Color(0.72f, 0.93f, 0.76f) : Ui.Card, 26); row.rectTransform.Band(true, y, 56);
-                    string worth = "x" + s.GoodsValue(h, g).ToString("0.##") + (g == s.GoodsOfTheDay ? " today!" : "") + (def.Speed < 1 ? "  " + Mathf.RoundToInt((float)def.Speed * 100) + "% pace" : "");
+                    // What running this line would earn the whole harbour now: value against the hall's pace.
+                    string worth = "x" + s.GoodsValue(h, g).ToString("0.##") + (g == s.GoodsOfTheDay ? " today!" : "") + (owned ? "  ≈" + Format.Money(s.PaceWithGoods(g)) + "/s" : (def.Speed < 1 ? "  " + Mathf.RoundToInt((float)def.Speed * 100) + "% pace" : ""));
+                    if (owned && g == best && !running) worth += "  <color=#1E9E4A>BEST NOW</color>";
                     var nm = Ui.Label("N", row.transform, def.Name + "  <size=22><color=#" + (g == s.GoodsOfTheDay ? "D9631E" : "5A6E82") + ">" + worth + "</color></size>", 28, Ui.Ink, TextAnchor.MiddleLeft); nm.rectTransform.Fill(); nm.rectTransform.offsetMin = new Vector2(18, 0);
                     if (running) { var on = Ui.Label("On", row.transform, "RUNNING", 24, new Color(0.12f, 0.62f, 0.29f), TextAnchor.MiddleRight); on.rectTransform.Fill(); on.rectTransform.offsetMax = new Vector2(-18, 0); }
                     else
@@ -174,6 +178,16 @@ namespace ReelEmpire.Game
                     }
                     y -= 60;
                 }
+            }
+
+            // What the purchase does for the whole harbour, not only this stage.
+            double gain; string verdict = s.UpgradeVerdict(stage, berth, n, out gain);
+            if (verdict != null)
+            {
+                var vl = Ui.Label("Verdict", stage == Stage.Hall ? right : mid, verdict, 24, gain >= 0.005 ? new Color(0.12f, 0.58f, 0.28f) : new Color(0.8f, 0.33f, 0.2f), stage == Stage.Hall ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft, false);
+                if (stage == Stage.Hall) { vl.rectTransform.anchorMin = new Vector2(0, 0); vl.rectTransform.anchorMax = new Vector2(1, 0); vl.rectTransform.pivot = new Vector2(0.5f, 0); vl.rectTransform.offsetMin = new Vector2(0, 132); vl.rectTransform.offsetMax = new Vector2(0, 196); }
+                else vl.rectTransform.Band(true, -228, 66);
+                vl.resizeTextForBestFit = true; vl.resizeTextMinSize = 16; vl.resizeTextMaxSize = 24;
             }
 
             // Right: the skipper, how many levels, and the button.
@@ -206,7 +220,7 @@ namespace ReelEmpire.Game
             }
             _upgrade = Ui.Button("Upgrade", right, null, Ui.Green, null, 44);
             var hold = _upgrade.gameObject.AddComponent<HoldButton>(); hold.Fire = DoUpgrade;
-            ((RectTransform)_upgrade.transform).Band(false, 0, stage == Stage.Hall ? 190 : 124);
+            ((RectTransform)_upgrade.transform).Band(false, 0, 124);
             _upgradeLabel = Ui.Label("L", _upgrade.transform, "", 40, Color.white, TextAnchor.UpperCenter); _upgradeLabel.rectTransform.Fill(); _upgradeLabel.rectTransform.offsetMax = new Vector2(0, -14); _upgradeLabel.Stroke(2.5f);
             _upgradeCost = Ui.Label("C", _upgrade.transform, "", 36, Color.white, TextAnchor.LowerCenter); _upgradeCost.rectTransform.Fill(); _upgradeCost.rectTransform.offsetMin = new Vector2(0, 26); _upgradeCost.Stroke(2f);
             var coin = Ui.ArtImg("Coin", _upgrade.transform, "coin", Color.white, 0); _upgradeCoin = coin.rectTransform; _upgradeCoin.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f), new Vector2(0, 48), new Vector2(40, 40)); coin.raycastTarget = false;
