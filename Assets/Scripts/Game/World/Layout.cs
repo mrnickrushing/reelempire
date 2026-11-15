@@ -34,6 +34,9 @@ namespace ReelEmpire.Game
         }
         /// <summary>The chart room: a watch tower behind the hall, where research is done.</summary>
         public static readonly Vector3 ChartRoom = new Vector3(37, QuayY, -17);
+        /// <summary>Where each water's landmark stands: on the rise north of the hall, and in the shallows past the quay's north end.</summary>
+        public static readonly Vector3 Landmark = new Vector3(27, QuayY, 39), WaterMark = new Vector3(-17, 0, 58);
+        public const float LandmarkRadius = 14, WaterMarkRadius = 10;
     }
 
     /// <summary>What makes each water look like itself: its ground, its sea and what grows there.</summary>
@@ -45,16 +48,26 @@ namespace ReelEmpire.Game
         /// <summary>Barn paint, as a turn of the hue from the kit's red: each water has its own.</summary>
         public float Paint;
         public float Fog = 1;
+        /// <summary>How this water builds: wall paint and finish (null wall: the barn red turned by <see cref="Paint"/>),
+        /// roof colour and finish, the market's roof, the quay's surface, and whether the roofs carry snow.</summary>
+        public Color? Wall; public SurfaceKind WallSurf = SurfaceKind.Siding;
+        public Color Roof = Palette.Hex(0x8C98A2), MarketRoof = Palette.Hex(0x2F7A8A); public SurfaceKind RoofSurf = SurfaceKind.Tin;
+        public Color Quay = Palette.Hex(0xD9A066); public SurfaceKind QuaySurf = SurfaceKind.Planks;
 
         public static Theme For(string harbour)
         {
             switch (harbour)
             {
-                case "river": return new Theme { Paint = 0.62f, Grass = Palette.Hex(0x6FBF4A), Sand = Palette.Hex(0xD9C89A), Deep = Palette.Hex(0x1E6E7A), Shallow = Palette.Hex(0x4FC2A8), Trees = new[] { "tree_pine", "tree_pine_b", "tree_c", "tree_pine", "tree_d" }, Lilies = true };
-                case "coast": return new Theme { Paint = 0.1f, Grass = Palette.Hex(0xB7D46A), Sand = Palette.Hex(0xF6E2A6), Deep = Palette.Hex(0x1466A8), Shallow = Palette.Hex(0x3FC6D8), Trees = new[] { "palm_a", "palm_b", "tree_a", "palm_a", "bush" } };
-                case "reef": return new Theme { Paint = 0.5f, Grass = Palette.Hex(0xF2DFA4), Sand = Palette.Hex(0xFFF0C2), Deep = Palette.Hex(0x0E86C4), Shallow = Palette.Hex(0x58E6D8), Trees = new[] { "palm_a", "palm_b", "palm_a", "palm_b", "bush_b" } };
-                case "deep": return new Theme { Paint = 0.72f, Grass = Palette.Hex(0x7FA08A), Sand = Palette.Hex(0xB9B4A6), Deep = Palette.Hex(0x0B2F6A), Shallow = Palette.Hex(0x1F6FB0), Trees = new[] { "rock_c", "tree_pine_b", "rock_b", "bush", "tree_pine" } };
-                case "arctic": return new Theme { Grass = Palette.Hex(0xF4F8FC), Sand = Palette.Hex(0xDDEAF4), Deep = Palette.Hex(0x1C4E7A), Shallow = Palette.Hex(0x8FD8EC), Trees = new[] { "tree_pine", "tree_pine_b", "rock_c", "tree_pine_b", "rock_b" }, Ice = true };
+                case "river": return new Theme { Paint = 0.62f, Grass = Palette.Hex(0x6FBF4A), Sand = Palette.Hex(0xD9C89A), Deep = Palette.Hex(0x1E6E7A), Shallow = Palette.Hex(0x4FC2A8), Trees = new[] { "tree_pine", "tree_pine_b", "tree_c", "tree_pine", "tree_d" }, Lilies = true,
+                    Wall = Palette.Hex(0x9A6A44), WallSurf = SurfaceKind.WoodGrain, Roof = Palette.Hex(0x4A7356), MarketRoof = Palette.Hex(0x4A7356), RoofSurf = SurfaceKind.Shingles };
+                case "coast": return new Theme { Paint = 0.1f, Grass = Palette.Hex(0xB7D46A), Sand = Palette.Hex(0xF6E2A6), Deep = Palette.Hex(0x1466A8), Shallow = Palette.Hex(0x3FC6D8), Trees = new[] { "palm_a", "palm_b", "tree_a", "palm_a", "bush" },
+                    Wall = Palette.Hex(0xF0EBE0), WallSurf = SurfaceKind.Brick, Roof = Palette.Hex(0xC2643E), MarketRoof = Palette.Hex(0xC2643E), RoofSurf = SurfaceKind.RoofTiles, Quay = Palette.Hex(0xCFC6B4), QuaySurf = SurfaceKind.Stone };
+                case "reef": return new Theme { Paint = 0.5f, Grass = Palette.Hex(0xF2DFA4), Sand = Palette.Hex(0xFFF0C2), Deep = Palette.Hex(0x0E86C4), Shallow = Palette.Hex(0x58E6D8), Trees = new[] { "palm_a", "palm_b", "palm_a", "palm_b", "bush_b" },
+                    Wall = Palette.Hex(0xEAD6AE), WallSurf = SurfaceKind.WoodGrain, Roof = Palette.Hex(0xC9AE78), MarketRoof = Palette.Hex(0x3FA6A0), RoofSurf = SurfaceKind.Shingles, Quay = Palette.Hex(0xE6C48C) };
+                case "deep": return new Theme { Paint = 0.72f, Grass = Palette.Hex(0x7FA08A), Sand = Palette.Hex(0xB9B4A6), Deep = Palette.Hex(0x0B2F6A), Shallow = Palette.Hex(0x1F6FB0), Trees = new[] { "rock_c", "tree_pine_b", "rock_b", "bush", "tree_pine" },
+                    Wall = Palette.Hex(0x45698C), WallSurf = SurfaceKind.PaintedMetal, Roof = Palette.Hex(0xA4AEB6), MarketRoof = Palette.Hex(0xD9503E), Quay = Palette.Hex(0xB8B4AA), QuaySurf = SurfaceKind.Concrete };
+                case "arctic": return new Theme { Grass = Palette.Hex(0xF4F8FC), Sand = Palette.Hex(0xDDEAF4), Deep = Palette.Hex(0x1C4E7A), Shallow = Palette.Hex(0x8FD8EC), Trees = new[] { "tree_pine", "tree_pine_b", "rock_c", "tree_pine_b", "rock_b" }, Ice = true,
+                    Wall = Palette.Hex(0xC98A32), Roof = Palette.Hex(0xF2F6FA), MarketRoof = Palette.Hex(0xF2F6FA), RoofSurf = SurfaceKind.None };
                 default: return new Theme { Grass = Palette.Hex(0x8FD05A), Sand = Palette.Hex(0xF2DFA4), Deep = Palette.Hex(0x126B9E), Shallow = Palette.Hex(0x40CCC7), Trees = new[] { "tree_a", "tree_b", "tree_c", "tree_d", "tree_pine", "tree_pine_b", "tree_b", "tree_d" }, Lilies = true };
             }
         }

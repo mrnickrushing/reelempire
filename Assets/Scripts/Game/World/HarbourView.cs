@@ -20,6 +20,7 @@ namespace ReelEmpire.Game
         readonly List<Transform> _haulLoads = new List<Transform>(), _truckLoads = new List<Transform>();
         readonly List<int> _haulTo = new List<int>();
         Transform _rawPile, _donePile, _smoke, _bonus, _beam;
+        Belt _belt;
         readonly List<Light> _lamps = new List<Light>();
         Material _glow;
         int _berths = -1, _nHaul = -1, _nTruck = -1; string _harbour;
@@ -59,6 +60,14 @@ namespace ReelEmpire.Game
         static Color Tint(CosmeticDef d) { return new Color(d.R, d.G, d.B); }
         /// <summary>Changes when a work is built or the plots appear, so the harbour is drawn again.</summary>
         int WorksKey(HarbourState h) { int k = S.Unlocked("works") ? 1 : 0; foreach (int l in h.works) k = k * 4 + l; return k; }
+        /// <summary>Changes when a milestone is reached or a line bought: the buildings gain their gear.</summary>
+        static int GearKey(HarbourState h)
+        {
+            int k = h.goodsOwned * 31 + Content.MilestonesAt(h.hall); k = k * 11 + Content.MilestonesAt(h.market); k = k * 11 + Content.MilestonesAt(h.dock);
+            foreach (var b in h.berths) k = k * 11 + Content.MilestonesAt(b.level);
+            return k;
+        }
+        int _gearKey;
 
         void Rebuild()
         {
@@ -68,13 +77,14 @@ namespace ReelEmpire.Game
             _moving = new GameObject("Moving").transform; _moving.SetParent(transform, false);
             var h = H;
             _berths = h.berths.Count; _nHaul = h.haulers.Count; _nTruck = h.trucks.Count; _harbour = h.id;
-            _worksKey = WorksKey(h); _lookKey = LookKey();
+            _worksKey = WorksKey(h); _lookKey = LookKey(); _gearKey = GearKey(h);
             Scenery.Paint = Theme.For(h.id).Paint;
             var market = Look("market"); Scenery.MarketLook = market != null ? (Color?)Tint(market) : null; Scenery.MarketHue = market != null ? market.Hue : 0;
             var tower = Look("lighthouse"); Scenery.LighthouseLook = tower != null ? (Color?)Tint(tower) : null; Scenery.LighthouseHue = tower != null ? tower.Hue : 0;
             BuildSea();
             BuildLand();
             for (int i = 0; i < Content.Berths.Length; i++) BuildPier(i, i < h.berths.Count);
+            for (int i = 0; i < h.berths.Count; i++) Facilities.Pier(_static, i, h.berths[i].level);
             for (int i = 0; i < h.berths.Count; i++)
             {
                 _boats.Add(Scenery.Boat(i, _moving).transform);
@@ -93,17 +103,18 @@ namespace ReelEmpire.Game
                 var t = Scenery.Truck(_moving).transform; _trucks.Add(t);
                 var load = t.Find("Load"); _truckLoads.Add(load);
             }
-            Scenery.Hall(_static, h);
-            _rawPile = Scenery.Pile(_static, new Color(0.62f, 0.7f, 0.76f)).transform; _rawPile.position = Layout.HallDoor + new Vector3(-0.5f, 0, 5.5f);
-            _donePile = Scenery.Pile(_static, new Color(0.86f, 0.62f, 0.3f)).transform; _donePile.position = Layout.TruckBay + new Vector3(-3.5f, 0, 5.5f);
+            _belt = Facilities.Hall(_static, h, Theme.For(h.id));
+            Facilities.Quay(_static, h);
+            _rawPile = Scenery.Pile(_static, new Color(0.62f, 0.7f, 0.76f)).transform; _rawPile.position = new Vector3(12.2f, Layout.QuayY, -3.2f);
+            _donePile = Scenery.Pile(_static, new Color(0.86f, 0.62f, 0.3f)).transform; _donePile.position = new Vector3(31.4f, Layout.QuayY, -1.2f);
             _bonus = (Models.Kit("chest", _moving, Vector3.zero, 0, 2.6f) ?? Scenery.Crate(_moving)).transform; _bonus.gameObject.SetActive(false);
-            Scenery.Market(_static);
+            Facilities.Market(_static, h, Theme.For(h.id), Scenery.MarketLook, Scenery.MarketHue);
+            Landmarks.Build(_static, h.id);
             Scenery.Surroundings(_static, h.id);
             BuildLamps();
             var bunting = Look("bunting"); if (bunting != null) Decor.Bunting(_static, Tint(bunting));
             Decor.Build(_static, S.Decor, h.berths.Count);
-            // Life: smoke from the smokehouse, gulls over the water, the lighthouse's beam.
-            Life.Smoke(_static, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY + 11.5f, Layout.HallCentre.z + 14));
+            // Life: gulls over the water, the lighthouse's beam (the hall makes its own smoke).
             if (!Theme.For(h.id).Ice) Life.Gulls(_moving, 5, h.id.GetHashCode());
             if (S.WorkLevel(h, "lamp") > 0) Life.LighthouseBeam(_static, new Vector3(3, Layout.QuayY + 15.2f, 62));      // the lamp is one of the works
         }
@@ -190,7 +201,7 @@ namespace ReelEmpire.Game
         {
             Models.Built("Land", _static, mb =>
             {
-                var th = Theme.For(H.id); var grass = th.Grass; var sand = th.Sand; var stone = Palette.Hex(0xB8AE9C); var planks = Palette.Hex(0xD9A066);
+                var th = Theme.For(H.id); var grass = th.Grass; var sand = th.Sand; var stone = Palette.Hex(0xB8AE9C); var planks = th.Quay;
                 mb.Mat(0.02f);
                 mb.Surf = SurfaceKind.None;
                 mb.Box(new Vector3(310, -2.5f + Layout.QuayY / 2 - 0.02f, 0), new Vector3(600, 5 + Layout.QuayY, 900), grass, grass);       // the meadow
@@ -198,8 +209,8 @@ namespace ReelEmpire.Game
                 // The beach slopes into the water beyond the ends of the quay.
                 foreach (float side in new[] { -1f, 1f })
                     mb.Quad(new Vector3(0, Layout.QuayY, side * 49), new Vector3(0, Layout.QuayY, side * 450), new Vector3(-14, -0.4f, side * 450), new Vector3(-14, -0.4f, side * 49), sand);
-                mb.Surf = SurfaceKind.Planks;
-                mb.Box(new Vector3(Layout.QuayWidth / 2, Layout.QuayY + 0.06f, 0), new Vector3(Layout.QuayWidth, 0.14f, 98), planks);         // the quay's boards
+                mb.Surf = th.QuaySurf;
+                mb.Box(new Vector3(Layout.QuayWidth / 2, Layout.QuayY + 0.06f, 0), new Vector3(Layout.QuayWidth, 0.14f, 98), planks);         // the quay's boards (stone or concrete on some waters)
                 mb.Box(new Vector3(-0.2f, Layout.QuayY - 0.6f, 0), new Vector3(0.5f, 1.5f, 98), Palette.Hex(0x8A5A3C));                       // its face
                 mb.Surf = SurfaceKind.None;
                 mb.Box(new Vector3(47, Layout.QuayY + 0.04f, -5), new Vector3(44, 0.08f, 7.5f), Palette.Hex(0xE6CF9A));                       // the sandy road to market
@@ -238,7 +249,7 @@ namespace ReelEmpire.Game
         {
             var s = S; if (s == null) return;
             var h = H;
-            if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck || WorksKey(h) != _worksKey) Rebuild();
+            if (h.id != _harbour || h.berths.Count != _berths || h.haulers.Count != _nHaul || h.trucks.Count != _nTruck || WorksKey(h) != _worksKey || GearKey(h) != _gearKey) Rebuild();
             else if ((_lookIn -= Time.unscaledDeltaTime) <= 0 || _lookNow) { _lookIn = 0.5f; _lookNow = false; if (LookKey() != _lookKey) Rebuild(); }
             float time = Time.time;
             // Dusk: the lamps come on one after another, and the lighthouse starts to turn.
@@ -311,10 +322,12 @@ namespace ReelEmpire.Game
             }
 
             double cap = s.PileCap(h);
-            _rawPile.localScale = Vector3.one * (h.raw <= 0 ? 0.001f : Mathf.Lerp(0.5f, 2.2f, (float)System.Math.Min(1, h.raw / cap)));
-            _donePile.localScale = Vector3.one * (h.done <= 0 ? 0.001f : Mathf.Lerp(0.5f, 2.2f, (float)System.Math.Min(1, h.done / cap)));
+            _rawPile.localScale = Vector3.one * (h.raw <= 0 ? 0.001f : Mathf.Lerp(0.5f, 1.6f, (float)System.Math.Min(1, h.raw / cap)));
+            _donePile.localScale = Vector3.one * (h.done <= 0 ? 0.001f : Mathf.Lerp(0.5f, 1.8f, (float)System.Math.Min(1, h.done / cap)));
+            if (_belt != null) _belt.Running = h.raw > 0 || HaulersBusy(h);
         }
 
+        static bool HaulersBusy(HarbourState h) { foreach (var c in h.haulers) if (c.busy) return true; return false; }
         static int Fullest(HarbourState h) { int best = 0; for (int i = 1; i < h.berths.Count; i++) if (h.berths[i].crate > h.berths[best].crate) best = i; return best; }
         static float Smooth(float t) { t = Mathf.Clamp01(t); return t * t * (3 - 2 * t); }
         static float Heading(Vector3 d) { return Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg; }
