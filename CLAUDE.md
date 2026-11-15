@@ -92,6 +92,16 @@ platform code, tools and conventions are the same.
   Classic, Variety, Hand-Line, Big Ones; rivals and goals scale by `ScaleOf`; the "other skippers are part of the game"
   line stays). A renovated harbour specialises (`SetFocus`: collecting, processing, voyages, transport; a change
   waits a day; `FocusFx`). Telemetry: Preset.saved/used, Crew.recruited, Focus.chosen, Customer.closer.
+- Meta (`Core/Sim.Meta.cs`, `UI/Hud.Meta.cs`, `World/Decor.cs`): harbour paint (`Cosmetics`, one per part: boats,
+  docks, market, lighthouse, bunting; gems only, never earnings; SEE IT in the shop tries it on the harbour itself via
+  `HarbourView.PreviewId` with the HUD faded out). Each season has a theme (`SeasonThemes`, `SeasonTheme`) whose paint
+  set is the premium reward at tiers 10/20/30 (the last `_gilt`). Collections (`Collections`, COLLECTIONS page from
+  TODAY) and the town (`Town`, by `ordersDone`) put decorations in the harbour (`Decor`, built by `Decor.Build`).
+  A record catch by hand opens a card with SHARE (`Platform/Share.cs` + `Plugins/iOS/ReelEmpireShare.mm`, the share
+  sheet) and MOUNT IT. Voyages chart fishing grounds (`Grounds`, three per route; all three: +25% voyage cash).
+  Chefs' requests (`OrderKind.Hand`: one fish landed by hand, PIN to make it the target) teach a recipe (+10% on that
+  line in that harbour, `Recipes`). Telemetry: Paint.previewed/bought/worn, Collection.claimed, Record.caught/shared/
+  mounted, Voyage.found, Recipe.learned, Target.pinned (from an order).
 - Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change

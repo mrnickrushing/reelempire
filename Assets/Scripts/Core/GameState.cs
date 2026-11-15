@@ -101,6 +101,8 @@ namespace ReelEmpire.Core
         public List<Tie> ties = new List<Tie>();           // customers delivered to (Sim.Depth)
         public List<Preset> presets = new List<Preset>();  // saved fleet set-ups
         public double mendIn; public long autoMended;      // the Boat Shed mending by itself
+        public List<string> cosmetics = new List<string>(), wearing = new List<string>();     // paint owned, and worn per Sim.Parts
+        public List<string> collections = new List<string>(), grounds = new List<string>(), recipes = new List<string>();
         public int tokens;                                 // recruit tokens
         public List<string> derbyKinds = new List<string>();      // kinds landed this derby (the Variety format)
         public long derbyIndex = -1, derbyScore, derbyLastIndex = -1, derbyLastScore, derbyPrizeFor = -1; public int derbyGoals, derbyBest;
@@ -150,6 +152,11 @@ namespace ReelEmpire.Core
             if (cohort < 0 || cohort > 99) cohort = (int)((uint)Guid.NewGuid().GetHashCode() % 100);
             if (pinned == null) pinned = "";
             if (ties == null) ties = new List<Tie>();
+            if (cosmetics == null) cosmetics = new List<string>();
+            if (wearing == null) wearing = new List<string>();
+            if (collections == null) collections = new List<string>();
+            if (grounds == null) grounds = new List<string>();
+            if (recipes == null) recipes = new List<string>();
             if (presets == null) presets = new List<Preset>();
             foreach (var p in presets) { if (p.baits == null) p.baits = new List<int>(); if (p.duty == null) p.duty = new List<string>(); }
             if (derbyKinds == null) derbyKinds = new List<string>();

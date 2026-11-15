@@ -176,6 +176,7 @@ namespace ReelEmpire.Game
             string tag = c.First ? "  <color=#D9631E>NEW SPECIES" + (c.Gems > 0 ? " +" + c.Gems + " gems" : "") + "</color>" : c.Record ? "  <color=#D9631E>YOUR BIGGEST YET</color>" : "";
             Finish(c.Species.Name + "  " + c.Kg.ToString(c.Kg < 10 ? "0.0" : "0") + " kg", RarityName(c.Species.Rarity) + "  ·  +" + Format.Money(c.Cash) + tag, c.Species);
             GameRoot.Instance.Save();
+            if (c.Record) { _cast = Cast.None; ShowRecord(c); }       // a record is an event of its own
         }
 
         static string RarityName(Rarity r) { return r == Rarity.Common ? "Common" : r == Rarity.Uncommon ? "Uncommon" : r == Rarity.Rare ? "Rare" : r == Rarity.Epic ? "Epic" : "Legendary"; }

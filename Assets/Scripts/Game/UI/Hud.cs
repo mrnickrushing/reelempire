@@ -270,7 +270,7 @@ namespace ReelEmpire.Game
             double secs = GameRoot.Instance.AwaySeconds;
             double got = S.AwayEarnings(secs);
             if (got <= 0) { S.CollectAway(secs); GameRoot.Instance.ClearAway(); return; }
-int missed = S.WelcomeHome(secs);
+            int missed = S.WelcomeHome(secs);
             var card = Card(860, 600, missed > 0 ? "WE MISSED YOU!" : "WELCOME BACK");
             var a = Ui.Label("A", card, "Your crews kept working for " + Format.Time(Math.Min(secs, S.AwayCap)) + (secs > S.AwayCap ? " (the docks were full after that)" : "") + (missed > 0 ? ".\nHere are " + missed + " gems to get going again." : ""), 30, Ui.Dim, TextAnchor.UpperCenter, false);
             a.rectTransform.Band(true, -90, 110, 60);
