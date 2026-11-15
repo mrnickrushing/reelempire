@@ -22,7 +22,7 @@ namespace ReelEmpire.Game
             _nav["book"] = NavButton(new Vector2(0, 0), new Vector2(84, 16), "BOOK", Resources.Load<Sprite>("UI/Species/lake_golden_koi"), Color.white, () => Open(Page.Book), false);
             _nav["awards"] = NavButton(new Vector2(0, 0), new Vector2(226, 16), "AWARDS", Ui.Art("star"), Color.white, () => Open(Page.Awards), true);
             _nav["today"] = NavButton(new Vector2(0, 0), new Vector2(368, 16), "TODAY", Ui.Ic("calendar"), Ui.Ink, () => Open(Page.Today), true);
-            _nav["angling"] = NavButton(new Vector2(0, 0), new Vector2(84, 176), "FISH", Resources.Load<Sprite>("UI/Species/lake_northern_pike"), Color.white, OpenAngling, false);
+            _nav["angling"] = NavButton(new Vector2(0, 0), new Vector2(84, 176), "FISH", Resources.Load<Sprite>("UI/Species/lake_largemouth_bass"), Color.white, OpenAngling, false);
             _nav["crew"] = NavButton(new Vector2(1, 0), new Vector2(-368, 16), "CREW", Resources.Load<Sprite>("UI/Faces/crew_brannock"), Color.white, () => Open(Page.Crew), true);
             NavButton(new Vector2(1, 0), new Vector2(-226, 16), "SHOP", Ui.Art("gem"), Color.white, () => Open(Page.Shop), false);
             NavButton(new Vector2(1, 0), new Vector2(-84, 16), "MORE", Ui.Ic("gear"), Ui.Ink, () => Open(Page.Settings), false);
@@ -516,12 +516,12 @@ namespace ReelEmpire.Game
             {
                 var d = Content.Harbours[i]; bool open = i < s.State.harbours.Count; string id = d.Id;
                 var tab = Ui.Button("Tab", p, open ? d.Water.ToUpperInvariant() : "?", id == _bookHarbour ? Ui.Blue : Ui.Off, open ? (Action)(() => { _bookHarbour = id; _listY = 0; if (_list != null) _list.anchoredPosition = Vector2.zero; ShowBook(); }) : null, 26);
-                ((RectTransform)tab.transform).Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(40 + i * 204, -72), new Vector2(196, 66));
+                ((RectTransform)tab.transform).Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(40 + i * 186, -72), new Vector2(180, 66));
             }
             var all = Book.In(_bookHarbour);
             int trophyPct = Mathf.RoundToInt((float)((s.TrophyMult - 1) * 100));
             var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (s.PageComplete(_bookHarbour) ? "  +10% here" : ""), 28, Ui.Ink, TextAnchor.MiddleRight);
-            count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-300, -72), new Vector2(200, 66));
+            count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-44, -140), new Vector2(300, 40));
             var hall = Ui.Button("Hall", p, "TROPHIES" + (trophyPct > 0 ? "  +" + trophyPct + "%" : ""), Ui.Gold, () => OpenHall(null, () => Open(Page.Book)), 24);
             ((RectTransform)hall.transform).Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -72), new Vector2(250, 66));
             // Tiles, six across.
@@ -683,7 +683,7 @@ namespace ReelEmpire.Game
             "Reel Empire: Idle Tycoon is made by Rushing Technologies.\n\n" +
             "<b>Models</b>\nBoats, the truck, trees, rocks, props and the porters: Kenney (kenney.nl), CC0.\n" +
             "Barns, market stalls, docks, fish and sea creatures: Quaternius (quaternius.com), CC0. Lighthouse: MaverickFX, CC0.\n" +
-            "Octopus, Lobster and Eel: Poly by Google, CC BY 3.0. Shrimp: jeremy, CC BY 3.0. (poly.pizza)\n\n" +
+            "Octopus, Lobster, Eels, Trout, Halibut, Kingfish, Seahorse, Shark and Fish: Poly by Google, CC BY 3.0. Shrimp: jeremy, CC BY 3.0. Fish: Kenney, CC0. (poly.pizza)\n\n" +
             "<b>Fonts</b>\nLilita One by Juan Montoreano and Fredoka by Milena Brandão and Hafontia, SIL Open Font License.\n\n" +
             "<b>Sound</b>\nInterface sounds: Kenney, CC0.\n\n<b>Icons</b>\nFont Awesome Free by Fonticons, Inc. (fontawesome.com), CC BY 4.0.\n\n<b>Sky</b>\nPoly Haven, CC0.\n\nThank you for playing.";
 

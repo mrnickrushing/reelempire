@@ -37,6 +37,9 @@ platform code, tools and conventions are the same.
 - Fish: `Tools/art/fish.py fetch|render|species` downloads the fish models (poly.pizza; refuses anything not CC0 / CC
   BY), renders each with `Tools/blender/icon_render.py`, and makes one picture per species (its model's picture,
   hue-shifted by the table in the script) in `Resources/UI/Species/<harbour>_<name>.png` (`Hud.SpeciesPicture`).
+  Memorable fish get their own shape (no pike drawn as a swordfish): trout, kingfish (pike, musky, barracuda, wahoo),
+  halibut and the skate seen from above (`PITCH`), seahorse, parrotfish, eels. Sturgeon, trevally, toothfish and oarfish
+  are cut from one paid Higgsfield sheet (`fish.py ai`, `art-src/free/fish/ai_sheet.png`; regenerating it costs credits).
 - Screens (`UI/Hud.Screens.cs`, round buttons in the bottom corners): BOOK (tiles by harbour; uncaught ones are
   silhouettes with when they bite), AWARDS (claim gems), SHOP (time warps for gems, the one-time purchases, gem packs,
   restore), MORE (sound, music, battery saver, reminders, statistics, Sign in with Apple, name, iCloud, Game Center,
