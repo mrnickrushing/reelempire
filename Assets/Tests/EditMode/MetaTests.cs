@@ -96,6 +96,24 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
+        public void TheTrophyHallKeepsWhenAndHowHeavy()
+        {
+            var s = TestGame.New();
+            Assert.IsNull(s.HallStar);
+            var rare = Book.Species.Where(x => x.Rarity == Rarity.Rare).Take(2).ToList();
+            var epic = Book.Species.First(x => x.Rarity == Rarity.Epic);
+            foreach (var sp in rare.Append(epic)) s.State.species.Add(new SpeciesEntry { id = sp.Id, count = 1, best = 3 });
+            foreach (var sp in rare.Append(epic)) Assert.IsTrue(s.Mount(sp.Id));
+            var note = s.NoteFor(epic.Id);
+            Assert.IsNotNull(note); Assert.AreEqual(3f, note.kg); Assert.AreEqual(s.RealNow(), note.at, 1);
+            Assert.AreEqual(epic.Id, s.HallStar.Id, "the rarest takes the case until one is chosen");
+            Assert.IsTrue(s.SetHallStar(rare[1].Id)); Assert.AreEqual(rare[1].Id, s.HallStar.Id);
+            Assert.IsFalse(s.SetHallStar(Book.Species.First(x => x.Rarity == Rarity.Common).Id), "only a mounted fish");
+            for (int i = 0; i < Sim.HallWalls.Length; i++) s.NextHallWall();
+            Assert.AreEqual(0, s.State.hallWall, "the walls go round");
+        }
+
+        [Test]
         public void ARecordCatchKnowsWhereItStands()
         {
             var s = TestGame.New();

@@ -12,6 +12,11 @@ namespace ReelEmpire.Game
         public Vector3 Focus = new Vector3(18, 0, -2);
         public float Distance = 150f;
         public const float MinDistance = 70f, MaxDistance = 260f;
+        /// <summary>How far the view may pan and zoom: the harbour's by default, a room's while one is visited.</summary>
+        public Vector2 LimX = new Vector2(-45, 60), LimZ = new Vector2(-40, 40), LimD = new Vector2(MinDistance, MaxDistance);
+        public void ResetLimits() { LimX = new Vector2(-45, 60); LimZ = new Vector2(-40, 40); LimD = new Vector2(MinDistance, MaxDistance); }
+        /// <summary>Jumps straight to the view instead of gliding there (a cut to another place).</summary>
+        public void Cut() { _shown = Distance; Place(); }
         float _shown;
 
         public static CameraRig Create()
@@ -42,12 +47,12 @@ namespace ReelEmpire.Game
             var right = Quaternion.Euler(0, Yaw, 0) * Vector3.right;
             var fwd = Quaternion.Euler(0, Yaw, 0) * Vector3.forward;
             Focus -= right * pixels.x * perPixel + fwd * pixels.y * perPixel / Mathf.Sin(Pitch * Mathf.Deg2Rad);
-            Focus.x = Mathf.Clamp(Focus.x, -45, 60);
-            Focus.z = Mathf.Clamp(Focus.z, -40, 40);
+            Focus.x = Mathf.Clamp(Focus.x, LimX.x, LimX.y);
+            Focus.z = Mathf.Clamp(Focus.z, LimZ.x, LimZ.y);
         }
 
         /// <summary>Zoom by a factor (over 1 = closer).</summary>
-        public void Zoom(float factor) { Distance = Mathf.Clamp(Distance / Mathf.Max(0.01f, factor), MinDistance, MaxDistance); }
+        public void Zoom(float factor) { Distance = Mathf.Clamp(Distance / Mathf.Max(0.01f, factor), LimD.x, LimD.y); }
 
         void LateUpdate()
         {

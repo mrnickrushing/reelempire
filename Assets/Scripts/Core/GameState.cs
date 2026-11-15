@@ -50,6 +50,9 @@ namespace ReelEmpire.Core
     [Serializable]
     public sealed class SpeciesEntry { public string id; public int count; public float best; }
 
+    [Serializable]
+    public sealed class TrophyNote { public string id; public double at; public float kg; }
+
     /// <summary>The save: plain fields and lists so JsonUtility can write it. Every class it holds is [Serializable].</summary>
     [Serializable]
     public sealed class GameState
@@ -83,6 +86,9 @@ namespace ReelEmpire.Core
         public double chestAt;          // real time the free crew chest is ready
         public int chestsOpened, chestsSinceEpic;
         public List<string> trophies = new List<string>();
+        public List<TrophyNote> trophyNotes = new List<TrophyNote>();     // when each was mounted, and how heavy
+        public string hallStar = "";    // the fish in the trophy hall's glass case ("": the best)
+        public int hallWall;            // the trophy hall's wall colour
         public int goalKind, goalBerth; public double goalTarget; public long goalFrom;
         public double bonusIn, bonusLeft; public int bonusSeed; public long bonusTaken;
         public long doubleDay = -1;
@@ -145,6 +151,8 @@ namespace ReelEmpire.Core
             if (voyages == null) voyages = new List<Voyage>();
             if (crew == null) crew = new List<CrewState>();
             if (trophies == null) trophies = new List<string>();
+            if (trophyNotes == null) trophyNotes = new List<TrophyNote>();
+            if (hallStar == null) hallStar = "";
             if (seenFeatures == null) seenFeatures = new List<string>();
             if (duty == null) duty = new List<string>();
             while (duty.Count < 4) duty.Add("");

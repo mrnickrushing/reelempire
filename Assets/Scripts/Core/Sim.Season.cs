@@ -25,9 +25,35 @@ namespace ReelEmpire.Core
             var sp = Book.Get(species);
             if (sp == null || !CanMount(sp)) return false;
             State.trophies.Add(species);
+            var e = Entry(species);
+            State.trophyNotes.Add(new TrophyNote { id = species, at = RealNow(), kg = e != null ? e.best : 0 });
             Touch();
             return true;
         }
+
+        /// <summary>When a trophy went up and what it weighed then (null: mounted before notes were kept).</summary>
+        public TrophyNote NoteFor(string species) { return State.trophyNotes.Find(n => n.id == species); }
+
+        public static readonly string[] HallWalls = { "Harbour blue", "Bottle green", "Oxblood", "Whitewash" };
+
+        /// <summary>The fish in the glass case: the one chosen, else the rarest and heaviest mounted. Null: none yet.</summary>
+        public SpeciesDef HallStar
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(State.hallStar) && Mounted(State.hallStar)) return Book.Get(State.hallStar);
+                SpeciesDef best = null; float kg = -1;
+                foreach (var id in State.trophies)
+                {
+                    var sp = Book.Get(id); if (sp == null) continue; var e = Entry(id); float w = e != null ? e.best : 0;
+                    if (best == null || sp.Rarity > best.Rarity || sp.Rarity == best.Rarity && w > kg) { best = sp; kg = w; }
+                }
+                return best;
+            }
+        }
+
+        public bool SetHallStar(string species) { if (!Mounted(species)) return false; State.hallStar = species; Touch(); return true; }
+        public void NextHallWall() { State.hallWall = (State.hallWall + 1) % HallWalls.Length; Touch(); }
 
         public double TrophyMult { get { double m = 1; foreach (var id in State.trophies) { var sp = Book.Get(id); if (sp != null) m += TrophyBonus(sp.Rarity); } return m; } }
         public int TrophiesWaiting { get { int n = 0; foreach (var e in State.species) { var sp = Book.Get(e.id); if (sp != null && CanMount(sp)) n++; } return n; } }

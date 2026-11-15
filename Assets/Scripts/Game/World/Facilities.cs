@@ -376,6 +376,34 @@ namespace ReelEmpire.Game
             Models.Kit("flag", parent, new Vector3(62, y, 18), 0, 8f);
         }
 
+        // ---------------------------------------------------------------- the trophy hall's front
+
+        /// <summary>The trophy hall's front in the harbour: a little museum with columns and a gilded fish over the door.
+        /// Tap it to go in.</summary>
+        public static void Museum(Transform parent, Theme th)
+        {
+            var c = Layout.TrophyHall;
+            Models.Built("Trophy hall", parent, mb =>
+            {
+                Color wall = Palette.Hex(0xE8E0CC), trim = Palette.White, roof = th.Ice ? th.Roof : Palette.Hex(0x2F5F8A);
+                mb.Surf = SurfaceKind.Stone; mb.Box(c + new Vector3(0, 0.25f, 0), new Vector3(10, 0.5f, 8), Palette.Hex(0xC9C1B0));
+                mb.Box(c + new Vector3(0, 0.15f, -4.4f), new Vector3(6, 0.3f, 1), Palette.Hex(0xC9C1B0));      // the steps
+                mb.Surf = SurfaceKind.Brick; mb.Box(c + new Vector3(0, 3, 0.8f), new Vector3(9, 5, 6), wall);
+                mb.Surf = SurfaceKind.RoofTiles; mb.GableRoof(c + new Vector3(0, 5.5f, 0.2f), new Vector3(9.4f, 2.2f, 7.6f), roof, trim, 0.3f);
+                mb.Surf = SurfaceKind.Auto; mb.Paint();
+                for (int i = 0; i < 4; i++) mb.Cylinder(c + new Vector3(-3.3f + i * 2.2f, 0.5f, -3.4f), c + new Vector3(-3.3f + i * 2.2f, 5.5f, -3.4f), 0.32f, 10, trim);
+                mb.Box(c + new Vector3(0, 5.6f, -3.4f), new Vector3(9.4f, 0.4f, 0.8f), trim);
+                mb.Matte();
+                mb.Box(c + new Vector3(0, 1.8f, -2.22f), new Vector3(1.8f, 2.6f, 0.1f), Palette.Hex(0x3A2A20));      // the door
+                mb.Shiny();
+                mb.Sphere(c + new Vector3(0, 6.7f, -3.85f), new Vector3(1.4f, 0.55f, 0.12f), 12, Palette.Hex(0xE8B23A));
+                var t0 = c + new Vector3(-1.3f, 6.7f, -3.85f);
+                mb.Tri(t0, t0 + new Vector3(-0.8f, 0.6f, 0), t0 + new Vector3(-0.8f, -0.6f, 0), Palette.Hex(0xE8B23A));
+                mb.Tri(t0, t0 + new Vector3(-0.8f, -0.6f, 0), t0 + new Vector3(-0.8f, 0.6f, 0), Palette.Hex(0xE8B23A));
+                mb.Matte();
+            });
+        }
+
         // ---------------------------------------------------------------- the quay and the piers
 
         /// <summary>The porters' gear on the quay by the hall door, more of it at each dock milestone.</summary>

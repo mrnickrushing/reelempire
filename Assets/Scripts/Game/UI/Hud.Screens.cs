@@ -520,7 +520,10 @@ namespace ReelEmpire.Game
             }
             var all = Book.In(_bookHarbour);
             int trophyPct = Mathf.RoundToInt((float)((s.TrophyMult - 1) * 100));
-            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (s.PageComplete(_bookHarbour) ? "  +10% here" : "") + (trophyPct > 0 ? "   +" + trophyPct + "%" : ""), 28, Ui.Ink, TextAnchor.MiddleRight);
+            var count = Ui.Label("C", p, s.CaughtIn(_bookHarbour) + " / " + all.Count + (s.PageComplete(_bookHarbour) ? "  +10% here" : ""), 28, Ui.Ink, TextAnchor.MiddleRight);
+            count.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-300, -72), new Vector2(200, 66));
+            var hall = Ui.Button("Hall", p, "TROPHIES" + (trophyPct > 0 ? "  +" + trophyPct + "%" : ""), Ui.Gold, () => OpenHall(null, () => Open(Page.Book)), 24);
+            ((RectTransform)hall.transform).Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -72), new Vector2(250, 66));
             // Tiles, six across.
             const int cols = 6; const float w = 236, hgt = 250;
             for (int i = 0; i < all.Count; i++)
@@ -540,7 +543,7 @@ namespace ReelEmpire.Game
                 if (got && s.CanMount(sp))
                 {
                     string sid = sp.Id; int pct = Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100));
-                    var mb = Ui.Button("Mount", tile.transform, "MOUNT  +" + pct + "%", Ui.Gold, () => { if (S.Mount(sid)) { Sfx.Play("star", 0.8f); Toast("Mounted in the trophy hall: +" + pct + "% income everywhere"); GameRoot.Instance.Save(); ShowBook(); } }, 22);
+                    var mb = Ui.Button("Mount", tile.transform, "MOUNT  +" + pct + "%", Ui.Gold, () => MountAndShow(Book.Get(sid), () => Open(Page.Book)), 22);
                     ((RectTransform)mb.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(w - 20, 50));
                     line = "";
                 }

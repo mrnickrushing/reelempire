@@ -213,6 +213,7 @@ namespace ReelEmpire.Game
         /// <summary>A tap on the open view: the nearest boat, hauler or truck does its work; a sign opens its sheet.</summary>
         public void TapWorld(Vector2 screen)
         {
+            if (TrophyHall.Open) { TapHall(screen); return; }
             var view = HarbourView.Instance; if (view == null) return;
             var cam = CameraRig.Instance.Cam; var h = H;
             float best = 95f * Screen.height / 940f; best *= best;
@@ -228,6 +229,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < h.haulers.Count; i++) consider(view.HaulerAt(i) - Vector3.up * 1.2f, TapDock);
             for (int i = 0; i < h.trucks.Count; i++) consider(view.TruckAt(i) - Vector3.up * 1.6f, TapMarket);
             if (S.BonusAfloat) consider(view.BonusAt, TakeBonus);
+            consider(view.TrophyHallAt, () => OpenHall());
             if (act != null) act(); else CloseSheet();
         }
 

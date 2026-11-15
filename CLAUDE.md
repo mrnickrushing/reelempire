@@ -112,6 +112,13 @@ platform code, tools and conventions are the same.
   finish, market roof, quay surface, snow) and has a landmark (`World/Landmarks.cs` at `Layout.Landmark`/`WaterMark`,
   kept clear of trees and rocks): boathouse, water mill (`Spin`), cottages and crab pots, stilt huts and lanterns,
   container crane and stacks, timber church and stockfish racks.
+- Trophy hall (`World/TrophyHall.cs`, `UI/Hud.Trophy.cs`): a little museum in every harbour (`Facilities.Museum` at
+  `Layout.TrophyHall`; tap it, the Book's TROPHIES button, or MOUNT IT on a record/rare card) opens a room built at
+  `TrophyHall.Origin`, turned to the camera's yaw. Every mounted fish hangs on a board (rarity frame, brass plate with
+  weight and the day it went up from `State.trophyNotes`; older mounts say "an old catch"), the just-mounted one framed
+  gold with NEW; `Sim.HallStar` stands in the glass case (tap a board to change it); WALLS cycles `Sim.HallWalls`.
+  `CameraRig.LimX/LimZ/LimD` are swapped for the room and restored on BACK. Species pictures are square with empty
+  space above and below the fish, so they are sized by width (`TrophyHall.Fit`).
 - Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change
