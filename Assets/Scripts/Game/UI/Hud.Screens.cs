@@ -552,7 +552,7 @@ void ShowToday()
             y = Entry(y, Ui.Art("star"), Color.white, "Enjoying Reel Empire?", "Rate it on the App Store.", "RATE", Ui.Gold, OpenStoreReview);
             y = Entry(y, Ui.Ic("lock"), Ui.Ink, "Privacy policy", "What the game keeps and what it never does.", "READ", Ui.Blue, () => Application.OpenURL(PrivacyUrl));
             y = Entry(y, Ui.Ic("bell"), Ui.Ink, "Help and support", "Questions, problems, a purchase that went wrong.", "OPEN", Ui.Blue, () => Application.OpenURL(SupportUrl));
-            y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Credits", "The free models, fonts and sounds this game is built with.", "SHOW", Ui.Blue, ShowCredits);
+            y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Credits", "The free models, fonts, icons and sounds this game is built with.", "SHOW", Ui.Blue, ShowCredits);
             y = Entry(y, Ui.Ic("trash"), Ui.Ink, "Delete account and start over", "Erases every harbour on this device and in your iCloud, and signs you out. Purchases made once can be restored.", "DELETE", Ui.Coral, AskDelete);
             var v = Ui.Label("V", _list, "Reel Empire: Idle Tycoon  " + Application.version + "  ·  Rushing Technologies", 24, Ui.Dim, TextAnchor.MiddleCenter, false); v.rectTransform.Band(true, y, 50);
             EndList(-y + 60);
@@ -597,12 +597,13 @@ void ShowToday()
             "Barns, market stalls, docks, fish and sea creatures: Quaternius (quaternius.com), CC0. Lighthouse: MaverickFX, CC0.\n" +
             "Octopus, Lobster and Eel: Poly by Google, CC BY 3.0. Shrimp: jeremy, CC BY 3.0. (poly.pizza)\n\n" +
             "<b>Fonts</b>\nLilita One by Juan Montoreano and Fredoka by Milena Brandão and Hafontia, SIL Open Font License.\n\n" +
-            "<b>Sound</b>\nInterface sounds: Kenney, CC0.\n\n<b>Sky</b>\nPoly Haven, CC0.\n\nThank you for playing.";
+            "<b>Sound</b>\nInterface sounds: Kenney, CC0.\n\n<b>Icons</b>\nFont Awesome Free by Fonticons, Inc. (fontawesome.com), CC BY 4.0.\n\n<b>Sky</b>\nPoly Haven, CC0.\n\nThank you for playing.";
 
         void ShowCredits()
         {
-            var card = Card(1100, 760, "CREDITS");
-            var b = Ui.Label("B", card, CreditsText, 28, Ui.Ink, TextAnchor.UpperLeft, false); b.rectTransform.Fill(); b.rectTransform.offsetMin = new Vector2(50, 150); b.rectTransform.offsetMax = new Vector2(-50, -90);
+            var card = Card(1400, 860, "CREDITS");
+            var b = Ui.Label("B", card, CreditsText, 28, Ui.Ink, TextAnchor.UpperLeft, false); b.rectTransform.Fill(); b.rectTransform.offsetMin = new Vector2(56, 150); b.rectTransform.offsetMax = new Vector2(-56, -90);
+            b.resizeTextForBestFit = true; b.resizeTextMinSize = 16; b.resizeTextMaxSize = 28;      // it all fits above CLOSE, whatever the screen
             var ok = Ui.Button("Ok", card, "CLOSE", Ui.Blue, CloseCard, 40); ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 36), new Vector2(360, 104));
         }
     }

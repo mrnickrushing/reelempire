@@ -32,6 +32,10 @@ Reel Empire: Idle Tycoon is made by Rushing Technologies. It uses these free wor
 
 - Interface clicks, chimes and coin sounds: **Kenney** interface sound packs.
 
+## Icons (CC BY 4.0)
+
+- The menu icons in `Assets/Resources/UI/Ic`: **Font Awesome Free** by Fonticons, Inc. (fontawesome.com).
+
 ## Sky (CC0)
 
 - The HDRI sky: **Poly Haven**.
