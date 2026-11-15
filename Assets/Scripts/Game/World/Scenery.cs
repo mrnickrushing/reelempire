@@ -195,6 +195,7 @@ namespace ReelEmpire.Game
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
                 if (Mathf.Abs(x - Layout.ChartRoom.x) < 5 && Mathf.Abs(z - Layout.ChartRoom.z) < 5) continue;       // the chart room
                 if (new Vector2(x - Layout.Landmark.x, z - Layout.Landmark.z).magnitude < Layout.LandmarkRadius) continue;     // the landmark
+                if (Mathf.Abs(x - Layout.TrophyHall.x) < 8 && Mathf.Abs(z - Layout.TrophyHall.z) < 7) continue;                // the trophy hall
                 if (Mathf.Abs(x - 36) < 8 && Mathf.Abs(z - 17) < 8 || Mathf.Abs(x - 20) < 8 && Mathf.Abs(z + 34) < 8 || Mathf.Abs(x - 52) < 6 && Mathf.Abs(z + 53) < 6) continue;   // the boat shed and net loft plots
                 if (farm && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
                 if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp

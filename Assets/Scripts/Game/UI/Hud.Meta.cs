@@ -63,7 +63,7 @@ namespace ReelEmpire.Game
             {
                 if (_tryHidden.Count > 0) return;
                 var hide = new System.Collections.Generic.List<Transform> { _signs };
-                foreach (Transform c in _root) if (c != _tryBar && c != _modal && c != _screenRoot) hide.Add(c);
+                foreach (Transform c in _root) if (c != _tryBar && c != _hallBar && c != _modal && c != _screenRoot) hide.Add(c);
                 foreach (var t in hide)
                 {
                     var g = t.GetComponent<CanvasGroup>(); if (g == null) g = t.gameObject.AddComponent<CanvasGroup>();
@@ -183,7 +183,7 @@ namespace ReelEmpire.Game
                 int pct = Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100));
                 var mount = Ui.Button("Mount", row, "MOUNT IT  +" + pct + "%", Ui.Gold, () =>
                 {
-                    if (S.Mount(sp.Id)) { Telemetry.Log("Record.mounted", ("Record.species", sp.Id)); Sfx.Play("star", 0.8f); Toast("Mounted in the trophy hall: +" + pct + "% income everywhere"); GameRoot.Instance.Save(); CloseCard(); }
+                    MountAndShow(sp);
                 }, 30);
                 ((RectTransform)mount.transform).Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-40, 0), new Vector2(360, 96));
             }

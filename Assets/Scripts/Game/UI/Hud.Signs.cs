@@ -292,7 +292,7 @@ namespace ReelEmpire.Game
             var n = Ui.Label("N", card, sp.Name, 52, Ui.Ink); n.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 196), new Vector2(700, 64));
             string extra = first ? "New in the book  ·  +" + Content.RarityGems[(int)sp.Rarity] + " gems" : "x" + Content.RarityValue[(int)sp.Rarity] + " for this trip";
             var w = Ui.Label("W", card, kg.ToString(kg < 10 ? "0.0" : "0") + " kg  ·  " + extra, 30, Ui.Dim); w.rectTransform.Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 152), new Vector2(700, 40));
-            var ok = Ui.Button("Ok", card, S.CanMount(sp) ? "MOUNT IT  +" + Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100)) + "%" : "WHAT A FISH!", Ui.Green, () => { if (S.Mount(sp.Id)) Toast("Mounted in the trophy hall"); CloseCard(); GameRoot.Instance.Save(); }, 40);
+            var ok = Ui.Button("Ok", card, S.CanMount(sp) ? "MOUNT IT  +" + Mathf.RoundToInt((float)(Sim.TrophyBonus(sp.Rarity) * 100)) + "%" : "WHAT A FISH!", Ui.Green, () => { if (S.CanMount(sp)) MountAndShow(sp); else { CloseCard(); GameRoot.Instance.Save(); } }, 40);
             ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 34), new Vector2(460, 108));
         }
 

@@ -110,6 +110,7 @@ namespace ReelEmpire.Game
             _bonus = (Models.Kit("chest", _moving, Vector3.zero, 0, 2.6f) ?? Scenery.Crate(_moving)).transform; _bonus.gameObject.SetActive(false);
             Facilities.Market(_static, h, Theme.For(h.id), Scenery.MarketLook, Scenery.MarketHue);
             Landmarks.Build(_static, h.id);
+            Facilities.Museum(_static, Theme.For(h.id));
             Scenery.Surroundings(_static, h.id);
             BuildLamps();
             var bunting = Look("bunting"); if (bunting != null) Decor.Bunting(_static, Tint(bunting));
@@ -343,6 +344,7 @@ namespace ReelEmpire.Game
 
         // ---- what the interface points at ----
 
+        public Vector3 TrophyHallAt { get { return Layout.TrophyHall + new Vector3(0, 3, 0); } }
         public Vector3 BonusAt { get { return _bonus != null ? _bonus.position : Vector3.zero; } }
         public Vector3 BoatAt(int berth) { return berth < _boats.Count ? _boats[berth].position + Vector3.up * 2.5f : Layout.Moored(berth); }
         public Vector3 BerthSign(int berth) { return new Vector3(0.8f, Layout.QuayY + 0.2f, Layout.BerthZ(berth) + 3.4f); }

@@ -37,6 +37,8 @@ namespace ReelEmpire.Game
         /// <summary>Where each water's landmark stands: on the rise north of the hall, and in the shallows past the quay's north end.</summary>
         public static readonly Vector3 Landmark = new Vector3(27, QuayY, 39), WaterMark = new Vector3(-17, 0, 58);
         public const float LandmarkRadius = 14, WaterMarkRadius = 10;
+        /// <summary>The trophy hall's front door in the harbour (tap it to go in).</summary>
+        public static readonly Vector3 TrophyHall = new Vector3(51, QuayY, 33);
     }
 
     /// <summary>What makes each water look like itself: its ground, its sea and what grows there.</summary>
