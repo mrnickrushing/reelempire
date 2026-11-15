@@ -121,84 +121,12 @@ namespace ReelEmpire.Game
             return go;
         }
 
-        public static float HallYaw = -90, MarketYaw = -90;
         /// <summary>How much the industrial kit's dark buildings are brightened, a little toward warm.</summary>
         static readonly Color Lift = new Color(1.55f, 1.5f, 1.45f);
         /// <summary>The colour this harbour's barns are painted, as a turn of the kit's red (set before the harbour is built).</summary>
         public static float Paint;
         /// <summary>Paint on the market and the lighthouse (null: their own colours).</summary>
         public static Color? MarketLook, LighthouseLook; public static float MarketHue, LighthouseHue;
-
-        public static void Hall(Transform parent, HarbourState h)
-        {
-            // The hall: a big red barn with its doors on the quay, the smokehouse silo behind it.
-            var hall = Models.Kit("big_barn", parent, new Vector3(Layout.HallCentre.x, Layout.QuayY, Layout.HallCentre.z), HallYaw, 17f, Lift, Paint);
-            if (hall != null)
-            {
-                Models.Kit("silo_house", parent, new Vector3(Layout.HallCentre.x + 3, Layout.QuayY, Layout.HallCentre.z + 14), HallYaw, 11f, Lift, Paint);
-                Models.Kit("container_red", parent, new Vector3(Layout.HallCentre.x + 10, Layout.QuayY, Layout.HallCentre.z + 12), 0, 6f);
-                Models.Kit("pallet", parent, new Vector3(Layout.HallCentre.x + 11, Layout.QuayY, Layout.HallCentre.z + 7), 20, 2.2f);
-                for (int i = 0; i < 4; i++) Models.Kit("barrel", parent, Layout.HallDoor + new Vector3(-1.2f + i % 2 * 1.3f, 0, -7.5f - i / 2 * 1.3f), i * 40, 1.3f);
-                return;
-            }
-            Models.Built("Hall", parent, mb =>
-            {
-                Vector3 c = Layout.HallCentre, s = Layout.HallSize;
-                Color wall = Palette.Hex(0xB9483A), trim = Palette.White, roof = Palette.Hex(0x4A5560);
-                mb.Surf = SurfaceKind.Siding;
-                mb.Box(c + new Vector3(0, s.y * 0.3f, 0), new Vector3(s.x, s.y * 0.6f, s.z), wall);
-                mb.Surf = SurfaceKind.Tin;
-                mb.GableRoof(c + new Vector3(0, s.y * 0.6f, 0), new Vector3(s.x, s.y * 0.4f, s.z), roof, wall, 0.6f);
-                mb.Surf = SurfaceKind.Auto;
-                // The big door onto the quay and the bay onto the yard.
-                mb.Box(new Vector3(c.x - s.x / 2 - 0.05f, c.y + 2, 0), new Vector3(0.12f, 4, 6), Palette.Hex(0x2B2F36));
-                mb.Box(new Vector3(c.x - s.x / 2 - 0.1f, c.y + 4.15f, 0), new Vector3(0.14f, 0.3f, 6.6f), trim);
-                mb.Box(new Vector3(c.x + s.x / 2 + 0.05f, c.y + 2, -5), new Vector3(0.12f, 4, 5), Palette.Hex(0x2B2F36));
-                mb.Lit();
-                for (float z = -9; z <= 9; z += 4.5f)
-                    if (Mathf.Abs(z) > 3.5f) mb.Box(new Vector3(c.x - s.x / 2 - 0.05f, c.y + 3.3f, z), new Vector3(0.1f, 1.3f, 1.8f), new Color(0.75f, 0.85f, 0.9f, 0));
-                mb.Matte();
-                // The smokehouse chimney.
-                mb.Surf = SurfaceKind.Brick;
-                mb.Box(c + new Vector3(4, s.y * 0.95f, 7), new Vector3(1.6f, s.y * 0.7f, 1.6f), Palette.Hex(0x8A4A3A));
-                mb.Surf = SurfaceKind.Auto;
-            });
-        }
-
-        public static void Market(Transform parent)
-        {
-            // The market: a barn for the fishmonger, stalls and stands along the road in front of it.
-            Color lift = MarketLook ?? Lift; float hue = MarketLook != null ? MarketHue : Paint;
-            var market = Models.Kit("barn", parent, new Vector3(Layout.MarketCentre.x + 5, Layout.QuayY, Layout.MarketCentre.z + 3), MarketYaw, 14f, Lift, Paint);
-            if (market != null)
-            {
-                Models.Kit("market_stalls", parent, new Vector3(Layout.MarketCentre.x - 7, Layout.QuayY, Layout.MarketCentre.z + 7), 90, 12f, lift, hue);
-                Models.Kit("market_stalls_b", parent, new Vector3(Layout.MarketCentre.x - 2, Layout.QuayY, Layout.MarketCentre.z - 17), 0, 11f, lift, hue);
-                Models.Kit("market_stand", parent, new Vector3(Layout.MarketCentre.x - 9, Layout.QuayY, Layout.MarketCentre.z - 3), 90, 4.2f, lift, hue);
-                Models.Kit("bucket_fish", parent, new Vector3(Layout.MarketCentre.x - 9.5f, Layout.QuayY, Layout.MarketCentre.z + 1), 30, 1.6f);
-                Models.Kit("flag", parent, new Vector3(Layout.MarketCentre.x - 10, Layout.QuayY, Layout.MarketCentre.z + 16), 0, 8f);
-                return;
-            }
-            Models.Built("Market", parent, mb =>
-            {
-                Vector3 c = Layout.MarketCentre;
-                Color wall = Palette.Hex(0xE8DCC0), roof = Palette.Hex(0x2F7A8A);
-                mb.Surf = SurfaceKind.Brick;
-                mb.Box(c + new Vector3(2, 3, 0), new Vector3(12, 6, 20), wall);
-                mb.Surf = SurfaceKind.RoofTiles;
-                mb.HipRoof(c + new Vector3(2, 6, 0), new Vector3(12, 3.2f, 20), roof, 0.8f);
-                mb.Surf = SurfaceKind.Auto;
-                // Awnings along the front, striped by stall.
-                Color[] stripes = { Palette.Hex(0xD9483A), Palette.Hex(0xF2F0E6), Palette.Hex(0x2F6FA8), Palette.Hex(0xE2B13C) };
-                for (int i = 0; i < 4; i++)
-                {
-                    float z = c.z - 7.5f + i * 5;
-                    mb.Box(new Vector3(c.x - 5.4f, c.y + 3.2f, z), new Vector3(3, 0.16f, 4.4f), stripes[i]);
-                    mb.Box(new Vector3(c.x - 5.6f, c.y + 0.6f, z), new Vector3(2, 1.2f, 3.8f), Palette.Wood, Palette.Hex(0x9FB4C4));
-                    mb.Cylinder(new Vector3(c.x - 6.8f, c.y, z - 2.1f), new Vector3(c.x - 6.8f, c.y + 3.2f, z - 2.1f), 0.07f, 6, Palette.Steel);
-                }
-            });
-        }
 
         public static void Surroundings(Transform parent, string harbour)
         {
@@ -266,6 +194,7 @@ namespace ReelEmpire.Game
                 if (x > 52 && x < 92 && Mathf.Abs(z - 3) < 20) continue;                        // the market
                 if (x < 16 && Mathf.Abs(z) < 50) continue;                                      // the quay
                 if (Mathf.Abs(x - Layout.ChartRoom.x) < 5 && Mathf.Abs(z - Layout.ChartRoom.z) < 5) continue;       // the chart room
+                if (new Vector2(x - Layout.Landmark.x, z - Layout.Landmark.z).magnitude < Layout.LandmarkRadius) continue;     // the landmark
                 if (Mathf.Abs(x - 36) < 8 && Mathf.Abs(z - 17) < 8 || Mathf.Abs(x - 20) < 8 && Mathf.Abs(z + 34) < 8 || Mathf.Abs(x - 52) < 6 && Mathf.Abs(z + 53) < 6) continue;   // the boat shed and net loft plots
                 if (farm && x > 43 && x < 71 && z > -39 && z < -17) continue;               // the wheat field
                 if (x > 30 && x < 50 && z > -56 && z < -40) continue;                           // the camp
@@ -282,6 +211,7 @@ namespace ReelEmpire.Game
             for (int i = 0; i < 22; i++)
             {
                 float z = (i % 2 == 0 ? 1 : -1) * R(49, 80), x = R(-9, 5);
+                if (new Vector2(x - Layout.WaterMark.x, z - Layout.WaterMark.z).magnitude < Layout.WaterMarkRadius) continue;
                 Models.Kit(Rk(i % 3 == 0 ? "rock_c" : i % 3 == 1 ? "rock_b" : "rocks_a"), parent, new Vector3(x, x < 0 ? -0.6f : y - 0.3f, z), R(0, 360), R(3f, 7f));
             }
             // Buoys marking the channel, and lily pads in the shallows of the lake.

@@ -102,6 +102,16 @@ platform code, tools and conventions are the same.
   Chefs' requests (`OrderKind.Hand`: one fish landed by hand, PIN to make it the target) teach a recipe (+10% on that
   line in that harbour, `Recipes`). Telemetry: Paint.previewed/bought/worn, Collection.claimed, Record.caught/shared/
   mounted, Voyage.found, Recipe.learned, Target.pinned (from an order).
+- Buildings that explain the chain (`World/Facilities.cs`): the fish hall (belt from the quay through the open door,
+  `Belt`, running while there's fish to work; outside it the gear of each line owned: ice tables, cleaning trough,
+  fillet shed, smokehouse with smoking chimneys, cannery tanks and tins; a fish painted on the roof slope that faces the
+  water), the fish auction (boxes on the floor, buyers, the auctioneer's stand, price board), and milestone gear on the
+  hall (awnings 10, vents 25, hoist 50, gilded fish 100, pennants 200), market (buyers, lights, van, clock, bunting),
+  quay (hand trucks, box stacks, crane, weigh station) and each pier (boxes, net rack, davit, lamp, pennant).
+  `HarbourView.GearKey` redraws when one is reached. Each water builds its own way (`Theme`: wall/roof colour and
+  finish, market roof, quay surface, snow) and has a landmark (`World/Landmarks.cs` at `Layout.Landmark`/`WaterMark`,
+  kept clear of trees and rocks): boathouse, water mill (`Spin`), cottages and crab pots, stilt huts and lanterns,
+  container crane and stacks, timber church and stockfish racks.
 - Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change
