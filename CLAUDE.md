@@ -3,7 +3,7 @@
 A fishing harbour idle tycoon for iPhone and iPad (landscape), Unity **6000.0.85f1**, URP. Rushing Technologies.
 Design: `docs/DESIGN.md`; the genre research behind it: `docs/RESEARCH.md`; the free models to use: `docs/ASSETS.md`.
 Original names and places only, nothing recreated from an existing game. Free models only (CC0 first; CC BY credited
-in `CREDITS.md` and in the game). **No ads, ever.** The project was started from Crosswind (`~/crosswind`): the
+in `CREDITS.md` and in the game). **Ads are rewarded only, never forced**: one plays only when the player taps for it. The project was started from Crosswind (`~/crosswind`): the
 platform code, tools and conventions are the same.
 
 - `Assets/Scripts/Core` (no Unity dependency): `Content` (berths, goods, harbours, tuning), `Content.Species` (`Book`:
@@ -58,7 +58,7 @@ platform code, tools and conventions are the same.
 - Crew (`Core/Sim.Crew.cs`, the CREW page): twelve cards, three per stage, from the crew chest (free every 4 h or 40
   gems; odds 70/22/7/1 printed on the page; a sure Epic by the tenth chest). One card stands duty per stage
   (`Assign`, `State.duty`) and multiplies it through `Fx`; copies raise its level (to 10). Portraits are the Kenney
-  mini characters rendered by `art-src/free/faces/crew_jobs.json`. No active abilities yet.
+  mini characters rendered by `art-src/free/faces/crew_jobs.json`. Each hand on duty has a skill (`Sim.Skills`).
 - Longer rhythms (`Core/Sim.Season.cs`): the trophy hall (`Mount` a caught Rare / Epic / Legendary from its BOOK tile:
   +1% / 3% / 8% income everywhere, `TrophyMult`), the season pass (four weeks, 30 tiers, `AddSeasonPoints` from levels,
   species, tasks, voyages and derby goals; `reelempire.season` buys the premium track of the season running), and the
@@ -71,8 +71,18 @@ platform code, tools and conventions are the same.
   after three days away, `Unlocked(feature)` (nav buttons and TODAY sections appear as the harbour grows; news shown
   once, `State.seenFeatures`), `StarterOfferDue` (never on the first day), `Affords`. Feel: `CoinBurst`, `Haptics`
   (`Plugins/iOS/ReelEmpireHaptics.mm`), `HoldButton` on UPGRADE, `BigCatch`. Reminders: two at most, none between
-  22:00 and 08:00. Don't add: ads, energy, pay-only walls, punishing streaks, offers at launch, fake players.
-- Not done yet (see DESIGN.md milestones): crew abilities, the privacy and support pages, App Store Connect setup.
+  22:00 and 08:00. Don't add: forced or interstitial ads, energy, pay-only walls, punishing streaks, offers at launch, fake players.
+- Clarity (`Core/Sim.Clarity.cs`, `UI/Hud.Target.cs`): every upgrade says what it does for the whole harbour
+  (`UpgradeVerdict`: "+X% for the whole harbour" or what holds it back, measured by `PaceAfter`), the sheet's
+  `LimitNote` (boats, porters and market set how MANY sell; the hall sets VALUE), the hall's lines with their pace and
+  BEST NOW (`PaceWithGoods`, `BestGoods`), a skill's gain before it is used (`SkillGain`, the `_probe` stage), a pinned
+  species from its BOOK tile (`Pin`, `Plan`: where, when, bait and the next useful step; the TARGET card under the goal,
+  DO IT puts the bait on or sails there; let go once landed), what a purchase would be worth here (`PurchaseBenefit`, the
+  shop's green line), and the starter pack's timing test (`StarterVariant` by `State.cohort`: "later_day" or "chain",
+  offered once a line has run and an order is filled). Settings' "Labels over the harbour" FEWER shows only the slowest
+  part, the open sheet and the best upgrade for its price (PlayerPrefs `re_compact_signs`). Telemetry: Target.pinned/
+  applied/landed, Skill.used, Starter.offered, Labels.changed.
+- Not done yet (see DESIGN.md milestones): the privacy and support pages, App Store Connect setup.
 
 ## Verify every change
 

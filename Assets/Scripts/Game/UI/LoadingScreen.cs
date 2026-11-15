@@ -28,7 +28,7 @@ namespace ReelEmpire.Game
             "A new dock lands eight times what the one before it does.",
             "The docks hold two hours of work while you're away. Come back before they fill.",
             "Buy NEXT to go straight to the next milestone level.",
-            "No ads here. Ever.",
+            "No forced ads: one only plays when you tap for it.",
         };
 
         CanvasGroup _group;

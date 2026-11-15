@@ -74,7 +74,7 @@ namespace ReelEmpire.Game
             const float G = 8;
             p.y = Mathf.Clamp(p.y, d + G, H - u - G);       // on the screen first, then out from under what is fixed
             // Top: push down (or sideways out of a corner). x0, x1 and the lowest y the block reaches.
-            p = Top(p, 0, 490, H - 392, true, l, r, u, G);
+            p = Top(p, 0, 490, H - (_targetCard != null && _targetCard.gameObject.activeSelf ? 500 : 392), true, l, r, u, G);
             p = Top(p, W / 2 - 335, W / 2 + 335, H - 162, null, l, r, u, G);
             p = Top(p, W - 390, W, H - 270, false, l, r, u, G);
             // Bottom: push up.
@@ -105,9 +105,10 @@ namespace ReelEmpire.Game
             return p;
         }
 
-        void SetSign(Sign s, Vector3 world, string text, bool canBuy)
+        void SetSign(Sign s, Vector3 world, string text, bool canBuy, bool show = true)
         {
-            Put(s.Rt, world, true, true);
+            Put(s.Rt, world, show, true);
+            if (!show) return;
             s.Label.text = text;
             s.Up.color = canBuy ? Ui.Green : Ui.Off;
         }
@@ -117,14 +118,20 @@ namespace ReelEmpire.Game
             var s = S; var h = H; var view = HarbourView.Instance;
             if (view == null) return;
             if (_signBerths != h.berths.Count) RebuildSigns();
+            PickBestSign();
+            // Fewer labels: only the slowest part, what the sheet has open, and what the cash takes to its next milestone.
+            var neck = s.Bottleneck(h); int weakBerth = 0;
+            for (int i = 1; i < h.berths.Count; i++) if (s.BerthRate(h, i) < s.BerthRate(h, weakBerth)) weakBerth = i;
             for (int i = 0; i < h.berths.Count; i++)
             {
-                SetSign(_berthSigns[i], view.BerthSign(i), h.berths[i].level.ToString(), s.Affordable(h, Stage.Berth, i) > 0);
-                _berthSigns[i].Back.color = s.Worn(h, i) ? new Color(1f, 0.78f, 0.72f) : Color.white;       // a worn hull shows on its sign
+                SetSign(_berthSigns[i], view.BerthSign(i), h.berths[i].level.ToString(), s.Affordable(h, Stage.Berth, i) > 0, ShowSign(Stage.Berth, i, neck == Stage.Berth && i == weakBerth));
+                _berthSigns[i].Back.color = s.Worn(h, i) ? new Color(1f, 0.78f, 0.72f) : CompactSigns && neck == Stage.Berth && i == weakBerth ? new Color(1f, 0.86f, 0.8f) : Color.white;       // a worn hull shows on its sign
             }
-            SetSign(_dockSign, view.DockSign, h.dock.ToString(), s.Affordable(h, Stage.Dock) > 0);
-            SetSign(_hallSign, view.HallSign, h.hall.ToString(), s.Affordable(h, Stage.Hall) > 0);
-            SetSign(_marketSign, view.MarketSign, h.market.ToString(), s.Affordable(h, Stage.Market) > 0);
+            SetSign(_dockSign, view.DockSign, h.dock.ToString(), s.Affordable(h, Stage.Dock) > 0, ShowSign(Stage.Dock, 0, neck == Stage.Dock));
+            SetSign(_hallSign, view.HallSign, h.hall.ToString(), s.Affordable(h, Stage.Hall) > 0, ShowSign(Stage.Hall, 0, false));
+            SetSign(_marketSign, view.MarketSign, h.market.ToString(), s.Affordable(h, Stage.Market) > 0, ShowSign(Stage.Market, 0, neck == Stage.Market));
+            if (CompactSigns) { _dockSign.Back.color = neck == Stage.Dock ? new Color(1f, 0.86f, 0.8f) : Color.white; _marketSign.Back.color = neck == Stage.Market ? new Color(1f, 0.86f, 0.8f) : Color.white; }
+            else { _dockSign.Back.color = _hallSign.Back.color = _marketSign.Back.color = Color.white; }
             UpdateWorkSigns();
             // The order board by the market stalls: gold when something is ready to hand over.
             bool orders = s.Unlocked("orders");
@@ -163,6 +170,39 @@ namespace ReelEmpire.Game
             Put(_tapBubbles[n], view.TruckAt(Mathf.Max(0, idleTruck)) + Vector3.up * 3f, marketIdle);
             if (marketIdle) _tapBubbles[n].anchoredPosition += new Vector2(0, bob);
         }
+
+        /// <summary>Whether a stage's level sign shows: always, or with fewer labels only when it matters (the slowest
+        /// part, what the sheet has open, and the one upgrade that lifts the whole harbour most for its price).</summary>
+        bool ShowSign(Stage stage, int berth, bool slowest)
+        {
+            if (!CompactSigns) return true;
+            if (_sheetOpen && _sheetStage == stage && (stage != Stage.Berth || _sheetBerth == berth)) return true;
+            if (slowest) return true;
+            return _bestStage == stage && (stage != Stage.Berth || _bestBerth == berth);
+        }
+
+        Stage? _bestStage; int _bestBerth; float _bestIn;
+
+        /// <summary>Once a second: the affordable upgrade with the biggest gain for the whole harbour per coin.</summary>
+        void PickBestSign()
+        {
+            if ((_bestIn -= Time.unscaledDeltaTime) > 0) return;
+            _bestIn = 1f; _bestStage = null;
+            if (!CompactSigns) return;
+            var s = S; var h = H; double best = 0;
+            void Try(Stage st, int b)
+            {
+                if (s.Affordable(h, st, b) <= 0) return;
+                double gain; s.UpgradeVerdict(st, b, 1, out gain);
+                double v = gain / Math.Max(1, s.LevelCost(h, st, b, 1));
+                if (gain >= 0.005 && v > best) { best = v; _bestStage = st; _bestBerth = b; }
+            }
+            for (int i = 0; i < h.berths.Count; i++) Try(Stage.Berth, i);
+            Try(Stage.Dock, 0); Try(Stage.Hall, 0); Try(Stage.Market, 0);
+        }
+
+        /// <summary>Fewer labels over the harbour (a setting kept on the device).</summary>
+        public static bool CompactSigns { get { return PlayerPrefs.GetInt("re_compact_signs", 0) == 1; } set { PlayerPrefs.SetInt("re_compact_signs", value ? 1 : 0); PlayerPrefs.Save(); } }
 
         static bool CratesWaiting(HarbourState h) { foreach (var b in h.berths) if (b.crate > 0) return true; return false; }
 

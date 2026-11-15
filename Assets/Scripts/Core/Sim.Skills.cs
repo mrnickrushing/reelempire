@@ -71,6 +71,7 @@ namespace ReelEmpire.Core
 
         double SkillMult(Stage stage)
         {
+            if (stage == _probe) return _probeMult;      // SkillGain asking "what if"
             if (_steady) return 1;
             var d = OnDuty(stage);
             return d != null && SkillLeft(stage) > 0 ? SkillOf(d).Mult : 1;

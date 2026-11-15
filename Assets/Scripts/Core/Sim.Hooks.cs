@@ -176,7 +176,15 @@ namespace ReelEmpire.Core
         }
 
         /// <summary>The Deckhand's Pack is offered once, and not on the first day: only to someone who came back.</summary>
-        public bool StarterOfferDue { get { return !State.starterOffered && !Owns("reelempire.starter") && State.firstDay >= 0 && Today > State.firstDay && State.played >= 1200; } }
+        public bool StarterOfferDue
+        {
+            get
+            {
+                if (State.starterOffered || Owns("reelempire.starter") || State.firstDay < 0 || State.played < 1200) return false;
+                // Two ways under test (StarterVariant): a later day, or once the chain is understood and an order filled.
+                return StarterVariant == "chain" ? StarterMilestone : Today > State.firstDay;
+            }
+        }
 
         /// <summary>What the cash would buy right now: the nudge on the welcome-back card and under the counter.</summary>
         public string Affords(double cash)

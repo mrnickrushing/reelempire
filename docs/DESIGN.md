@@ -2,7 +2,7 @@
 
 A fishing harbour idle tycoon for iPhone and iPad (landscape), Unity 6000.0.85f1, URP. Rushing
 Technologies. Original names, places and characters only; nothing recreated from an existing game. Free models only
-(CC0 first, CC BY credited in `CREDITS.md` and in the game). **No ads, ever**: purchases only.
+(CC0 first, CC BY credited in `CREDITS.md` and in the game). **No forced ads**: rewarded ads only, and only when the player taps for one; everything can be earned by playing.
 
 Research behind this document: `docs/RESEARCH.md` (idle tycoon conventions, the existing fishing idle games and what
 their players complain about, with sources).
@@ -20,7 +20,7 @@ shops, cute villages, aquariums):
 - a real choice in the processing hall (fresh, fillet, smoked, canned) against daily market prices;
 - a species book driven by the real time of day, weather and season (bonuses, never penalties);
 - a trophy hall as the visible, lasting reward;
-- no ads at all: everything other games gate behind an ad is free on a timer here.
+- no forced ads: an ad only ever plays when the player taps for one (a Tide Boost, a second DOUBLE, a wrench), and nothing needs one.
 
 ## Pillars
 

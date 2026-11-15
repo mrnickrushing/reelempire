@@ -615,6 +615,7 @@ namespace ReelEmpire.Tests
         {
             double t = 1_700_000_000;
             var s = TestGame.New(); s.RealNow = () => t;
+            s.State.cohort = 10;    // the "later_day" way of the timing test
             s.Tick(3000);
             Assert.That(s.StarterOfferDue, Is.False, "the first day");
             t += 86400;

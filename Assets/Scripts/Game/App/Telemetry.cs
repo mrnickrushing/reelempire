@@ -29,6 +29,9 @@ namespace ReelEmpire.Game
 
         public static Telemetry Instance { get; private set; }
 
+        /// <summary>Queues an event if statistics are running (safe to call from anywhere, any time).</summary>
+        public static void Log(string type, params (string key, string value)[] extra) { if (Instance != null) Instance.Send(type, extra); }
+
         /// <summary>The player's choice in Settings (on unless turned off).</summary>
         public static bool Sharing
         {

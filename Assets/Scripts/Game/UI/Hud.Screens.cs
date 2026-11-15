@@ -182,7 +182,7 @@ namespace ReelEmpire.Game
             }
         }
 
-void ShowToday()
+        void ShowToday()
         {
             var s = S;
             Frame("TODAY");
@@ -198,7 +198,7 @@ void ShowToday()
                 "OPEN", Ui.Blue, () => Open(Page.Season), null, s.SeasonWaiting > 0);
             if (s.Unlocked("orders")) y = Entry(y, Ui.Ic("box"), Ui.Ink, "Orders from the town", s.OrdersReady > 0 ? s.OrdersReady + " ready to hand over." : s.State.orders.Count + " on the board. Filling one pays well.",
                 "OPEN", Ui.Blue, () => Open(Page.Orders), null, s.OrdersReady > 0);
-            if (s.Unlocked("research")) y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Research at the chart room", s.State.notes + " notes in hand." + (s.ResearchReady ? " Something can be learned." : ""),
+            if (s.Unlocked("research")) y = Entry(y, Ui.Ic("medal"), Ui.Ink, "Research at the chart room", s.State.notes + (s.State.notes == 1 ? " note" : " notes") + " in hand." + (s.ResearchReady ? " Something can be learned." : ""),
                 "OPEN", Ui.Blue, () => Open(Page.Research), null, s.ResearchReady);
             bool prize = s.DerbyPrizeWaiting >= 0;
             if (s.Unlocked("derby")) y = Entry(y, Ui.Ic("trophy"), Ui.Ink, "Weekend derby", prize ? "The last derby is over: your prize is waiting." : s.DerbyOn ? "On now: " + s.DerbyScore.ToString("N0") + " points, place " + s.DerbyRankNow + " of 50. Ends in " + Format.Time(s.DerbyLeft) + "." : "Friday to Sunday, every fish landed scores. The next one starts in " + Format.Time(s.DerbyIn) + ".",
@@ -211,6 +211,12 @@ void ShowToday()
                 var v = s.State.voyages[i]; var d = Sim.Voyages[v.kind]; int k = i; double left = s.VoyageLeft(v);
                 y = Entry(y, Resources.Load<Sprite>("UI/Species/coast_mackerel"), Color.white, d.Name, left > 0 ? "Back in " + Format.Time(left) : "Back with a full hold: +" + Format.Money(s.VoyageCash(d)) + " and " + d.Gems + " gems",
                     left > 0 ? null : "UNLOAD", Ui.Green, left > 0 ? null : (Action)(() => { double cash = S.CollectVoyage(k); if (cash > 0) { Sfx.Play("coin", 0.9f); Toast("+" + Format.Money(cash) + "  +" + d.Gems + " gems"); GameRoot.Instance.Save(); ShowToday(); } }), left > 0 ? "AT SEA" : null, left <= 0);
+            }
+            // The second slot, shown where it would be, for someone who hasn't got it.
+            if (s.Unlocked("voyages") && !s.Owns("reelempire.fleet") && Store.Available)
+            {
+                var fp = Sim.Product("reelempire.fleet");
+                y = Entry(y, Ui.Ic("lock"), Ui.Dim, "Second boat slot", s.PurchaseBenefit(fp.Id) ?? fp.Blurb, "SHOP", Ui.Off, () => Open(Page.Shop), null);
             }
             if (s.Unlocked("voyages") && s.State.voyages.Count < s.VoyageSlots)
                 for (int i = 0; i < Sim.Voyages.Length; i++)
@@ -373,9 +379,11 @@ void ShowToday()
             var st = S.State; var prod = Sim.Product("reelempire.starter");
             if (st.starterOffered || S.Owns(prod.Id) || ModalOpen || !Store.Available) return;
             st.starterOffered = true;
+            Telemetry.Log("Starter.offered", ("Starter.variant", S.StarterVariant));
             var card = Card(900, 560, "A HAND ON DECK?");
             var star = Ui.ArtImg("Star", card, "gem", Color.white, 0); star.rectTransform.Place(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(60, 30), new Vector2(170, 176));
-            var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra porter and an extra truck in every harbour, for good.\n\nOne time only. You can always find it in the SHOP.", 32, Ui.Ink, TextAnchor.UpperLeft, false);
+            var t = Ui.Label("T", card, "<b>" + prod.Name + "</b>\n250 gems, plus an extra porter and an extra truck in every harbour, for good.\n<color=#1E7A3E>" + S.PurchaseBenefit(prod.Id) + "</color>\n\nOne time only. You can always find it in the SHOP.", 30, Ui.Ink, TextAnchor.UpperLeft, false);
+            t.resizeTextForBestFit = true; t.resizeTextMinSize = 20; t.resizeTextMaxSize = 30;
             t.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(270, -100), new Vector2(580, 280));
             var buy = Ui.Button("Buy", card, "BUY  " + Store.Price(prod), Ui.Green, () => { CloseCard(); Store.Buy(prod, (ok, msg) => { Toast(msg); if (ok) { Sfx.Play("confirm"); Haptics.Success(); } }); }, 44);
             ((RectTransform)buy.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(215, 40), new Vector2(400, 116));
@@ -447,6 +455,8 @@ void ShowToday()
             {
                 var sp = all[i]; var e = s.Entry(sp.Id); bool got = e != null;
                 var tile = Ui.ArtImg("Tile", _list, "card", got ? Color.white : new Color(0.93f, 0.88f, 0.78f), 26);
+                { var tsp = sp; tile.raycastTarget = true; tile.gameObject.AddComponent<Button>().onClick.AddListener(() => ShowSpecies(tsp)); }
+                if (s.State.pinned == sp.Id) { var pin = Ui.ArtImg("Pin", tile.transform, "tag", Ui.Coral, 30); pin.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(6, 10), new Vector2(110, 40)); var pl = Ui.Label("P", pin.transform, "TARGET", 18, Color.white); pl.rectTransform.Fill(); pl.Stroke(1.5f); }
                 tile.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(4 + i % cols * (w + 6), -(i / cols) * (hgt + 6)), new Vector2(w, hgt));
                 var band = Ui.ArtImg("Band", tile.transform, "well", RarityInk[(int)sp.Rarity], 20); band.rectTransform.Band(true, -10, 34, 12);
                 var rl = Ui.Label("R", band.transform, RarityNames[(int)sp.Rarity], 20, Color.white); rl.rectTransform.Fill();
@@ -504,7 +514,8 @@ void ShowToday()
             {
                 if (!prod.Once) continue;
                 var pr = prod; bool owned = s.Owns(prod.Id);
-                y = Entry(y, Ui.Art(prod.Id.EndsWith("ledger") ? "coin" : "star"), Color.white, prod.Name, prod.Blurb, owned ? null : Store.Price(prod), Ui.Green,
+                string benefit = s.PurchaseBenefit(prod.Id);
+                y = Entry(y, Ui.Art(prod.Id.EndsWith("ledger") ? "coin" : "star"), Color.white, prod.Name, prod.Blurb + (benefit != null && !owned ? "\n<color=#1E7A3E>" + benefit + "</color>" : ""), owned ? null : Store.Price(prod), Ui.Green,
                     owned ? null : (Action)(() => Store.Buy(pr, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Shop) ShowShop(); })), owned ? "OWNED" : null, owned);
             }
             y = Heading(y, "GEMS");
@@ -516,7 +527,7 @@ void ShowToday()
                     () => Store.Buy(pr, (ok, msg) => { Toast(msg); if (ok) Sfx.Play("confirm"); if (_screen == Page.Shop) ShowShop(); }));
             }
             y = Entry(y, Ui.Ic("cart"), Ui.Ink, "Restore purchases", "Bring back what this Apple Account has bought once.", "RESTORE", Ui.Blue, () => Store.Restore(msg => { Toast(msg); if (_screen == Page.Shop) ShowShop(); }));
-            var note = Ui.Label("Note", _list, "No ads here, ever. Everything in the game can be earned by playing.", 26, Ui.Dim, TextAnchor.MiddleCenter, false); note.rectTransform.Band(true, y, 60);
+            var note = Ui.Label("Note", _list, "No forced ads: one only plays when you tap for it (a Tide Boost, a second DOUBLE, a wrench). Everything can be earned by playing.", 26, Ui.Dim, TextAnchor.MiddleCenter, false); note.rectTransform.Band(true, y, 60);
             EndList(-y + 70);
         }
 
@@ -533,6 +544,7 @@ void ShowToday()
             y = Entry(y, Ui.Ic("sound"), Ui.Ink, "Music", Sfx.Music ? "On" : "Off", Sfx.Music ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Sfx.Music = !Sfx.Music; again(); });
             y = Entry(y, Ui.Ic("bolt"), Ui.Ink, "Battery saver", FrameBudget.BatterySaver ? "On: 30 frames a second, a cooler phone" : "Off: 60 frames a second", FrameBudget.BatterySaver ? "TURN OFF" : "TURN ON", Ui.Blue, () => { FrameBudget.BatterySaver = !FrameBudget.BatterySaver; again(); });
             y = Entry(y, Ui.Ic("bolt"), Ui.Ink, "Vibration", Haptics.On ? "On: a tap you can feel on upgrades and catches" : "Off", Haptics.On ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Haptics.On = !Haptics.On; again(); });
+            y = Entry(y, Ui.Ic("compass"), Ui.Ink, "Labels over the harbour", CompactSigns ? "Fewer: the slowest part, what you have open, and the best upgrade for its price" : "All: a level sign over every dock and building", CompactSigns ? "SHOW ALL" : "FEWER", Ui.Blue, () => { CompactSigns = !CompactSigns; Telemetry.Log("Labels.changed", ("Labels.compact", CompactSigns ? "true" : "false")); again(); });
             y = Entry(y, Ui.Ic("bell"), Ui.Ink, "Reminders", Reminders.On ? "On: a notification when the docks are full" : "Off", Reminders.On ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Reminders.On = !Reminders.On; again(); });
             y = Entry(y, Ui.Ic("chart"), Ui.Ink, "Anonymous play statistics", (Telemetry.Sharing ? "On" : "Off") + ": where players get stuck. Nothing about you, no tracking.", Telemetry.Sharing ? "TURN OFF" : "TURN ON", Ui.Blue, () => { Telemetry.Sharing = !Telemetry.Sharing; again(); });
 

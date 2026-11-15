@@ -15,6 +15,7 @@ namespace ReelEmpire.Game
         readonly Text[] _skillText = new Text[4];
         readonly string[] _skillWho = new string[4];
         static readonly string[] SkillStage = { "boats", "porters", "hall", "market" };
+        readonly double[] _skillGain = new double[4]; readonly Stage[] _skillLimit = new Stage[4]; float _skillProbeIn;
 
         void BuildSkills()
         {
@@ -35,6 +36,8 @@ namespace ReelEmpire.Game
         {
             var s = S; if (s == null || _skillRt[0] == null) return;
             bool on = s.Unlocked("crew") && s.State.tutorialStep != 1 && !ModalOpen && !ScreenOpen;      // never over a card or a page
+            // What each ready skill would add right now (twice a second is plenty).
+            if ((_skillProbeIn -= Time.unscaledDeltaTime) <= 0) { _skillProbeIn = 0.5f; for (int i = 0; i < 4; i++) _skillGain[i] = s.SkillGain((Stage)i, out _skillLimit[i]); }
             for (int i = 0; i < 4; i++)
             {
                 var d = on ? s.OnDuty((Stage)i) : null;
@@ -45,10 +48,14 @@ namespace ReelEmpire.Game
                 bool ready = left <= 0 && rest <= 0;
                 _skillBack[i].color = left > 0 ? Ui.Green : ready ? Ui.Gold : Ui.Off;
                 _skillFace[i].color = left > 0 || ready ? Color.white : new Color(1, 1, 1, 0.55f);
-                _skillText[i].text = left > 0 ? Mathf.CeilToInt((float)left) + "s" : ready ? "SKILL" : Format.Time(rest);
+                string special = Sim.SkillOf(d).Special;
+                _skillText[i].text = left > 0 ? Mathf.CeilToInt((float)left) + "s" : ready ? (special != null || _skillGain[i] >= 0.05 ? "+" + (special != null && _skillGain[i] < 0.05 ? "EXTRA" : Mathf.RoundToInt((float)_skillGain[i] * 100) + "%") : "LOW USE") : Format.Time(rest);
+                _skillText[i].color = ready && special == null && _skillGain[i] < 0.05 ? Ui.Dim : Ui.Ink;
                 _skillRt[i].localScale = Vector3.one * (ready ? 1 + 0.05f * Mathf.Sin(Time.unscaledTime * 5 + i) : left > 0 ? 1.06f : 1);
             }
         }
+
+        static string Cap(string t) { return string.IsNullOrEmpty(t) ? t : char.ToUpperInvariant(t[0]) + t.Substring(1); }
 
         void TapSkill(Stage stage)
         {
@@ -57,7 +64,17 @@ namespace ReelEmpire.Game
             if (s.UseSkill(stage))
             {
                 Sfx.Play("star", 0.9f); Haptics.Success();
-                Toast(d.Name.Split(' ')[0] + ": " + sk.Name + "!  For " + Format.Time(Sim.SkillSeconds(d, own != null ? own.level : 1)) + " " + sk.Blurb + ".");
+                int k = (int)stage; double lift = s.SkillLift;
+                string held = _skillGain[k] < 0.05 && sk.Special == null ? "  " + Cap(Sim.StageName(_skillLimit[k])) + " hold it back: help them first." : "";
+                Telemetry.Log("Skill.used", ("Skill.stage", stage.ToString()), ("Skill.gain", Mathf.RoundToInt((float)_skillGain[k] * 100).ToString()), ("Skill.running", s.SkillsRunning.ToString()));
+                if (s.SkillsRunning >= 2 && lift > _skillGain[k] + 0.1)
+                {
+                    // Two or more working together: say so, loudly.
+                    Toast("Working together!  The harbour is earning +" + Mathf.RoundToInt((float)lift * 100) + "% right now.");
+                    Pop(Layout.MarketGate + Vector3.up * 5, "COMBO  +" + Mathf.RoundToInt((float)lift * 100) + "%", Ui.Gold, 56, 2.2f);
+                    Sfx.Play("claim", 0.9f);
+                }
+                else Toast(d.Name.Split(' ')[0] + ": " + sk.Name + "!  For " + Format.Time(Sim.SkillSeconds(d, own != null ? own.level : 1)) + " " + sk.Blurb + "." + held);
                 GameRoot.Instance.Save();
             }
             else if (s.SkillLeft(stage) > 0) Toast(sk.Name + " is running: " + sk.Blurb + ".");
