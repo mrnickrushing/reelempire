@@ -17,6 +17,7 @@ namespace ReelEmpire.Core
         public string species;          // Species: its id
         public double need, have;
         public int cashSeconds, gems;
+        public bool favourite;          // Product: the customer's favourite line (pays more)
     }
 
     /// <summary>
@@ -87,6 +88,9 @@ namespace ReelEmpire.Core
             var owned = new List<int>();
             for (int g = 0; g < Content.Goods.Length; g++) if (OwnsGoods(h, g)) owned.Add(g);
             o.goods = owned.Count > 1 && Roll() < 0.8 ? owned[1 + (int)(Roll() * (owned.Count - 1))] : 0;
+            // Customers ask for their favourite line when the hall has it, and pay more for it.
+            int fav = FavouriteOf(o.who);
+            if (OwnsGoods(h, fav) && Roll() < 0.6) { o.goods = fav; o.favourite = true; }
             double pace = Math.Max(Flow(h, true), Content.DockBase * DefOf(h).Scale * 0.5);
             if (o.goods > 0) pace = Math.Min(pace, StageOut(Content.HallBase, h.hall) * DefOf(h).Scale * Content.Goods[o.goods].Speed * Fx(h, "hall"));
             double seconds = 180 + Roll() * 180;
@@ -133,7 +137,7 @@ namespace ReelEmpire.Core
             }
         }
 
-        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * RewardRate(h)) * (Researched("haggle") ? 1.25 : 1); }
+        public double OrderCash(Order o) { var h = State.harbours.Find(x => x.id == o.harbour) ?? H; return Math.Max(40 * DefOf(h).Scale, o.cashSeconds * RewardRate(h)) * (Researched("haggle") ? 1.25 : 1) * OrderBonus(o); }
 
         /// <summary>Hands a finished order over. Returns the cash paid (0 if it isn't finished).</summary>
         public double ClaimOrder(int index)
@@ -143,7 +147,8 @@ namespace ReelEmpire.Core
             if (o.have < o.need) return 0;
             var h = State.harbours.Find(x => x.id == o.harbour) ?? H;
             double cash = OrderCash(o);
-            Pay(h, cash); State.gems += o.gems;
+            Pay(h, cash); State.gems += o.gems + (TieLevel(o.who) >= 3 ? 1 : 0);
+            TieNews = Deliver(o.who) ?? TieNews;
             State.notes += o.kind == (int)OrderKind.Rarity && o.rarity >= (int)Rarity.Rare ? 2 : 1;      // what the chart room learns from the town
             if (Unlocked("wear")) AddWrenches(1);       // the town pays in kind too
             State.orders.RemoveAt(index); State.ordersDone++;

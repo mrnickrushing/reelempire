@@ -17,7 +17,7 @@ namespace ReelEmpire.Game
         Text _angHead, _angHint, _angButtonText;
         Image _angButton, _tensionBack;
         PressArea _press;
-        Fight _fight; SpeciesDef _hooked;
+        Fight _fight; SpeciesDef _hooked; bool _warned;
         float _aimT, _waitLeft, _biteLeft, _quality, _hapticAt;
 
         public bool AnglingOpen { get { return _cast != Cast.None && _angRoot != null; } }
@@ -103,10 +103,11 @@ namespace ReelEmpire.Game
                     // A quick strike sets the hook better: a little more toward the good fish.
                     float quick = Mathf.Clamp01(_biteLeft / 0.9f);
                     _hooked = S.HandBite(Mathf.Clamp01(_quality + quick * 0.15f));
-                    _fight = new Fight(_hooked.Rarity, S.FightSeed());
+                    var style = Sim.StyleOf(_hooked);
+                    _fight = new Fight(_hooked.Rarity, S.FightSeed(), style); _warned = false;
                     _cast = Cast.Fight;
                     Sfx.Play("confirm", 0.8f); Haptics.Success();
-                    _angHead.text = "Fish on!"; _angHint.text = "Hold to reel. Keep the line in the green; ease off when it runs.";
+                    _angHead.text = "Fish on!"; _angHint.text = Sim.StyleHints[(int)style] + " Keep the line in the green.";
                     _angButtonText.text = "HOLD TO REEL"; _angButton.color = Ui.Blue;
                     break;
                 }
@@ -153,8 +154,12 @@ namespace ReelEmpire.Game
                     _bobber.anchoredPosition = new Vector2(Mathf.Lerp(_bobber.anchoredPosition.x, (_fight.Running ? Mathf.Sin(t * 5) * 300 : Mathf.Sin(t * 1.5f) * 80), dt * 3), 30 + _fight.Progress * -10 + Mathf.Sin(t * 12) * (_fight.Running ? 8 : 3));
                     _ring.anchoredPosition = _bobber.anchoredPosition - new Vector2(0, 12);
                     _tensionBack.color = _fight.Tension > 0.92f ? Color.Lerp(Ui.Faint, Ui.Coral, 0.5f + 0.5f * Mathf.Sin(t * 30)) : Ui.Faint;
-                    _angHead.text = _fight.Running ? "It's running: EASE OFF!" : _fight.Tension < Fight.BandLow ? "Too slack: reel!" : "Fish on!";
-                    _angButton.color = _fight.Running ? Ui.Coral : Ui.Blue;
+                    // A run is telegraphed: the fish tenses, the float shivers and a creak sounds a moment before it bolts.
+                    if (_fight.Warning && !_warned) { _warned = true; Sfx.Play("click", 0.9f, 0.55f); Haptics.Light(); }
+                    if (!_fight.Warning) _warned = false;
+                    if (_fight.Warning) _bobber.anchoredPosition += new Vector2(Mathf.Sin(t * 60) * 6, 0);
+                    _angHead.text = _fight.Running ? "It's running: EASE OFF!" : _fight.Warning ? "It's tensing up..." : _fight.Tension < Fight.BandLow ? "Too slack: reel!" : "Fish on!  <size=26><color=#5A6E82>" + Sim.StyleNames[(int)_fight.Style].ToUpperInvariant() + "</color></size>";
+                    _angButton.color = _fight.Running ? Ui.Coral : _fight.Warning ? Ui.Gold : Ui.Blue;
                     if (hold && t > _hapticAt) { Haptics.Light(); _hapticAt = t + (_fight.Tension > 0.85f ? 0.08f : 0.22f); }
                     if (_fight.State == FightState.Landed) Landed();
                     else if (_fight.State == FightState.Snapped) { Sfx.Play("error", 0.7f); Finish("The line snapped!", "Too tight for too long. Let go the moment it runs, then reel again."); }

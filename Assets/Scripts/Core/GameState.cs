@@ -43,6 +43,8 @@ namespace ReelEmpire.Core
         public int renovations;
         public int stars;               // milestones reached here
         public List<int> works = new List<int>();      // the level of each of Sim.Works
+        public string focus = "";       // what a renovated harbour specialises in (Sim.Focuses)
+        public double focusAt;          // real time the focus was last chosen
     }
 
     [Serializable]
@@ -96,6 +98,11 @@ namespace ReelEmpire.Core
         public long firstDay = -1;      // the day the game was first played
         public List<string> seenFeatures = new List<string>();
         public long seasonIndex = -1, seasonPoints, seasonPremiumIndex = -1; public int seasonFree, seasonPaid;
+        public List<Tie> ties = new List<Tie>();           // customers delivered to (Sim.Depth)
+        public List<Preset> presets = new List<Preset>();  // saved fleet set-ups
+        public double mendIn; public long autoMended;      // the Boat Shed mending by itself
+        public int tokens;                                 // recruit tokens
+        public List<string> derbyKinds = new List<string>();      // kinds landed this derby (the Variety format)
         public long derbyIndex = -1, derbyScore, derbyLastIndex = -1, derbyLastScore, derbyPrizeFor = -1; public int derbyGoals, derbyBest;
 
         // The shop.
@@ -142,6 +149,10 @@ namespace ReelEmpire.Core
             if (seed == 0) seed = 2463534242;
             if (cohort < 0 || cohort > 99) cohort = (int)((uint)Guid.NewGuid().GetHashCode() % 100);
             if (pinned == null) pinned = "";
+            if (ties == null) ties = new List<Tie>();
+            if (presets == null) presets = new List<Preset>();
+            foreach (var p in presets) { if (p.baits == null) p.baits = new List<int>(); if (p.duty == null) p.duty = new List<string>(); }
+            if (derbyKinds == null) derbyKinds = new List<string>();
             at = Math.Max(0, Math.Min(at, harbours.Count - 1));
             foreach (var h in harbours)
             {
@@ -151,6 +162,7 @@ namespace ReelEmpire.Core
                 if (h.trucks == null) h.trucks = new List<Carrier>();
                 h.dock = Math.Max(1, h.dock); h.hall = Math.Max(1, h.hall); h.market = Math.Max(1, h.market);
                 h.goodsOwned |= 1;
+                if (h.focus == null) h.focus = "";
                 foreach (var b in h.berths) b.level = Math.Max(1, Math.Min(Content.MaxLevel, b.level));
             }
         }

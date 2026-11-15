@@ -12,10 +12,10 @@ namespace ReelEmpire.Core
         {
             if (what == "berthcost") return Logbook("yard") ? 0.85 : 1;
             if (what == "levelcost") return Logbook("trade") ? 0.9 : 1;
-            if (what == "catch") return DutyMult(Stage.Berth) * (1 + 0.15 * WorkLevel(h, "netloft")) * (Researched("hooks") ? 1.1 : 1);
-            if (what == "dock") return DutyMult(Stage.Dock) * (Researched("barrows") ? 1.15 : 1);
-            if (what == "hall") return DutyMult(Stage.Hall) * (Researched("knives") ? 1.15 : 1);
-            if (what == "market") return DutyMult(Stage.Market) * (Researched("coldchain") ? 1.15 : 1);
+            if (what == "catch") return FocusFx(h, what) * DutyMult(Stage.Berth) * (1 + 0.15 * WorkLevel(h, "netloft")) * (Researched("hooks") ? 1.1 : 1);
+            if (what == "dock") return FocusFx(h, what) * DutyMult(Stage.Dock) * (Researched("barrows") ? 1.15 : 1);
+            if (what == "hall") return FocusFx(h, what) * DutyMult(Stage.Hall) * (Researched("knives") ? 1.15 : 1);
+            if (what == "market") return FocusFx(h, what) * DutyMult(Stage.Market) * (Researched("coldchain") ? 1.15 : 1);
             return 1;
         }
 

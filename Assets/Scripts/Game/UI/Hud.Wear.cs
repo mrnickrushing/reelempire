@@ -22,20 +22,22 @@ namespace ReelEmpire.Game
             string says = wear > Sim.WornAt ? "Worn: she lands <b>" + lost + "% less</b> until she's mended."
                 : wear > 0.02f ? "Sound for now. Past half worn a boat starts to land less."
                 : "Good as new.";
-            says += "\n<size=24><color=#5A6E82>Hulls wear as boats sail. Time away mends them, and the Boat Shed makes them last longer.</color></size>";
+            says += s.AutoMends(h)
+                ? "\n<size=24><color=#1E9E4A>The Boat Shed's crew mends the worst worn boat by itself every " + Mathf.RoundToInt((float)(Sim.AutoMendEvery / 60)) + " minutes you play (next in " + Format.Time(s.AutoMendIn > 0 ? s.AutoMendIn : Sim.AutoMendEvery) + ").</color></size>"
+                : "\n<size=24><color=#5A6E82>Hulls wear as boats sail. Time away mends them. At Boat Shed level " + Sim.AutoMendShed + " its crew mends boats by itself.</color></size>";
             var t = Ui.Label("T", card, says, 30, Ui.Ink, TextAnchor.UpperCenter, false); t.rectTransform.Place(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -208), new Vector2(860, 130));
 
             // The wrenches in hand, and the ways to more.
             var wi = Ui.Img("W", card, Ui.Ink); wi.sprite = Ui.Ic("wrench"); wi.preserveAspect = true; wi.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(60, 190), new Vector2(54, 54));
             var wn = Ui.Label("WN", card, "x " + s.State.wrenches, 40, Ui.Ink, TextAnchor.MiddleLeft); wn.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(124, 190), new Vector2(160, 54));
             bool ad = s.AdOffered(AdReward.Wrench) && Ads.Ready;
-            var watch = Ui.Button("Ad", card, ad ? "FREE: WATCH AN ADVERT" : "FROM GIFTS AND ORDERS", ad ? Ui.Green : Ui.Off, () =>
+            var watch = Ui.Button("Ad", card, ad ? "FREE: WATCH AN AD" : "FROM GIFTS AND ORDERS", ad ? Ui.Green : Ui.Off, () =>
             {
                 if (!ad) { Toast("Wrenches come with the day's gift and with every order you fill."); return; }
                 Ads.Show(ok =>
                 {
                     if (ok && S.WrenchByAd()) { Sfx.Play("star", 0.7f); Haptics.Success(); Toast("+1 wrench"); GameRoot.Instance.Save(); }
-                    else if (!ok) Toast("The advert wasn't finished, so there's no wrench.");
+                    else if (!ok) Toast("The ad wasn't finished, so there's no wrench.");
                     ShowRepair(berth);
                 });
             }, 26);

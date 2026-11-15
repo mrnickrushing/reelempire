@@ -24,22 +24,22 @@ namespace ReelEmpire.Game
         double _shownCash;
         Image _boostImg; Text _boostText; RectTransform _boostRoot;
 
-        /// <summary>The Tide Boost: an hour of double income for a short advert, if the player wants one.</summary>
+        /// <summary>The Tide Boost: an hour of double income for a short ad, if the player wants one.</summary>
         void UseBoost()
         {
             if (S.AdOffered(AdReward.Boost) && Ads.Ready)
-                Confirm("TIDE BOOST", "Watch a short advert for an hour of double income?" + (S.Boosted ? " It adds to the boost already running." : "") + "\n\n(" + S.AdsLeft + " adverts left today)", "WATCH", Ui.Green, () =>
+                Confirm("TIDE BOOST", "Watch a short ad for an hour of double income?" + (S.Boosted ? " It adds to the boost already running." : "") + "\n\n(" + S.AdsLeft + " ads left today)", "WATCH", Ui.Green, () =>
                     Ads.Show(ok =>
                     {
                         if (ok && S.BoostByAd()) { Sfx.Play("star", 0.7f); Haptics.Success(); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
-                        else if (!ok) Toast("The advert wasn't finished, so there's no boost.");
+                        else if (!ok) Toast("The ad wasn't finished, so there's no boost.");
                     }), "NOT NOW");
             else
             {
                 Sfx.Play("error", 0.5f);
-                Toast(S.AdsLeft <= 0 ? "That's all the adverts for today: the Tide Boost is back tomorrow"
+                Toast(S.AdsLeft <= 0 ? "That's all the ads for today: the Tide Boost is back tomorrow"
                     : !S.AdOffered(AdReward.Boost) ? "The boost is full: 8 hours at most"
-                    : "No advert is ready just now. Try again in a moment.");
+                    : "No ad is ready just now. Try again in a moment.");
             }
         }
 
@@ -126,7 +126,7 @@ namespace ReelEmpire.Game
             BuildNav();
             BuildSheet();
             _modal = Ui.Rect("Modal", _root); _modal.Fill();
-            S.Changed += OnChanged; S.Caught += OnCaught; S.Sold += OnSold; S.MilestoneReached += OnMilestone; S.BonusAppeared += OnBonus;
+            S.Changed += OnChanged; S.Mended += OnMended; S.Caught += OnCaught; S.Sold += OnSold; S.MilestoneReached += OnMilestone; S.BonusAppeared += OnBonus;
             _shownCash = H.cash;
             OnChanged();
             if (GameRoot.Instance.AwaySeconds > 0) OfferAway();
@@ -137,7 +137,7 @@ namespace ReelEmpire.Game
         void OnDestroy()
         {
             if (S == null) return;
-            S.Changed -= OnChanged; S.Caught -= OnCaught; S.Sold -= OnSold; S.MilestoneReached -= OnMilestone; S.BonusAppeared -= OnBonus;
+            S.Changed -= OnChanged; S.Mended -= OnMended; S.Caught -= OnCaught; S.Sold -= OnSold; S.MilestoneReached -= OnMilestone; S.BonusAppeared -= OnBonus;
         }
 
         bool _dirty;
@@ -260,6 +260,8 @@ namespace ReelEmpire.Game
         }
 
         void CloseCard() { Ui.Clear(_modal); }
+
+        void OnMended(int berth) { Toast("The Boat Shed mended the " + Content.Berths[berth].Boat + " by itself"); }
         public bool ModalOpen { get { return _modal != null && _modal.childCount > 0; } }
 
         /// <summary>The welcome-back card: what the harbour made while the app was closed.</summary>
@@ -292,7 +294,7 @@ int missed = S.WelcomeHome(secs);
                 {
                     Ads.Show(ok =>
                     {
-                        if (!ok) { Toast("The advert wasn't finished: collect, or try again."); return; }
+                        if (!ok) { Toast("The ad wasn't finished: collect, or try again."); return; }
                         if (!S.CollectAwayByAd(secs)) return;
                         GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
                         Reminders.AskOnce();
@@ -305,7 +307,7 @@ int missed = S.WelcomeHome(secs);
             }, 44);
             ((RectTransform)d.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(205, 44), new Vector2(380, 124));
             var dl = Ui.Label("L", d.transform, "DOUBLE IT", 42, Color.white, TextAnchor.UpperCenter); dl.rectTransform.Fill(); dl.rectTransform.offsetMax = new Vector2(0, -14); dl.Stroke(2.5f);
-            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : "WATCH AN ADVERT", 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
+            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : "WATCH AN AD", 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
         }
 
         // ---- coins flying to the counter ----

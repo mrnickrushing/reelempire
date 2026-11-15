@@ -161,7 +161,8 @@ namespace ReelEmpire.Game
                     if (++shown > 5) break;
                     var row = Ui.ArtImg("Line", mid, "card", running ? new Color(0.72f, 0.93f, 0.76f) : Ui.Card, 26); row.rectTransform.Band(true, y, 56);
                     // What running this line would earn the whole harbour now: value against the hall's pace.
-                    string worth = "x" + s.GoodsValue(h, g).ToString("0.##") + (g == s.GoodsOfTheDay ? " today!" : "") + (owned ? "  ≈" + Format.Money(s.PaceWithGoods(g)) + "/s" : (def.Speed < 1 ? "  " + Mathf.RoundToInt((float)def.Speed * 100) + "% pace" : ""));
+                    string worth = "x" + s.GoodsValue(h, g).ToString("0.##") + (g == s.GoodsOfTheDay ? " today!" : "") + "  ≈" + Format.Money(s.PaceWithGoods(g)) + "/s";
+                    if (s.State.orders.Exists(o => o.kind == (int)OrderKind.Product && o.goods == g && o.harbour == h.id && o.have < o.need)) worth += "  <color=#C47A00>ORDER</color>";
                     if (owned && g == best && !running) worth += "  <color=#1E9E4A>BEST NOW</color>";
                     var nm = Ui.Label("N", row.transform, def.Name + "  <size=22><color=#" + (g == s.GoodsOfTheDay ? "D9631E" : "5A6E82") + ">" + worth + "</color></size>", 28, Ui.Ink, TextAnchor.MiddleLeft); nm.rectTransform.Fill(); nm.rectTransform.offsetMin = new Vector2(18, 0);
                     if (running) { var on = Ui.Label("On", row.transform, "RUNNING", 24, new Color(0.12f, 0.62f, 0.29f), TextAnchor.MiddleRight); on.rectTransform.Fill(); on.rectTransform.offsetMax = new Vector2(-18, 0); }

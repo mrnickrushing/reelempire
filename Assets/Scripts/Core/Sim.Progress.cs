@@ -37,6 +37,7 @@ namespace ReelEmpire.Core
             State.renown += renown; State.renownPaid += renown;
             var fresh = GameState.NewHarbour(Content.HarbourIndex(h.id));
             fresh.renovations = h.renovations + 1;
+            fresh.focus = h.focus; fresh.focusAt = h.focusAt;      // the specialism stays with the harbour
             State.harbours[State.at] = fresh;
             FitCrew(fresh);
             State.renovations++;
