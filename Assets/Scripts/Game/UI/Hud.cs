@@ -24,20 +24,23 @@ namespace ReelEmpire.Game
         double _shownCash;
         Image _boostImg; Text _boostText; RectTransform _boostRoot;
 
+        /// <summary>The Tide Boost: an hour of double income for a short advert, if the player wants one.</summary>
         void UseBoost()
         {
-            if (S.UseBoost()) { Sfx.Play("star", 0.7f); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
-            else if (S.AdOffered(AdReward.Boost) && Ads.Ready)
-            {
-                // Out of charges: an advert is another way to one, if the player wants it.
-                Confirm("TIDE BOOST", "Your boosts are spent: the next is ready in " + Format.Time(S.BoostNextIn) + ".\n\nWatch a short advert for an hour of double income now? (" + S.AdsLeft + " left today)", "WATCH", Ui.Green, () =>
+            if (S.AdOffered(AdReward.Boost) && Ads.Ready)
+                Confirm("TIDE BOOST", "Watch a short advert for an hour of double income?" + (S.Boosted ? " It adds to the boost already running." : "") + "\n\n(" + S.AdsLeft + " adverts left today)", "WATCH", Ui.Green, () =>
                     Ads.Show(ok =>
                     {
                         if (ok && S.BoostByAd()) { Sfx.Play("star", 0.7f); Haptics.Success(); Toast("Tide Boost! Double income for an hour"); GameRoot.Instance.Save(); }
                         else if (!ok) Toast("The advert wasn't finished, so there's no boost.");
                     }), "NOT NOW");
+            else
+            {
+                Sfx.Play("error", 0.5f);
+                Toast(S.AdsLeft <= 0 ? "That's all the adverts for today: the Tide Boost is back tomorrow"
+                    : !S.AdOffered(AdReward.Boost) ? "The boost is full: 8 hours at most"
+                    : "No advert is ready just now. Try again in a moment.");
             }
-            else { Sfx.Play("error", 0.5f); Toast(S.BoostReady <= 0 ? "The next boost is ready in " + Format.Time(S.BoostNextIn) : "The boost is full: 8 hours at most"); }
         }
 
         public static Hud Create()
@@ -74,7 +77,7 @@ namespace ReelEmpire.Game
             _gems = Ui.Label("N", gems.transform, "0", 50, Ui.Ink, TextAnchor.MiddleCenter); _gems.rectTransform.Fill(); _gems.rectTransform.offsetMin = new Vector2(60, 8); _gems.rectTransform.offsetMax = new Vector2(-16, 0);
             var gem = Ui.ArtImg("Gem", _root, "gem", Color.white, 0); gem.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-190, -10), new Vector2(96, 100));
 
-            // The Tide Boost: a round button under the gems with its charges or the time left.
+            // The Tide Boost: a round button under the gems; WATCH, or the time left.
             _boostRoot = Ui.Rect("BoostRoot", _root); _boostRoot.Fill();
             var boost = Ui.Button("Boost", _boostRoot, null, new Color(0, 0, 0, 0), UseBoost, 30);
             var brt = (RectTransform)boost.transform; brt.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -122), new Vector2(112, 120));
@@ -153,10 +156,10 @@ namespace ReelEmpire.Game
             _harbourName.text = s.Def.Name.ToUpperInvariant() + (h.renovations > 0 ? "  x" + Format.Money(Math.Pow(2, h.renovations)) : "");
             _conditions.text = (s.IsNight ? "Night" : "Day") + "  •  " + WeatherName(s.Weather) + "  •  " + Sim.SeasonNames[s.Season];
 
-            int ready = s.BoostReady;
-            _boostText.text = s.Boosted ? Format.Time(s.BoostLeft) : ready > 0 ? ready + " ready" : Format.Time(s.BoostNextIn);
-            _boostImg.color = ready > 0 ? Ui.Blue : s.Boosted ? Ui.Green : Ui.Off;
-            _boostImg.rectTransform.localScale = Vector3.one * (ready > 0 && !s.Boosted ? 1 + 0.05f * Mathf.Sin(Time.unscaledTime * 5) : 1);
+            bool watch = s.AdOffered(AdReward.Boost) && Ads.Ready;
+            _boostText.text = s.Boosted ? Format.Time(s.BoostLeft) : watch ? "WATCH AD" : "TIDE BOOST";
+            _boostImg.color = s.Boosted ? Ui.Green : watch ? Ui.Blue : Ui.Off;
+            _boostImg.rectTransform.localScale = Vector3.one * (watch && !s.Boosted ? 1 + 0.05f * Mathf.Sin(Time.unscaledTime * 5) : 1);
 
             double fleet = s.FleetRate(h, true), dock = s.DockRate(h), hall = s.HallRate(h), market = s.MarketRate(h);
             _chainRate[0].text = Format.Money(fleet) + "\n/s"; _chainRate[1].text = Format.Money(dock) + "\n/s";
@@ -265,7 +268,7 @@ namespace ReelEmpire.Game
             if (got <= 0) { S.CollectAway(secs); GameRoot.Instance.ClearAway(); return; }
 int missed = S.WelcomeHome(secs);
             var card = Card(860, 600, missed > 0 ? "WE MISSED YOU!" : "WELCOME BACK");
-            var a = Ui.Label("A", card, "Your crews kept working for " + Format.Time(Math.Min(secs, S.AwayCap)) + (secs > S.AwayCap ? " (the docks were full after that)" : "") + (missed > 0 ? ".\nHere are " + missed + " gems and three fresh Tide Boosts to get going again." : ""), 30, Ui.Dim, TextAnchor.UpperCenter, false);
+            var a = Ui.Label("A", card, "Your crews kept working for " + Format.Time(Math.Min(secs, S.AwayCap)) + (secs > S.AwayCap ? " (the docks were full after that)" : "") + (missed > 0 ? ".\nHere are " + missed + " gems to get going again." : ""), 30, Ui.Dim, TextAnchor.UpperCenter, false);
             a.rectTransform.Band(true, -90, 110, 60);
             var rays = Ui.ArtImg("Rays", card, "rays", new Color(1f, 0.77f, 0.2f, 0.5f), 0); rays.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-220, 20), new Vector2(300, 300));
             var coin = Ui.ArtImg("Coin", card, "coin", Color.white, 0); coin.rectTransform.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-220, 20), new Vector2(130, 134));
@@ -277,9 +280,10 @@ int missed = S.WelcomeHome(secs);
                 S.CollectAway(secs); GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("coin", 0.8f); CoinBurst(8); GameRoot.Instance.Save();
                 Reminders.AskOnce();        // the first time the harbour has earned by itself is the moment a reminder makes sense
             }, 44);
-            ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-205, 44), new Vector2(380, 124));
             bool free = S.DoubleFree;
-            bool byAd = !free && S.AdOffered(AdReward.Double) && Ads.Ready;       // after the free one: an advert instead of gems
+            bool byAd = !free && S.AdOffered(AdReward.Double) && Ads.Ready;       // after the free one of the day, only for an advert
+            ((RectTransform)b.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(free || byAd ? -205 : 0, 44), new Vector2(380, 124));
+            if (!free && !byAd) return;
             var d = Ui.Button("Double", card, null, Ui.Green, () =>
             {
                 if (byAd)
@@ -293,16 +297,14 @@ int missed = S.WelcomeHome(secs);
                     });
                     return;
                 }
-                if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Not enough gems for another double today"); return; }
+                if (!S.CollectAwayDoubled(secs)) { Sfx.Play("error", 0.5f); Toast("Today's free double has been used"); return; }
                 GameRoot.Instance.ClearAway(); CloseCard(); Sfx.Play("star", 0.9f); Haptics.Success(); CoinBurst(16); Toast("Doubled: +" + Format.Money(got * 2)); GameRoot.Instance.Save();
                 Reminders.AskOnce();
             }, 44);
             ((RectTransform)d.transform).Place(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(205, 44), new Vector2(380, 124));
             var dl = Ui.Label("L", d.transform, "DOUBLE IT", 42, Color.white, TextAnchor.UpperCenter); dl.rectTransform.Fill(); dl.rectTransform.offsetMax = new Vector2(0, -14); dl.Stroke(2.5f);
-            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : byAd ? "WATCH AN ADVERT" : DoubleCost(), 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
+            var dc = Ui.Label("C", d.transform, free ? "FREE TODAY" : "WATCH AN ADVERT", 28, Color.white, TextAnchor.LowerCenter); dc.rectTransform.Fill(); dc.rectTransform.offsetMin = new Vector2(0, 26); dc.Stroke(2f);
         }
-
-        static string DoubleCost() { return Sim.DoubleGems + " GEMS"; }
 
         // ---- coins flying to the counter ----
 

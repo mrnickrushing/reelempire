@@ -259,23 +259,17 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
-        public void TheTideBoostDoublesIncomeForAnHourAndRecharges()
+        public void TheTideBoostDoublesIncomeForAnHour()
         {
             double t = 1_700_000_000;
             var s = TestGame.New(); s.RealNow = () => t;
             double m = s.IncomeMult(s.H);
-            Assert.That(s.BoostReady, Is.EqualTo(3));
-            Assert.That(s.UseBoost(), Is.True);
+            Assert.That(s.BoostByAd(), Is.True);
             Assert.That(s.IncomeMult(s.H), Is.EqualTo(m * 2));
-            Assert.That(s.UseBoost(), Is.True); Assert.That(s.UseBoost(), Is.True);
+            Assert.That(s.BoostByAd(), Is.True); Assert.That(s.BoostByAd(), Is.True);
             Assert.That(s.BoostLeft, Is.EqualTo(3 * 3600).Within(1));
-            Assert.That(s.UseBoost(), Is.False, "three charges");
             t += 3 * 3600 + 1;
             Assert.That(s.Boosted, Is.False);
-            Assert.That(s.BoostReady, Is.EqualTo(0));
-            t += 3600;
-            Assert.That(s.BoostReady, Is.EqualTo(3));
-            Assert.That(s.UseBoost(), Is.True);
         }
     }
 
@@ -343,7 +337,7 @@ namespace ReelEmpire.Tests
             s.State.renown = 150;
             Assert.That(s.Logbook("watch1") && s.Logbook("tide") && s.Logbook("watch2"), Is.True);
             Assert.That(s.AwayCap, Is.EqualTo(cap + 2 * 3600));
-            s.UseBoost();
+            s.BoostByAd();
             Assert.That(s.BoostLeft, Is.EqualTo(5400).Within(1));
         }
     }
@@ -557,10 +551,9 @@ namespace ReelEmpire.Tests
             Assert.That(s.CollectAwayDoubled(3600), Is.True);
             Assert.That(h.cash - before, Is.EqualTo(rate * 7200).Within(1e-6));
             Assert.That(s.DoubleFree, Is.False);
-            Assert.That(s.CollectAwayDoubled(3600), Is.False, "no gems");
-            s.State.gems = 20;
-            Assert.That(s.CollectAwayDoubled(3600), Is.True);
-            Assert.That(s.State.gems, Is.EqualTo(0));
+            s.State.gems = 1000;
+            Assert.That(s.CollectAwayDoubled(3600), Is.False, "once a day; after that only an advert doubles");
+            Assert.That(s.State.gems, Is.EqualTo(1000));
             t += 86400;
             Assert.That(s.DoubleFree, Is.True);
         }
@@ -569,10 +562,9 @@ namespace ReelEmpire.Tests
         public void SomeoneBackAfterDaysIsWelcomed()
         {
             var s = TestGame.New();
-            s.UseBoost(); s.UseBoost(); s.UseBoost();
             Assert.That(s.WelcomeHome(86400), Is.EqualTo(0));
             Assert.That(s.WelcomeHome(4 * 86400), Is.EqualTo(Sim.MissedGems));
-            Assert.That(s.BoostReady, Is.EqualTo(3));
+            Assert.That(s.Boosted, Is.False, "gems, not a boost");
         }
     }
 

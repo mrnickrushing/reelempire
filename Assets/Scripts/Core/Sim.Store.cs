@@ -45,7 +45,7 @@ namespace ReelEmpire.Core
             new ProductDef { Id = "reelempire.ledger", Name = "Captain's Ledger", Blurb = "All income doubled, for good, in every harbour.", Once = true, FallbackPrice = "$7.99" },
             new ProductDef { Id = "reelempire.fleet", Name = "Second Boat Out", Blurb = "Send two voyages at once, for good.", Once = true, FallbackPrice = "$4.99" },
             new ProductDef { Id = "reelempire.season", Name = "Season Pass", Blurb = "The premium reward on every tier of this season.", Season = true, FallbackPrice = "$7.99" },
-            new ProductDef { Id = "reelempire.nightcrew", Name = "Night Crew", Blurb = "The harbour earns for 4 more hours while you're away, for good.", Once = true, FallbackPrice = "$4.99" },
+            new ProductDef { Id = "reelempire.nightcrew", Name = "Night Crew", Blurb = "The harbour earns for 4 more hours while you're away, and the welcome-back DOUBLE is always free. For good.", Once = true, FallbackPrice = "$4.99" },
         };
 
         public bool Owns(string product) { return State.owned.Contains(product); }

@@ -6,7 +6,7 @@ namespace ReelEmpire.Core
     /// <summary>
     /// The long game: renovating a harbour (it starts again, earning twice as much for good), renown (a share of
     /// everything ever earned, paid at each renovation: +2% income everywhere per point), opening the next water, and
-    /// the Tide Boost (free, on a timer: double income for an hour a charge).
+    /// the Tide Boost (double income for an hour, for a watched advert).
     /// </summary>
     public sealed partial class Sim
     {
@@ -85,52 +85,11 @@ namespace ReelEmpire.Core
 
         // ---- the Tide Boost ----
 
-        public const int BoostCharges = 3;
-        public const double BoostEvery = 4 * 3600, BoostLasts = 3600, BoostCap = 8 * 3600, BoostMult = 2;
+        // Double income for an hour, only ever for a watched advert (BoostByAd) or from the paid season track: nothing
+        // doubles for free. It stacks to eight hours.
+        public const double BoostLasts = 3600, BoostCap = 8 * 3600, BoostMult = 2;
 
         public bool Boosted { get { return State.boostUntil > RealNow(); } }
         public double BoostLeft { get { return Math.Max(0, State.boostUntil - RealNow()); } }
-
-        /// <summary>Charges ready now (they come back one every four hours, up to three).</summary>
-        public int BoostReady
-        {
-            get
-            {
-                if (State.boostUsedAt.Count == 0) return BoostCharges;
-                int back = 0; double now = RealNow();
-                foreach (double t in State.boostUsedAt) if (now - t >= BoostEvery) back++;
-                return BoostCharges - State.boostUsedAt.Count + back;
-            }
-        }
-
-        /// <summary>Seconds until the next charge is back (0: one is ready, or all are).</summary>
-        public double BoostNextIn
-        {
-            get
-            {
-                double now = RealNow(), best = double.PositiveInfinity;
-                foreach (double t in State.boostUsedAt) if (now - t < BoostEvery) best = Math.Min(best, BoostEvery - (now - t));
-                return double.IsInfinity(best) ? 0 : best;
-            }
-        }
-
-        /// <summary>Seconds until every charge is back.</summary>
-        public double BoostFullIn
-        {
-            get { double now = RealNow(), worst = 0; foreach (double t in State.boostUsedAt) worst = Math.Max(worst, BoostEvery - (now - t)); return Math.Max(0, worst); }
-        }
-
-        public bool UseBoost()
-        {
-            double now = RealNow();
-            State.boostUsedAt.RemoveAll(t => now - t >= BoostEvery);
-            if (State.boostUsedAt.Count >= BoostCharges) return false;
-            double lasts = BoostLasts * (Logbook("tide") ? 1.5 : 1);
-            if (BoostLeft + lasts > BoostCap + 1) return false;
-            State.boostUsedAt.Add(now);
-            State.boostUntil = Math.Max(State.boostUntil, now) + lasts;
-            Touch();
-            return true;
-        }
     }
 }
