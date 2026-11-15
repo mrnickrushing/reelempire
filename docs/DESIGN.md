@@ -28,8 +28,8 @@ shops, cute villages, aquariums):
    guide points at it. A bottleneck is always solved by an upgrade the player can afford soon, never by a purchase.
 2. **Something good every 30 seconds early, every session later.** First upgrade inside 10 seconds, first milestone
    inside 2 minutes, first skipper (free) inside 4.
-3. **Generous free play.** Free chests on a timer, a free daily double on the welcome-back card. Beyond that, doubling
-   is never free: a watched advert or a purchase.
+3. **Generous free play.** Free chests and a daily gift on a timer. Doubling is never free: the welcome-back DOUBLE
+   is for a watched ad (or always, with the Night Crew purchase).
    Crew cards come mostly from play; odds are printed; a pity counter guarantees the good ones.
 4. **Fair purchases.** One-time permanent upgrades, a season pass, gems. No weekly subscription, no crew that only
    money buys, no pop-up offers at launch.

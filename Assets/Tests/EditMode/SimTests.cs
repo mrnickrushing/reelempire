@@ -540,22 +540,23 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
-        public void TheDoubleIsFreeOnceADayThenCostsGems()
+        public void OnlyTheNightCrewDoublesWithoutAnAd()
         {
             double t = 1_700_000_000;
             var s = TestGame.New(); s.RealNow = () => t;
             var h = s.H; h.cash = 1e7;
             s.HireSkipper(Stage.Berth, 0); s.HireSkipper(Stage.Dock); s.HireSkipper(Stage.Market);
-            double rate = s.IdleRate(h), before = h.cash;
+            Assert.That(s.DoubleFree, Is.False);
+            s.State.gems = 1000;
+            Assert.That(s.CollectAwayDoubled(3600), Is.False, "no free double: an ad doubles");
+            Assert.That(s.State.gems, Is.EqualTo(1000));
+            t += 86400;
+            Assert.That(s.DoubleFree, Is.False, "not on a new day either");
+            s.State.owned.Add("reelempire.nightcrew");
+            double before = h.cash, rate = s.IdleRate(h);
             Assert.That(s.DoubleFree, Is.True);
             Assert.That(s.CollectAwayDoubled(3600), Is.True);
             Assert.That(h.cash - before, Is.EqualTo(rate * 7200).Within(1e-6));
-            Assert.That(s.DoubleFree, Is.False);
-            s.State.gems = 1000;
-            Assert.That(s.CollectAwayDoubled(3600), Is.False, "once a day; after that only an advert doubles");
-            Assert.That(s.State.gems, Is.EqualTo(1000));
-            t += 86400;
-            Assert.That(s.DoubleFree, Is.True);
         }
 
         [Test]

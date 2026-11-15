@@ -6,13 +6,11 @@ namespace ReelEmpire.Tests
     public class AdTests
     {
         [Test]
-        public void TheFreeDoubleComesBeforeAnAdvert()
+        public void TheDoubleIsAlwaysForAnAd()
         {
             var s = TestGame.New();
-            Assert.IsTrue(s.DoubleFree);
-            Assert.IsFalse(s.AdOffered(AdReward.Double));
-            Assert.IsFalse(s.CollectAwayByAd(600));
-            Assert.IsTrue(s.CollectAwayDoubled(600));
+            Assert.IsFalse(s.DoubleFree, "no free double of the day");
+            Assert.IsFalse(s.CollectAwayDoubled(600));
             Assert.IsTrue(s.AdOffered(AdReward.Double));
             Assert.IsTrue(s.CollectAwayByAd(600));
             Assert.AreEqual(Sim.AdsPerDay - 1, s.AdsLeft);
@@ -30,10 +28,9 @@ namespace ReelEmpire.Tests
         }
 
         [Test]
-        public void AfterTheFreeDoubleOfTheDayADoubleNeedsAnAdvertNotGems()
+        public void ADoubleNeedsAnAdNotGems()
         {
             var s = TestGame.New();
-            Assert.IsTrue(s.CollectAwayDoubled(600));
             s.State.gems = 1000;
             Assert.IsFalse(s.CollectAwayDoubled(600), "gems never buy a double");
             Assert.AreEqual(1000, s.State.gems);
@@ -62,7 +59,6 @@ namespace ReelEmpire.Tests
         public void SixADay()
         {
             var s = TestGame.New();
-            s.CollectAwayDoubled(600);
             for (int i = 0; i < Sim.AdsPerDay; i++) Assert.IsTrue(s.CollectAwayByAd(600));
             Assert.AreEqual(0, s.AdsLeft);
             Assert.IsFalse(s.CollectAwayByAd(600));

@@ -8,7 +8,7 @@ namespace ReelEmpire.Core
 
     /// <summary>
     /// What keeps a sitting going and brings the next one: a guide that never runs out of steps, a crate drifting in
-    /// the harbour every couple of minutes, the free DOUBLE on the welcome-back card, and a welcome for someone who
+    /// the harbour every couple of minutes, the DOUBLE on the welcome-back card (for an ad), and a welcome for someone who
     /// has been away for days.
     /// </summary>
     public sealed partial class Sim
@@ -97,15 +97,14 @@ namespace ReelEmpire.Core
         public const int MissedGems = 30;
         public const double MissedAfter = 3 * 86400;
 
-        /// <summary>The free DOUBLE of the day is still there (always, with the Night Crew, which is paid for). After it, a
-        /// double is only ever for a watched advert (CollectAwayByAd).</summary>
-        public bool DoubleFree { get { return Owns("reelempire.nightcrew") || State.doubleDay != Today; } }
+        /// <summary>The DOUBLE on the welcome-back card needs nothing watched only with the Night Crew, which is paid
+        /// for. Everyone else doubles for a watched ad (CollectAwayByAd); there is no free double of the day.</summary>
+        public bool DoubleFree { get { return Owns("reelempire.nightcrew"); } }
 
-        /// <summary>Collects the time away twice over with the free double of the day. False if it has been used.</summary>
+        /// <summary>Collects the time away twice over for a Night Crew owner. False for anyone else (they watch an ad).</summary>
         public bool CollectAwayDoubled(double seconds)
         {
             if (!DoubleFree) return false;
-            State.doubleDay = Today;
             CollectAway(seconds, 2);
             return true;
         }

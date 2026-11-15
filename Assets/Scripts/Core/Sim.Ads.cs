@@ -24,7 +24,7 @@ namespace ReelEmpire.Core
             if (AdsLeft <= 0) return false;
             switch (reward)
             {
-                case AdReward.Double: return !DoubleFree;                       // the free one of the day comes first
+                case AdReward.Double: return !DoubleFree;                       // the Night Crew doubles without one
                 case AdReward.Wrench: return Unlocked("wear") && State.wrenches < AdWrenchBelow;      // for someone running short, not for hoarding
                 case AdReward.Boost: return BoostLeft + BoostHour <= BoostCap + 1;
             }
